@@ -3,37 +3,49 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Plus, Play, Edit, Search, Clock, ListChecks } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { checklistAPI, simulateApiDelay } from '../data/mockData';
+import { checklistProducaoService } from '../services/checklistProducaoService';
 import '../styles/checklists.css';
 
 const Checklists = () => {
     const navigate = useNavigate();
     const [checklists, setChecklists] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const loadChecklists = async () => {
             try {
-                const data = await checklistAPI.getAll();
+                setLoading(true);
+                const data = await checklistProducaoService.getAll();
                 setChecklists(data || []);
             } catch (error) {
                 console.error('Erro ao carregar checklists:', error);
                 setChecklists([]);
+            } finally {
+                setLoading(false);
             }
         };
         loadChecklists();
     }, []);
 
     const filteredChecklists = checklists.filter(c =>
-        c.title.toLowerCase().includes(searchTerm.toLowerCase())
+        c.nome.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    if (loading) {
+        return (
+            <div className="checklists-container">
+                <div className="loading-state">Carregando checklists...</div>
+            </div>
+        );
+    }
 
     return (
         <div className="checklists-container">
             <header className="checklists-header">
                 <div className="header-title">
-                    <h1>Biblioteca de Modelos</h1>
-                    <p>Gerencie os padrões operacionais da sua empresa</p>
+                    <h1>Checklists de Produção</h1>
+                    <p>Gerencie inventários de Cozinha e Bebidas</p>
                 </div>
                 <div className="header-actions">
                     <div className="search-bar">
@@ -46,9 +58,6 @@ const Checklists = () => {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <Link to="/checklists/new" className="create-btn">
-                        <Plus size={20} /> Novo Modelo
-                    </Link>
                 </div>
             </header>
 
@@ -60,34 +69,40 @@ const Checklists = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.1 }}
-                        onClick={() => navigate(`/checklists/${checklist.id}/execute`)}
+                        onClick={() => navigate(`/checklists/${checklist.id}/contagem`)}
                     >
                         <div className="card-content">
-                            <h3>{checklist.title}</h3>
-                            <p>{checklist.description || 'Sem descrição definida.'}</p>
+                            <h3>{checklist.nome}</h3>
+                            <p className="checklist-type">{checklist.tipo === 'cozinha' ? '🍳 Cozinha' : '🍕 Bebidas'}</p>
                             <div className="card-meta">
-                                <span className="meta-badge"><ListChecks size={14} /> {checklist.items?.length || 0} itens</span>
-                                <span className="meta-badge"><Clock size={14} /> 15 min</span>
+                                <span className="meta-badge">
+                                    <ListChecks size={14} /> {checklist.produtos_checklist?.length || 0} produtos
+                                </span>
+                                <span className="meta-badge">
+                                    <Clock size={14} /> {checklist.frequencia}
+                                </span>
                             </div>
+                            {checklist.responsaveis && checklist.responsaveis.length > 0 && (
+                                <div className="responsaveis">
+                                    <small>Responsáveis: {checklist.responsaveis.join(', ')}</small>
+                                </div>
+                            )}
                         </div>
 
                         <div className="card-actions">
-                            <button
-                                className="action-btn"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    // Navigate to edit (not implemented yet, placeholder)
-                                    alert('Editar modelo');
-                                }}
-                            >
-                                <Edit size={16} /> Editar
-                            </button>
                             <Link
-                                to={`/checklists/${checklist.id}/execute`}
+                                to={`/checklists/${checklist.id}/historico`}
+                                className="action-btn"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <Clock size={16} /> Histórico
+                            </Link>
+                            <Link
+                                to={`/checklists/${checklist.id}/contagem`}
                                 className="action-btn primary"
                                 onClick={(e) => e.stopPropagation()}
                             >
-                                <Play size={16} /> Executar
+                                <Play size={16} /> Fazer Contagem
                             </Link>
                         </div>
                     </motion.div>

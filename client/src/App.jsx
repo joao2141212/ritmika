@@ -10,6 +10,8 @@ import ChecklistDetails from './components/ChecklistDetails';
 import Settings from './pages/Settings';
 
 import Checklists from './pages/Checklists';
+import ChecklistContagem from './pages/ChecklistContagem';
+import ChecklistHistorico from './pages/ChecklistHistorico';
 import Team from './pages/Team';
 
 // Placeholder pages
@@ -55,6 +57,8 @@ function App() {
             <Route path="checklists" element={<Checklists />} />
             <Route path="checklists/new" element={<ChecklistBuilder />} />
             <Route path="checklists/:id/execute" element={<ChecklistExecution />} />
+            <Route path="checklists/:id/contagem" element={<ChecklistContagem />} />
+            <Route path="checklists/:id/historico" element={<ChecklistHistorico />} />
             <Route path="checklists/:id/details" element={<ChecklistDetails />} />
             <Route path="settings" element={<Settings />} />
             <Route path="team" element={<Team />} />

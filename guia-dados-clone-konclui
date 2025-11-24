@@ -1,0 +1,430 @@
+# GUIA COMPLETO: ESTRUTURA DE DADOS PARA CLONE KONCLUI
+
+## 📋 RESUMO DOS CHECKLISTS
+
+Você precisa criar **2 checklists principais** no seu clone:
+
+1. **CHECK-LIST COZINHA** (CHECK-LIST-COZINHA-1)
+2. **ESTOQUE PIZZARIA/BEBIDAS** (CONTAGEM-ESTOQUE-PIZZA-BEBIDAS)
+
+---
+
+## 🍳 CHECKLIST 1: COZINHA
+
+### Informações Gerais
+- **Nome do Checklist:** Check-List Cozinha
+- **Responsáveis:** Diana e Aline
+- **Turno:** Dia / Noite
+- **Frequência:** Diária
+- **Período de Contagem:** Semanal (7 dias)
+
+### Campos Obrigatórios
+1. `referencia` (REF)
+2. `produto` (Nome do item)
+3. `quantidade_minima` (Qty que aparece ao lado do produto)
+4. `dia_semana` (SEG, TER, QUA, QUI, SEX, SÁB, DOM)
+5. `data` (Data de contagem)
+6. `turno` (dia / noite) - **múltiplos registros possíveis**
+7. `retirado_por` (Quem fez a contagem)
+8. `estoque_diario` (Quantidade registrada)
+9. `observacoes` (Notas/Observações)
+
+### LISTA COMPLETA DE PRODUTOS - COZINHA (74 ITENS)
+
+#### BEBIDAS (1)
+- Água 5L (qty: 3)
+
+#### FARINHAS E BASES (4)
+- Farinha Trigo (qty: 1)
+- Farinha Sêmola (qty: 1)
+- Bag Polpa (qty: 1)
+- Fermento (qty: 1)
+
+#### QUEIJOS (9)
+- Mussarela (qty: 2)
+- Parmesão (qty: 1)
+- Gorgonzola (qty: 1)
+- Provolone (qty: 4)
+- Ricota (qty: 1)
+- Búfala (qty: 1)
+- Burrata (qty: 10)
+- Cream Cheese (qty: 1)
+- Catupiry (qty: 1)
+
+#### CARNES E EMBUTIDOS (10)
+- Peperoni (qty: 1)
+- Calabresa (qty: 1)
+- Parma Picado (qty: 2)
+- Parma Fatiado (qty: 1)
+- Presunto Cozido (qty: 3)
+- Bacon Fatiado (qty: 1)
+- Salame Italiano (qty: 4)
+- Linguiça Blumenau (qty: 3)
+- Lombo Defumado (qty: 1)
+- Camará (qty: 10)
+
+#### PROTEÍNAS (3)
+- Frango KG (qty: 3)
+- Filé Anchova (qty: 1)
+- Trufa (qty: 1)
+
+#### VEGETAIS E COMPLEMENTOS (5)
+- Shitáke (qty: 10)
+- Azeitona Preta Fatiada (qty: 1)
+- Azeitona Verde Inteira (qty: 1)
+- Azeitona Preta Inteira (qty: 1)
+- Brócolis Friarieli (qty: 1)
+
+#### ÓLEOS E AZEITES (3)
+- Óleo de Soja (qty: 1)
+- Azeite Oliva 5L (qty: 1)
+- Vinagre Balsâmico 900mL (qty: 1)
+
+#### MOLHOS E TEMPEROS (8)
+- Mostarda Escura (qty: 1)
+- Mostarda Dijon (qty: 1)
+- Mel Uva (qty: 1)
+- Nutella (qty: 1)
+- Kit Kat (qty: 1)
+- Pistache (qty: 1)
+- Kinder (qty: 1)
+- Vinagre de Vinho Tinto (qty: 1)
+
+#### CONDIMENTOS (3)
+- Orégano (qty: 1)
+- Tomate Seco (qty: 1)
+- Amêndoa Laminada (qty: 1)
+
+#### LATICÍNIOS (3)
+- Creme de Leite 200G (qty: 1)
+- Ovomaltine (qty: 1)
+- Sal (qty: 1)
+
+#### AÇÚCAR/DOCES (1)
+- Açúcar (qty: 1)
+
+#### LIMPEZA E HIGIENE (11)
+- Pano Multiuso Perfex (qty: 1)
+- Detergente (qty: 3)
+- Álcool 70 (qty: 3)
+- QBOA (qty: 1)
+- Esponja (qty: 1)
+- Luva Nitrílica (qty: 1)
+- Luva Limpeza (qty: 1)
+- Plástico Filme (qty: 1)
+- Bobina Porcionar (qty: 1)
+
+### Estrutura JSON - Cozinha
+
+```json
+{
+  "checklist_id": "cozinha_001",
+  "nome": "Check-List Cozinha",
+  "tipo": "inventario",
+  "responsaveis": ["Diana", "Aline"],
+  "turno_ativado": true,
+  "turnos": ["dia", "noite"],
+  "frequencia": "diaria",
+  "periodo_semana": 7,
+  "produtos": [
+    {
+      "id": 1,
+      "nome": "Água 5L",
+      "categoria": "Bebidas",
+      "quantidade_minima": 3,
+      "unidade": "litro",
+      "contagens": [
+        {
+          "data": "2025-11-03",
+          "dia_semana": "SEG",
+          "turno": "dia",
+          "quantidade": 0,
+          "retirado_por": "Diana",
+          "observacoes": ""
+        },
+        {
+          "data": "2025-11-03",
+          "dia_semana": "SEG",
+          "turno": "noite",
+          "quantidade": 0,
+          "retirado_por": "",
+          "observacoes": ""
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "nome": "Farinha Trigo",
+      "categoria": "Farinhas e Bases",
+      "quantidade_minima": 1,
+      "unidade": "kg",
+      "contagens": []
+    }
+  ]
+}
+```
+
+---
+
+## 🍕 CHECKLIST 2: ESTOQUE PIZZARIA / BEBIDAS
+
+### Informações Gerais
+- **Nome do Checklist:** Contagem Estoque Pizza/Bebidas
+- **Tipo:** Inventário de Estoque
+- **Frequência:** Semanal
+- **Período:** 7 dias com múltiplas contagens
+- **Colunas a Preencher:** CONTAGEM (Cont.) e PEDIDO (Ped.) em amarelo
+
+### Campos Obrigatórios
+1. `produto` (Nome da bebida)
+2. `quantidade_padrao` (Quantidade padrão com unidade)
+3. `unidade` (FDO, CX, PAC, PACOTE, etc.)
+4. `fornecedor` (Fabricante/Distribuidor)
+5. `estoque_inicial` (7 DIAS - número inicial)
+6. `contagem_dia1` (Cont. - Dia 1)
+7. `pedido_dia1` (Ped. - Dia 1)
+8. `contagem_dia2` (Cont. - Dia 2)
+9. `pedido_dia2` (Ped. - Dia 2)
+10. `contagem_dia3` (Cont. - Dia 3)
+11. `pedido_dia3` (Ped. - Dia 3)
+12. `contagem_dia4` (Cont. - Dia 4)
+13. `pedido_dia4` (Ped. - Dia 4)
+14. `data_semana` (Data de início da contagem)
+15. `responsavel` (Quem fez a contagem)
+16. `status` (Aberto, Finalizado, Pendente)
+
+### LISTA COMPLETA DE BEBIDAS (27 ITENS)
+
+#### ÁGUA E GELO (3)
+- Gelo 10kg (unidade: PACOTE, fornecedor: GELO BRASIL, estoque 7 dias: 15/32)
+- Água c/gás 12un (unidade: FDO, fornecedor: AMBEV, estoque 7 dias: 12)
+- Água s/gás 12un (unidade: FDO, fornecedor: AMBEV, estoque 7 dias: 12)
+
+#### REFRIGERANTES (6)
+- Coca-cola 12un (unidade: FDO, fornecedor: FEMSA, estoque 7 dias: 6)
+- Coca-cola zero 6un (unidade: FDO, fornecedor: FEMSA, estoque 7 dias: 20)
+- Guaraná Antártica 12un (unidade: FDO, fornecedor: AMBEV, estoque 7 dias: 3)
+- Guaraná Antártica Zero 12un (unidade: FDO, fornecedor: AMBEV, estoque 7 dias: 3)
+- Soda Limonada 12un (unidade: FDO, fornecedor: AMBEV, estoque 7 dias: 2)
+- Corona 24un (unidade: CX, fornecedor: AMBEV, estoque 7 dias: 30/42)
+
+#### SUCOS DEL VALLE (6)
+- Suco Del Valle PÊSSEGO 6un (unidade: FDO, fornecedor: FEMSA, estoque 7 dias: 2)
+- Suco Del Valle GOIABA 6un (unidade: FDO, fornecedor: FEMSA, estoque 7 dias: 1)
+- Suco Del Valle UVA 6un (unidade: FDO, fornecedor: FEMSA, estoque 7 dias: 4)
+- Suco Del Valle MARACUJÁ 6un (unidade: FDO, fornecedor: FEMSA, estoque 7 dias: 2)
+- Suco Del Valle MANGA 6un (unidade: FDO, fornecedor: FEMSA, estoque 7 dias: 2)
+- Tônica Schweeppes ZERO 6un (unidade: FDO, fornecedor: FEMSA, estoque 7 dias: 10)
+
+#### CERVEJAS (7)
+- Corona Zero 24un (unidade: CX, fornecedor: AMBEV, estoque 7 dias: 3)
+- Stella Pure Gold 24un (unidade: CX, fornecedor: AMBEV, estoque 7 dias: 20)
+- Stella 24un (unidade: CX, fornecedor: AMBEV, estoque 7 dias: 5)
+- Spaten 24un (unidade: CX, fornecedor: AMBEV, estoque 7 dias: 4)
+- Red Bull Zero 250ml pac 4un (unidade: PAC, fornecedor: AMBEV, estoque 7 dias: 2)
+- Red Bull 250ml pac 6un (unidade: PAC, fornecedor: AMBEV, estoque 7 dias: 2)
+- Beats 269ml Lata AZUL 8un. (unidade: CX, fornecedor: AMBEV, estoque 7 dias: 1)
+
+#### ENERGÉTICOS E OUTROS (5)
+- Beats 269ml Lata VERMELHA 8un. (unidade: CX, fornecedor: AMBEV, estoque 7 dias: 1)
+- Beats 269ml Lata GT 8un. (unidade: CX, fornecedor: AMBEV, estoque 7 dias: 1)
+
+### Estrutura JSON - Bebidas
+
+```json
+{
+  "checklist_id": "bebidas_001",
+  "nome": "Contagem Estoque Pizza/Bebidas",
+  "tipo": "inventario_bebidas",
+  "frequencia": "semanal",
+  "periodo_dias": 7,
+  "colunas_preenchimento": ["contagem", "pedido"],
+  "produtos": [
+    {
+      "id": 1,
+      "nome": "Gelo 10kg",
+      "quantidade_padrao": "10kg",
+      "unidade": "PACOTE",
+      "fornecedor": "GELO BRASIL",
+      "estoque_7dias": "15/32",
+      "categoria": "Água e Gelo",
+      "contagens_semana": [
+        {
+          "dia": 1,
+          "data": "2025-11-01",
+          "contagem": 0,
+          "pedido": 0
+        },
+        {
+          "dia": 2,
+          "data": "2025-11-02",
+          "contagem": 0,
+          "pedido": 0
+        }
+      ],
+      "responsavel": "",
+      "status": "aberto"
+    },
+    {
+      "id": 2,
+      "nome": "Coca-cola 12un",
+      "quantidade_padrao": "12 unidades",
+      "unidade": "FDO",
+      "fornecedor": "FEMSA",
+      "estoque_7dias": "6",
+      "categoria": "Refrigerantes",
+      "contagens_semana": []
+    }
+  ]
+}
+```
+
+---
+
+## 🗂️ ESTRUTURA DE BANCO DE DADOS (SUPABASE)
+
+### Tabela 1: `checklists`
+```sql
+CREATE TABLE checklists (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  nome VARCHAR NOT NULL,
+  tipo VARCHAR (cozinha, bebidas), -- Type of checklist
+  responsaveis TEXT[], -- Array of responsible people
+  frequencia VARCHAR (diaria, semanal, mensal),
+  turno_ativado BOOLEAN DEFAULT false,
+  status VARCHAR (ativo, inativo),
+  criado_em TIMESTAMP DEFAULT NOW(),
+  atualizado_em TIMESTAMP DEFAULT NOW()
+);
+```
+
+### Tabela 2: `produtos_checklist`
+```sql
+CREATE TABLE produtos_checklist (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  checklist_id UUID REFERENCES checklists(id),
+  nome VARCHAR NOT NULL,
+  categoria VARCHAR,
+  quantidade_minima INT,
+  unidade VARCHAR (kg, litro, un, pacote, caixa, etc.),
+  fornecedor VARCHAR,
+  estoque_padrao VARCHAR,
+  criado_em TIMESTAMP DEFAULT NOW()
+);
+```
+
+### Tabela 3: `contagens`
+```sql
+CREATE TABLE contagens (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  produto_id UUID REFERENCES produtos_checklist(id),
+  checklist_id UUID REFERENCES checklists(id),
+  data_contagem DATE,
+  dia_semana VARCHAR (SEG, TER, QUA, QUI, SEX, SAB, DOM),
+  turno VARCHAR (dia, noite),
+  quantidade_contada INT,
+  quantidade_pedida INT (para bebidas),
+  retirado_por VARCHAR,
+  observacoes TEXT,
+  status VARCHAR (completo, pendente, cancelado),
+  criado_em TIMESTAMP DEFAULT NOW()
+);
+```
+
+---
+
+## 📊 CAMPOS RESUMIDOS POR CHECKLIST
+
+### CHECK-LIST COZINHA
+| Campo | Tipo | Obrigatório | Exemplo |
+|-------|------|-------------|---------|
+| Nome do Produto | Text | Sim | Mussarela |
+| Categoria | Select | Sim | Queijos |
+| Quantidade Mínima | Number | Sim | 2 |
+| Unidade | Select | Sim | kg, un, pacote |
+| Data | Date | Sim | 2025-11-03 |
+| Dia da Semana | Select | Sim | SEG, TER, QUA... |
+| Turno | Select | Sim | Dia / Noite |
+| Quantidade Contada | Number | Sim | 2.5 |
+| Retirado Por | Text | Sim | Diana, Aline |
+| Observações | TextArea | Não | Acabar |
+
+### ESTOQUE PIZZARIA/BEBIDAS
+| Campo | Tipo | Obrigatório | Exemplo |
+|-------|------|-------------|---------|
+| Nome da Bebida | Text | Sim | Coca-cola 12un |
+| Unidade | Select | Sim | FDO, CX, PAC, PACOTE |
+| Fornecedor | Text | Sim | FEMSA, AMBEV, GELO BRASIL |
+| Estoque 7 Dias | Text | Sim | 6 ou 30/42 |
+| Data | Date | Sim | 2025-11-01 |
+| Contagem (cada dia) | Number | Sim | 6 |
+| Pedido (cada dia) | Number | Não | 10 |
+| Status | Select | Sim | Aberto, Finalizado |
+| Responsável | Text | Sim | Nome |
+
+---
+
+## 🎯 CHECKLIST DE IMPLEMENTAÇÃO
+
+### Para cada Checklist:
+- [ ] Criar tabela no Supabase com produtos
+- [ ] Criar interface de listagem de produtos
+- [ ] Criar interface de preenchimento de contagem (form)
+- [ ] Integrar campos de data, dia da semana, turno (se aplicável)
+- [ ] Adicionar campo de responsável
+- [ ] Adicionar campo de observações
+- [ ] Criar função de salvar contagem
+- [ ] Criar função de visualizar histórico
+- [ ] Adicionar validação (qty > 0, data válida, responsável informado)
+- [ ] Criar relatório/dashboard de estoque
+
+### Campos Dinâmicos:
+- Turno (Dia/Noite) - **APENAS PARA COZINHA**
+- Contagem e Pedido em múltiplos dias - **APENAS PARA BEBIDAS**
+- Fornecedor - **APENAS PARA BEBIDAS**
+
+---
+
+## 💾 COMO IMPORTAR ISSO NO SEU CLONE
+
+### Opção 1: CSV para Supabase
+Crie um CSV com os produtos e importe direto no Supabase:
+```
+nome,categoria,quantidade_minima,unidade,fornecedor
+Água 5L,Bebidas,3,litro,
+Farinha Trigo,Farinhas,1,kg,
+Mussarela,Queijos,2,kg,
+Gelo 10kg,Água e Gelo,15,pacote,GELO BRASIL
+Coca-cola 12un,Refrigerantes,6,FDO,FEMSA
+```
+
+### Opção 2: JSON para seu App
+Use o JSON que criei acima para pré-popular o banco via migrations ou seed data.
+
+### Opção 3: Manual
+Crie interface CRUD para inserir cada produto manualmente no seu painel.
+
+---
+
+## 📝 NOTAS IMPORTANTES
+
+1. **Todos os 74 produtos da Cozinha** têm quantidade mínima referência
+2. **Todos os 27 produtos de Bebidas** têm unidade específica (FDO, CX, PAC, PACOTE)
+3. **Turnos (Dia/Noite)** aplicam-se **APENAS** à Cozinha
+4. **Contagem e Pedido** aplicam-se **APENAS** ao Estoque de Bebidas
+5. **Responsáveis:** Diana e Aline para Cozinha; qualquer um para Bebidas
+6. **Período:** Cozinha = Diária com marcação de 7 dias; Bebidas = Semanal com 7 colunas (dia por dia)
+7. **Fornecedores:** FEMSA, AMBEV, GELO BRASIL são os principais
+
+---
+
+## 🚀 PRÓXIMOS PASSOS
+
+1. Crie as 3 tabelas no Supabase (checklists, produtos_checklist, contagens)
+2. Insira os 74 produtos de Cozinha
+3. Insira os 27 produtos de Bebidas
+4. Crie a interface no seu clone com os campos mapeados acima
+5. Teste com um registro de contagem completo (Cozinha + Bebidas)
+6. Valide se os dados estão sendo salvos corretamente
+
+**Sucesso!** 🎉
