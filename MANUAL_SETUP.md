@@ -5,7 +5,7 @@ https://supabase.com/dashboard/project/bcckaltuxorkybtzskql
 
 ## 2. Execute o Schema (SQL Editor)
 
-Vá em **SQL Editor** e execute o conteúdo de `supabase_schema.sql`:
+Vá em **SQL Editor** e execute o conteúdo de `scripts/supabase_schema.sql`:
 
 ```sql
 -- Copie e cole todo o conteúdo do arquivo supabase_schema.sql
@@ -13,7 +13,7 @@ Vá em **SQL Editor** e execute o conteúdo de `supabase_schema.sql`:
 
 ## 3. Execute as Functions (SQL Editor)
 
-Execute o conteúdo de `supabase_functions.sql`:
+Execute o conteúdo de `scripts/supabase_functions.sql`:
 
 ```sql
 -- Copie e cole todo o conteúdo do arquivo supabase_functions.sql
@@ -71,7 +71,7 @@ WHERE email = 'maria@ritmika.com';
 
 ## 6. Insira os Checklists (SQL Editor)
 
-Execute o conteúdo de `supabase_seed.sql`:
+Execute o conteúdo de `scripts/supabase_seed.sql`:
 
 ```sql
 -- Copie e cole todo o conteúdo do arquivo supabase_seed.sql

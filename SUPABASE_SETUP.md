@@ -3,13 +3,13 @@
 ## 1. Configurar Database
 
 ### Executar Schema
-No Supabase Dashboard > SQL Editor, execute o arquivo `supabase_schema.sql` para criar todas as tabelas e policies.
+No Supabase Dashboard > SQL Editor, execute o arquivo `scripts/supabase_schema.sql` para criar todas as tabelas e policies.
 
 ### Executar Functions
-Execute o arquivo `supabase_functions.sql` para criar as funções auxiliares.
+Execute o arquivo `scripts/supabase_functions.sql` para criar as funções auxiliares.
 
 ### Seed Data
-Execute o arquivo `supabase_seed.sql` para popular os checklists iniciais.
+Execute o arquivo `scripts/supabase_seed.sql` para popular os checklists iniciais.
 
 ## 2. Criar Usuários Demo
 
