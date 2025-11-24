@@ -1,0 +1,106 @@
+:root {
+  /* Premium Dark Theme Palette */
+  --bg-app: #05060B;
+  /* Deepest background - even darker */
+  --bg-card: #14141A;
+  /* Zinc 900 - Card background */
+  --bg-secondary: #1E1E24;
+  /* Secondary elements */
+
+  --text-primary: #FDF2E9;
+  /* Warm off-white */
+  --text-secondary: #C7C1B8;
+  /* Muted warm gray */
+  --text-muted: #8B847F;
+  /* Muted gray */
+
+  --accent-primary: #F97316;
+  /* Orange 500 - Primary Action */
+  --accent-glow: rgba(249, 115, 22, 0.5);
+  --accent-secondary: #FDBA74;
+  /* Orange 300 */
+
+  --success: #10b981;
+  /* Emerald 500 */
+  --success-bg: rgba(16, 185, 129, 0.1);
+
+  --warning: #f59e0b;
+  /* Amber 500 */
+  --warning-bg: rgba(245, 158, 11, 0.1);
+
+  --danger: #ef4444;
+  /* Red 500 */
+  --danger-bg: rgba(239, 68, 68, 0.1);
+
+  --border-subtle: #1E1E24;
+  /* Secondary background */
+  --border-highlight: #2A2A32;
+  /* Slightly lighter */
+
+  /* Spacing & Layout */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-glow: 0 0 20px var(--accent-glow);
+
+  /* Animation */
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+body {
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Glassmorphism Utility */
+.glass-panel {
+  background: rgba(20, 20, 26, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-lg);
+}
+
+/* Typography */
+h1,
+h2,
+h3 {
+  letter-spacing: -0.025em;
+  font-weight: 600;
+}
+
+/* Button Reset & Base */
+button {
+  font-family: inherit;
+  transition: all 0.2s var(--ease-spring);
+}
+
+button:active {
+  transform: scale(0.96);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-secondary);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-highlight);
+}
