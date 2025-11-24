@@ -1,6 +1,5 @@
 import { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios';
-import { mockUsers, simulateApiDelay } from '../data/mockData';
+import { supabase } from '../lib/supabase';
 
 const AuthContext = createContext();
 
@@ -9,44 +8,94 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        const savedUser = localStorage.getItem('user');
-        if (token && savedUser) {
-            setUser(JSON.parse(savedUser));
-            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        }
-        setLoading(false);
+        // Check active session
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session?.user) {
+                loadUserProfile(session.user.id);
+            } else {
+                setLoading(false);
+            }
+        });
+
+        // Listen for auth changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            if (session?.user) {
+                loadUserProfile(session.user.id);
+            } else {
+                setUser(null);
+                setLoading(false);
+            }
+        });
+
+        return () => subscription.unsubscribe();
     }, []);
 
-    const login = async (email, password) => {
-        // Simulate API delay
-        await simulateApiDelay();
+    const loadUserProfile = async (userId) => {
+        try {
+            const { data: profile, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', userId)
+                .single();
 
-        const user = mockUsers.find(u => u.email === email && u.password === password);
+            if (error) throw error;
 
-        if (!user) {
-            return { success: false, error: 'Credenciais inválidas' };
+            setUser(profile);
+        } catch (error) {
+            console.error('Error loading profile:', error);
+        } finally {
+            setLoading(false);
         }
-
-        // Create mock JWT token
-        const token = btoa(JSON.stringify({ id: user.id, role: user.role, exp: Date.now() + 86400000 }));
-
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify({ id: user.id, name: user.name, email: user.email, role: user.role }));
-        setUser({ id: user.id, name: user.name, email: user.email, role: user.role });
-
-        return { success: true };
     };
 
-    const logout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        delete axios.defaults.headers.common['Authorization'];
+    const login = async (email, password) => {
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            });
+
+            if (error) {
+                return { success: false, error: error.message };
+            }
+
+            await loadUserProfile(data.user.id);
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    };
+
+    const logout = async () => {
+        await supabase.auth.signOut();
         setUser(null);
     };
 
+    const signup = async (email, password, name, role = 'employee') => {
+        try {
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        name,
+                        role
+                    }
+                }
+            });
+
+            if (error) {
+                return { success: false, error: error.message };
+            }
+
+            return { success: true, data };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, logout, loading }}>
+        <AuthContext.Provider value={{ user, login, logout, signup, loading }}>
             {children}
         </AuthContext.Provider>
     );
