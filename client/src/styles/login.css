@@ -19,6 +19,11 @@
     --login-primary: #174b57;
 }
 
+body:has(.login-container) {
+    margin: 0;
+    overflow-x: hidden;
+}
+
 .login-background {
     position: absolute;
     top: 0;
@@ -110,51 +115,56 @@
     font-weight: 600;
 }
 
-.login-card .input-field {
+.login-container input.login-card-input,
+.login-container .login-card .input-field {
     width: 100%;
     min-width: 0;
     box-sizing: border-box;
-    background: #ffffff;
-    border: 1px solid var(--login-border);
-    color: var(--login-text);
-    padding: 14px 16px;
+    background: #ffffff !important;
+    border: 1px solid var(--login-border) !important;
+    color: var(--login-text) !important;
+    padding: 16px !important;
 }
 
-.login-card .input-field::placeholder {
+.login-container .login-card .input-field::placeholder {
     color: #6a7d84;
     opacity: 1;
 }
 
-.login-card .input-field:focus,
-.login-card .input-field:focus-visible {
-    outline: 3px solid rgba(11, 107, 97, 0.22);
+.login-container input.login-card-input:focus,
+.login-container input.login-card-input:focus-visible,
+.login-container .login-card .input-field:focus,
+.login-container .login-card .input-field:focus-visible {
+    outline: 3px solid rgba(11, 107, 97, 0.32) !important;
     outline-offset: 2px;
-    border-color: var(--login-accent);
-    background: #ffffff;
+    border-color: var(--login-accent) !important;
+    background: #ffffff !important;
+    box-shadow: 0 0 0 1px var(--login-accent) !important;
 }
 
 .login-btn {
     width: 100%;
-    margin-top: 10px;
+    margin-top: 8px;
     padding: 12px;
 }
 
 .login-card .login-btn {
-    background: var(--login-primary);
-    color: #ffffff;
-    border: 1px solid var(--login-primary);
+    min-height: 44px;
+    background: var(--login-primary) !important;
+    color: #ffffff !important;
+    border: 1px solid var(--login-primary) !important;
 }
 
 .login-card .login-btn:hover,
 .login-card .login-btn:focus-visible {
-    background: #0f3d48;
-    border-color: #0f3d48;
+    background: #0f3d48 !important;
+    border-color: #0f3d48 !important;
 }
 
 .error-message {
     background: rgba(218, 54, 51, 0.1);
     color: #a12825;
-    padding: 10px;
+    padding: 12px;
     border-radius: var(--radius-sm);
     margin-bottom: 20px;
     font-size: 0.9rem;
@@ -169,7 +179,7 @@
 }
 
 .login-footer a {
-    color: var(--login-accent);
+    color: #075c52 !important;
     text-decoration: underline;
     text-underline-offset: 3px;
 }
