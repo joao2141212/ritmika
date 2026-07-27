@@ -149,7 +149,9 @@ body:has(.login-container) {
 }
 
 .login-card .login-btn {
-    min-height: 44px;
+    height: 44px !important;
+    min-height: 44px !important;
+    padding: 0 12px !important;
     background: var(--login-primary) !important;
     color: #ffffff !important;
     border: 1px solid var(--login-primary) !important;
