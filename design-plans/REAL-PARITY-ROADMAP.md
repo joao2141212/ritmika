@@ -136,7 +136,7 @@ e refletida no dashboard depois de reload e de uma nova sessão.
 
 ### Fase 5. Evidências e mídia
 
-Status: referências históricas parciais; cópia privada pendente.
+Status: mirror privado concluído no banco; prova de UI publicada ainda pendente.
 
 - Criar mirror idempotente das mídias históricas para bucket privado do
   Ritmika, preservando source URL, source id, checksum, MIME e item de origem.
@@ -146,11 +146,13 @@ Status: referências históricas parciais; cópia privada pendente.
 - Validar disponibilidade e integridade de uma amostra e da contagem total.
 
 Aceite: a evidência histórica abre pelo storage privado do Ritmika e continua
-disponível sem depender da sessão ou do bucket público do Koncluí.
+disponível sem depender da sessão ou do bucket público do Koncluí. O check atual
+confirmou 627/627 cópias privadas e uma URL assinada gerada com sucesso.
 
 ### Fase 6. Notificações, equipe e configurações
 
-Status: notificações novas parciais; histórico de origem pendente.
+Status: notificações novas persistidas para evidência e lifecycle de execução;
+histórico de origem pendente.
 
 - Mapear a origem observável das notificações históricas; se não houver
   exportação confiável, registrar a lacuna em vez de inventar eventos.
@@ -227,6 +229,9 @@ combinação banco + contrato + UI + execução publicada.
   restrito ao desenvolvimento não-prod explícito.
 - 2026-07-27: build e lint passaram após a correção; segue pendente a prova
   autenticada do bundle publicado e as fases de lifecycle/diferencial.
+- 2026-07-27, commits 0a0b631 e e15f99f: início, conclusão e retry de execução
+  passaram a persistir notificações; as 627 mídias históricas foram espelhadas
+  no bucket privado, com checksum, proveniência e prova de URL assinada.
 
 ## Definition of Done
 
