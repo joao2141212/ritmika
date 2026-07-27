@@ -38,3 +38,6 @@ Cada pasta mantida pelo projeto possui um documento com o nome literal da pasta 
 ## Banco de dados
 
 Não executar SQL Supabase colado no terminal como rotina. Use os scripts em supabase/scripts/db/read para leitura e supabase/scripts/db/write para escrita. O Koncluí permanece somente leitura.
+## Handoff operacional
+
+O estado atual, provas, pendências e regras para continuidade estão em `HANDOFF-AGENTE-PARIDADE-REAL.md`.
