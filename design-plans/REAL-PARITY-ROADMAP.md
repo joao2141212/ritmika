@@ -245,3 +245,10 @@ O Ritmika só será marcado como paridade real quando:
 - reload, nova sessão, retry e erro tiverem comportamento validado;
 - build, lint, migrations, smoke e publicação tiverem sinais recentes;
 - os limites inevitáveis da fonte estiverem documentados, não escondidos.
+## Registro de execução 2026-07-27
+
+- Login publicado em white mode, responsivo nos viewports desktop, tablet e mobile; a varredura pública terminou sem achados altos.
+- Dashboard remoto ganhou exportação CSV da fila carregada, respeitando aba e período selecionados.
+- O ciclo de execução remoto já cobre salvar, concluir, retry/reabrir, eventos e notificações idempotentes.
+- A leitura `supabase/scripts/db/read/verify_security_state.sql` confirmou 16/16 tabelas Ritmika com RLS, 21 policies em 16 tabelas, nenhuma tabela RLS sem policy e bucket de evidências privado.
+- Ainda sem certificação: smoke autenticado no bundle publicado, paridade visual/DOM das telas protegidas do Koncluí e prova diferencial completa de filtros/rankings/gráficos em sessão autenticada.

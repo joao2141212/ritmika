@@ -26,6 +26,8 @@ const EMPTY_DATA = {
         unreadNotifications: 0,
     },
     tasks: { late: [], now: [], upcoming: [] },
+    rankings: { users: [], units: [], sectors: [] },
+    trend: [],
 };
 
 const TaskCard = ({ task, status }) => {
@@ -91,6 +93,8 @@ const DashboardRemote = () => {
 
     const stats = data.stats || EMPTY_DATA.stats;
     const tasks = data.tasks || EMPTY_DATA.tasks;
+    const rankings = data.rankings || EMPTY_DATA.rankings;
+    const trend = data.trend || EMPTY_DATA.trend;
     const taskList = activeTab === 'upcoming' ? tasks.upcoming : tasks.late.concat(tasks.now);
 
     const exportDashboard = () => {
@@ -214,6 +218,67 @@ const DashboardRemote = () => {
                                 task={task}
                                 status={activeTab === 'upcoming' ? 'upcoming' : (tasks.late.some((lateTask) => lateTask.response_id === task.response_id) ? 'late' : 'now')}
                             />
+                        ))}
+                    </div>
+                )}
+            </section>
+
+            <section className="remote-dashboard-panel remote-rankings-panel">
+                <div className="remote-panel-heading">
+                    <div>
+                        <p className="remote-eyebrow">Desempenho</p>
+                        <h2>Rankings do período</h2>
+                    </div>
+                    <span className="remote-panel-caption">Score médio e conclusão</span>
+                </div>
+                <div className="remote-rankings-grid">
+                    {[
+                        ['Usuários', rankings.users],
+                        ['Unidades', rankings.units],
+                        ['Setores', rankings.sectors],
+                    ].map(([title, items]) => (
+                        <article className="remote-ranking-card" key={title}>
+                            <h3>{title}</h3>
+                            {items.length === 0 ? (
+                                <p className="remote-state-inline">Sem dados no período.</p>
+                            ) : items.map((item, index) => (
+                                <div className="remote-ranking-row" key={item.id}>
+                                    <div className="remote-ranking-label">
+                                        <span>{index + 1}. {item.label}</span>
+                                        <strong>{item.score}%</strong>
+                                    </div>
+                                    <div className="remote-ranking-track" aria-hidden="true">
+                                        <span style={{ width: `${item.score}%` }} />
+                                    </div>
+                                    <small>{item.completed} concluídos de {item.total} · {item.completionRate}% conclusão</small>
+                                </div>
+                            ))}
+                        </article>
+                    ))}
+                </div>
+            </section>
+
+            <section className="remote-dashboard-panel remote-trend-panel">
+                <div className="remote-panel-heading">
+                    <div>
+                        <p className="remote-eyebrow">Evolução</p>
+                        <h2>Indicadores por dia</h2>
+                    </div>
+                    <span className="remote-panel-caption">Score médio dos registros</span>
+                </div>
+                {trend.length === 0 ? (
+                    <div className="remote-state remote-state-empty">Sem evolução registrada no período.</div>
+                ) : (
+                    <div className="remote-trend-list">
+                        {trend.slice(-7).map((item) => (
+                            <div className="remote-trend-row" key={item.date}>
+                                <span>{new Date(`${item.date}T12:00:00`).toLocaleDateString('pt-BR')}</span>
+                                <div className="remote-ranking-track" aria-hidden="true">
+                                    <span style={{ width: `${item.score}%` }} />
+                                </div>
+                                <strong>{item.score}%</strong>
+                                <small>{item.completed}/{item.total} concluídos</small>
+                            </div>
                         ))}
                     </div>
                 )}

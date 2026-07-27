@@ -986,7 +986,7 @@ export const remoteChecklistRepository = {
             if (!period.startIso) return query;
             return query.gte('execution_date', period.startIso).lt('execution_date', period.endIso);
         };
-        const [checklistsResult, responsesResult, totalResult, completedResult, overdueResult, unreadResult] = await Promise.all([
+        const [checklistsResult, responsesResult, totalResult, completedResult, overdueResult, unreadResult, profilesResult, unitsResult, sectorsResult] = await Promise.all([
             client
                 .from('ritmika_checklists')
                 .select('id,title,status,items,schedule,unit_id,sector_id,moment_id,metadata')
@@ -1002,9 +1002,27 @@ export const remoteChecklistRepository = {
             scopedToPeriod(client.from('ritmika_responses').select('id', { count: 'exact', head: true }).eq('workspace_id', context.workspaceId).eq('is_finished', true)),
             scopedToPeriod(client.from('ritmika_responses').select('id', { count: 'exact', head: true }).eq('workspace_id', context.workspaceId).eq('is_finished', false).lt('execution_date', nowIso)),
             client.from('ritmika_notifications').select('id', { count: 'exact', head: true }).eq('workspace_id', context.workspaceId).is('read_at', null),
+            client
+                .from('ritmika_profiles')
+                .select('id,name,email')
+                .eq('workspace_id', context.workspaceId)
+                .order('name', { ascending: true }),
+            client
+                .from('ritmika_units')
+                .select('id,name')
+                .eq('workspace_id', context.workspaceId)
+                .order('name', { ascending: true }),
+            client
+                .from('ritmika_sectors')
+                .select('id,name')
+                .eq('workspace_id', context.workspaceId)
+                .order('name', { ascending: true }),
         ]);
         const checklistRows = unwrap('getDashboardData.checklists', checklistsResult, { workspaceId: context.workspaceId }) || [];
         const responseRows = unwrap('getDashboardData.responses', responsesResult, { workspaceId: context.workspaceId }) || [];
+        const profileRows = unwrap('getDashboardData.profiles', profilesResult, { workspaceId: context.workspaceId }) || [];
+        const unitRows = unwrap('getDashboardData.units', unitsResult, { workspaceId: context.workspaceId }) || [];
+        const sectorRows = unwrap('getDashboardData.sectors', sectorsResult, { workspaceId: context.workspaceId }) || [];
         if (totalResult.error) {
             reportError('getDashboardData.total', totalResult.error, { workspaceId: context.workspaceId });
             throw totalResult.error;
@@ -1056,6 +1074,61 @@ export const remoteChecklistRepository = {
         const totalScheduled = Number(totalResult.count || 0);
         const completed = Number(completedResult.count || 0);
 
+        const buildRanking = (dimension, labels) => {
+            const groups = new Map();
+            responseRows.forEach((row) => {
+                const checklist = checklistMap.get(String(row.checklist_id));
+                const dimensionId = dimension === 'user'
+                    ? (row.profile_id || row.source_user_id)
+                    : checklist?.[`${dimension}_id`];
+                const label = labels.get(String(dimensionId));
+                if (!label) return;
+                const current = groups.get(String(dimensionId)) || {
+                    id: String(dimensionId),
+                    label,
+                    total: 0,
+                    completed: 0,
+                    scoreTotal: 0,
+                };
+                const score = Number(row.metadata?.score ?? row.metadata?.progress ?? (row.is_finished ? 100 : 0));
+                current.total += 1;
+                current.completed += row.is_finished ? 1 : 0;
+                current.scoreTotal += Math.max(0, Math.min(100, Number.isFinite(score) ? score : 0));
+                groups.set(String(dimensionId), current);
+            });
+            return [...groups.values()]
+                .map((item) => ({
+                    ...item,
+                    score: item.total ? Math.round(item.scoreTotal / item.total) : 0,
+                    completionRate: item.total ? Math.round((item.completed / item.total) * 100) : 0,
+                }))
+                .sort((left, right) => right.score - left.score || right.total - left.total || left.label.localeCompare(right.label, 'pt-BR'))
+                .slice(0, 5);
+        };
+
+        const trendMap = new Map();
+        responseRows.forEach((row) => {
+            const date = (row.execution_date || row.started_at || row.created_at || '').slice(0, 10);
+            if (!date) return;
+            const current = trendMap.get(date) || { date, total: 0, completed: 0, scoreTotal: 0 };
+            const score = Number(row.metadata?.score ?? row.metadata?.progress ?? (row.is_finished ? 100 : 0));
+            current.total += 1;
+            current.completed += row.is_finished ? 1 : 0;
+            current.scoreTotal += Math.max(0, Math.min(100, Number.isFinite(score) ? score : 0));
+            trendMap.set(date, current);
+        });
+        const trend = [...trendMap.values()]
+            .sort((left, right) => left.date.localeCompare(right.date))
+            .map((item) => ({
+                date: item.date,
+                total: item.total,
+                completed: item.completed,
+                score: item.total ? Math.round(item.scoreTotal / item.total) : 0,
+            }));
+        const profileLabels = new Map(profileRows.map((row) => [String(row.id), row.name || row.email || 'Usuário']));
+        const unitLabels = new Map(unitRows.map((row) => [String(row.id), row.name || 'Unidade']));
+        const sectorLabels = new Map(sectorRows.map((row) => [String(row.id), row.name || 'Setor']));
+
         return {
             workspace_id: context.workspaceId,
             period,
@@ -1074,6 +1147,12 @@ export const remoteChecklistRepository = {
                 now: nowRows.slice(0, 12).map(taskFromRow),
                 upcoming: upcomingRows.slice(0, 12).map(taskFromRow),
             },
+            rankings: {
+                users: buildRanking('user', profileLabels),
+                units: buildRanking('unit', unitLabels),
+                sectors: buildRanking('sector', sectorLabels),
+            },
+            trend,
             recentExecutions: await mapExecutionRows(context.workspaceId, responseRows.slice(0, 12)),
         };
     },

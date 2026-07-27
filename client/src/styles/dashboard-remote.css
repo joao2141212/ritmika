@@ -428,3 +428,124 @@
         flex: 1;
     }
 }
+.remote-rankings-panel,
+.remote-trend-panel {
+    margin-top: 18px;
+}
+
+.remote-panel-caption {
+    color: #6d7f89;
+    font-size: 12px;
+}
+
+.remote-rankings-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.remote-ranking-card {
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid #e2e9ee;
+    border-radius: 14px;
+    background: #fbfcfd;
+}
+
+.remote-ranking-card h3 {
+    margin: 0 0 14px;
+    color: #1d3440;
+    font-size: 14px;
+}
+
+.remote-ranking-row {
+    padding: 11px 0;
+    border-top: 1px solid #e8eef1;
+}
+
+.remote-ranking-row:first-of-type {
+    border-top: 0;
+    padding-top: 0;
+}
+
+.remote-ranking-label {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    color: #38515f;
+    font-size: 13px;
+}
+
+.remote-ranking-label span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.remote-ranking-label strong,
+.remote-trend-row strong {
+    color: #0b6b61;
+}
+
+.remote-ranking-track {
+    height: 7px;
+    margin: 8px 0 5px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #e3efed;
+}
+
+.remote-ranking-track span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: #69cdbd;
+}
+
+.remote-ranking-row small,
+.remote-trend-row small {
+    color: #71838c;
+    font-size: 11px;
+}
+
+.remote-state-inline {
+    margin: 0;
+    color: #71838c;
+    font-size: 13px;
+}
+
+.remote-trend-list {
+    display: grid;
+    gap: 10px;
+}
+
+.remote-trend-row {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr) 46px 110px;
+    align-items: center;
+    gap: 12px;
+    color: #526873;
+    font-size: 12px;
+}
+
+.remote-trend-row .remote-ranking-track {
+    width: 100%;
+    margin: 0;
+}
+
+@media (max-width: 900px) {
+    .remote-rankings-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .remote-trend-row {
+        grid-template-columns: 76px minmax(0, 1fr) 42px;
+    }
+
+    .remote-trend-row small {
+        grid-column: 2 / -1;
+    }
+}

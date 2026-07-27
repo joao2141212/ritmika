@@ -8,3 +8,6 @@ Leituras Supabase agrupadas em uma chamada curta.
 - verify_operational_state.sql: check único de dashboard de 30 dias, schema de evidências, histórico e contagens principais.
 - verify_private_evidence_access.sh: valida que uma evidência privada pode gerar URL assinada sem imprimir a URL.
 - verify_private_evidence_access.mjs: implementação da prova de acesso ao Storage privado.
+# Verificação adicionada
+
+`verify_security_state.sql` faz uma leitura compacta das tabelas Ritmika com RLS, quantidade de policies, escopo por `workspace_id`, tabelas protegidas sem policy e privacidade do bucket `ritmika-evidences`. Não altera o banco.
