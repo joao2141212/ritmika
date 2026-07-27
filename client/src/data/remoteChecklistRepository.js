@@ -1397,6 +1397,24 @@ export const remoteChecklistRepository = {
             checklist_id: checklist.id,
             execution_type: executionMetadata.execution_type || 'manual',
         });
+        try {
+            await this.createNotification({
+                recipientProfileId: profile?.id || null,
+                sourceId: `execution-started:${execution.id}`,
+                kind: 'execution_started',
+                title: 'Execução iniciada',
+                body: checklist.title || 'Um checklist foi iniciado.',
+                route: `/checklists/${checklist.id}/details`,
+                entityType: 'execution',
+                entityId: execution.id,
+                metadata: { checklist_id: checklist.id },
+            });
+        } catch (notificationError) {
+            reportError('startExecution.notification', notificationError, {
+                workspaceId: context.workspaceId,
+                executionId: execution.id,
+            });
+        }
         return execution;
     },
 
@@ -1479,6 +1497,28 @@ export const remoteChecklistRepository = {
             progress,
             score: progress,
         });
+        try {
+            await this.createNotification({
+                recipientProfileId: current.profile_id || null,
+                sourceId: `execution-completed:${execution.id}`,
+                kind: 'execution_completed',
+                title: 'Execução concluída',
+                body: `Checklist concluído com ${progress}% de progresso.`,
+                route: `/checklists/${current.checklist_id}/details`,
+                entityType: 'execution',
+                entityId: execution.id,
+                metadata: {
+                    checklist_id: current.checklist_id,
+                    progress,
+                    score: progress,
+                },
+            });
+        } catch (notificationError) {
+            reportError('completeExecution.notification', notificationError, {
+                workspaceId: context.workspaceId,
+                executionId: execution.id,
+            });
+        }
         return execution;
     },
 
@@ -1519,6 +1559,27 @@ export const remoteChecklistRepository = {
         await recordExecutionEvent(context.workspaceId, execution.id, current.profile_id, 'retried', {
             retry_count: Number(currentMetadata.retry_count || 0) + 1,
         });
+        try {
+            await this.createNotification({
+                recipientProfileId: current.profile_id || null,
+                sourceId: `execution-retried:${execution.id}:${execution.metadata?.retry_count || 0}`,
+                kind: 'execution_retried',
+                title: 'Execução reiniciada',
+                body: 'A execução foi reaberta para uma nova tentativa.',
+                route: `/checklists/${current.checklist_id}/details`,
+                entityType: 'execution',
+                entityId: execution.id,
+                metadata: {
+                    checklist_id: current.checklist_id,
+                    retry_count: execution.metadata?.retry_count || 0,
+                },
+            });
+        } catch (notificationError) {
+            reportError('retryExecution.notification', notificationError, {
+                workspaceId: context.workspaceId,
+                executionId: execution.id,
+            });
+        }
         return execution;
     },
 };
