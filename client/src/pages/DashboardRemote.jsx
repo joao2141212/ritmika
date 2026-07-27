@@ -93,6 +93,33 @@ const DashboardRemote = () => {
     const tasks = data.tasks || EMPTY_DATA.tasks;
     const taskList = activeTab === 'upcoming' ? tasks.upcoming : tasks.late.concat(tasks.now);
 
+    const exportDashboard = () => {
+        const escapeCsv = (value) => `"${String(value ?? '').replaceAll('"', '""')}"`;
+        const rows = taskList.map((task) => ({
+            titulo: task.title,
+            situacao: activeTab === 'upcoming'
+                ? 'Próximo'
+                : (tasks.late.some((lateTask) => lateTask.response_id === task.response_id) ? 'Atrasado' : 'Agora'),
+            prazo: task.due_at ? new Date(task.due_at).toLocaleString('pt-BR') : '',
+            checklist_id: task.id,
+            execucao_id: task.execution_id || task.response_id || '',
+        }));
+        const headers = ['Título', 'Situação', 'Prazo', 'Checklist ID', 'Execução ID'];
+        const csv = '\uFEFF' + [
+            headers,
+            ...rows.map((row) => [row.titulo, row.situacao, row.prazo, row.checklist_id, row.execucao_id]),
+        ].map((row) => row.map(escapeCsv).join(';')).join('\n');
+        const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `ritmika-atividades-${periodDays === 'all' ? 'historico' : periodDays + 'd'}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 0);
+        toast.success('Atividades exportadas.');
+    };
+
     return (
         <div className="dashboard-remote ritmika-light-mode">
             <header className="remote-dashboard-header">
@@ -129,6 +156,9 @@ const DashboardRemote = () => {
                     <button type="button" className="remote-refresh-button" onClick={loadDashboard} disabled={loading}>
                         <RefreshCw size={16} className={loading ? 'is-spinning' : ''} />
                         Atualizar
+                    </button>
+                    <button type="button" className="remote-refresh-button" onClick={exportDashboard} disabled={loading}>
+                        Exportar
                     </button>
                 </div>
             </header>
