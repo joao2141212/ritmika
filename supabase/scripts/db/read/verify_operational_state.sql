@@ -24,7 +24,8 @@ SELECT concat_ws(
     count(*)::text,
     count(*) FILTER (WHERE coalesce(metadata->>'historical_import', 'false') = 'true')::text,
     count(*) FILTER (WHERE metadata->>'source_url' ~* '^https?://')::text,
-    count(*) FILTER (WHERE storage_bucket = 'konclui-source')::text
+    count(*) FILTER (WHERE storage_bucket = 'konclui-source')::text,
+    count(*) FILTER (WHERE storage_bucket = 'ritmika-evidences' AND metadata->>'mirror_status' = 'complete')::text
 )
 FROM public.ritmika_evidences
 

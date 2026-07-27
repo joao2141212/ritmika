@@ -1300,7 +1300,10 @@ export const remoteChecklistRepository = {
 
     async getEvidenceUrl(evidence) {
         const sourceUrl = evidence?.metadata?.source_url;
-        if (sourceUrl) {
+        const mirrorComplete = evidence?.metadata?.mirror_status === 'complete'
+            && evidence?.storage_bucket === 'ritmika-evidences'
+            && String(evidence?.storage_path || '').startsWith('historical/');
+        if (sourceUrl && !mirrorComplete) {
             return {
                 ...evidence,
                 url: sourceUrl,
