@@ -1,5 +1,6 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { logger } from '../lib/logger';
 
 const AuthContext = createContext();
 
@@ -55,16 +56,32 @@ export const AuthProvider = ({ children }) => {
     const loadUserProfile = async (userId) => {
         try {
             const { data: profile, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', userId)
-                .single();
+                .from('ritmika_profiles')
+                .select('id,workspace_id,source_user_id,auth_user_id,email,name,phone,role,is_owner,managed_units,preferences,metadata')
+                .eq('auth_user_id', userId)
+                .maybeSingle();
 
             if (error) throw error;
 
-            setUser(profile);
+            if (profile) {
+                setUser(profile);
+                return;
+            }
+
+            const { data: authData } = await supabase.auth.getUser();
+            setUser({
+                id: userId,
+                name: authData?.user?.user_metadata?.name || authData?.user?.email || 'Usuário Ritmika',
+                email: authData?.user?.email || '',
+                role: authData?.user?.user_metadata?.role || 'operator',
+            });
         } catch (error) {
-            console.error('Error loading profile:', error);
+            logger.error({
+                fn: 'AuthContext.loadUserProfile',
+                status: 'error',
+                userId,
+                error: error instanceof Error ? error.message : String(error),
+            });
         } finally {
             setLoading(false);
         }

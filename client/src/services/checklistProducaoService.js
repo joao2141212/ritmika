@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabase';
 
 // Checklists de Produção
 import { localChecklistRepository } from '../data/localChecklistRepository';
+import { remoteChecklistRepository } from '../data/remoteChecklistRepository';
 
 const isLocalData = () => import.meta.env.VITE_DATA_MODE !== 'remote';
 
@@ -11,14 +12,7 @@ export const checklistProducaoService = {
             return localChecklistRepository.getAll();
         }
 
-        const { data, error } = await supabase
-            .from('checklists_producao')
-            .select('*, produtos_checklist(*)')
-            .eq('status', 'ativo')
-            .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        return data;
+        return remoteChecklistRepository.getAll();
     },
 
     async getManagerList() {
@@ -26,7 +20,7 @@ export const checklistProducaoService = {
             return localChecklistRepository.getManagerList();
         }
 
-        throw new Error('A lista de gestão remota ainda não foi conectada ao contrato do Ritmika.');
+        return remoteChecklistRepository.getManagerList();
     },
 
     async getById(id) {
@@ -34,14 +28,7 @@ export const checklistProducaoService = {
             return localChecklistRepository.getById(id);
         }
 
-        const { data, error } = await supabase
-            .from('checklists_producao')
-            .select('*, produtos_checklist(*)')
-            .eq('id', id)
-            .single();
-
-        if (error) throw error;
-        return data;
+        return remoteChecklistRepository.getById(id);
     },
 
     async getProdutos(checklistId) {
@@ -49,15 +36,7 @@ export const checklistProducaoService = {
             return localChecklistRepository.getProdutos(checklistId);
         }
 
-        const { data, error } = await supabase
-            .from('produtos_checklist')
-            .select('*')
-            .eq('checklist_id', checklistId)
-            .eq('ativo', true)
-            .order('ordem', { ascending: true });
-
-        if (error) throw error;
-        return data;
+        return remoteChecklistRepository.getProdutos(checklistId);
     },
 
 // Checklist writes
@@ -66,14 +45,7 @@ export const checklistProducaoService = {
             return localChecklistRepository.create(checklist);
         }
 
-        const { data, error } = await supabase
-            .from('checklists_producao')
-            .insert([checklist])
-            .select('*, produtos_checklist(*)')
-            .single();
-
-        if (error) throw error;
-        return data;
+        return remoteChecklistRepository.create(checklist);
     },
 
     async update(id, updates) {
@@ -81,15 +53,7 @@ export const checklistProducaoService = {
             return localChecklistRepository.update(id, updates);
         }
 
-        const { data, error } = await supabase
-            .from('checklists_producao')
-            .update(updates)
-            .eq('id', id)
-            .select('*, produtos_checklist(*)')
-            .single();
-
-        if (error) throw error;
-        return data;
+        return remoteChecklistRepository.update(id, updates);
     },
 
     async archive(id) {
@@ -97,13 +61,7 @@ export const checklistProducaoService = {
             return localChecklistRepository.archive(id);
         }
 
-        const { error } = await supabase
-            .from('checklists_producao')
-            .update({ status: 'inativo' })
-            .eq('id', id);
-
-        if (error) throw error;
-        return true;
+        return remoteChecklistRepository.archive(id);
     },
 
     async publish(id, status = 'ativo') {
@@ -111,7 +69,7 @@ export const checklistProducaoService = {
             return localChecklistRepository.publish(id, status);
         }
 
-        throw new Error('Publicação remota ainda não foi conectada ao contrato do Ritmika.');
+        return remoteChecklistRepository.publish(id, status);
     },
 
     async startExecution(checklistId, metadata = {}) {
@@ -119,7 +77,7 @@ export const checklistProducaoService = {
             return localChecklistRepository.startExecution(checklistId, metadata);
         }
 
-        throw new Error('Execução remota ainda não foi conectada ao contrato do Ritmika.');
+        return remoteChecklistRepository.startExecution(checklistId, metadata);
     },
 
     async saveExecution(id, updates = {}) {
@@ -127,7 +85,7 @@ export const checklistProducaoService = {
             return localChecklistRepository.saveExecution(id, updates);
         }
 
-        throw new Error('Persistência remota de execução ainda não foi conectada ao contrato do Ritmika.');
+        return remoteChecklistRepository.saveExecution(id, updates);
     },
 
     async completeExecution(id, answers = {}) {
@@ -135,7 +93,7 @@ export const checklistProducaoService = {
             return localChecklistRepository.completeExecution(id, answers);
         }
 
-        throw new Error('Conclusão remota ainda não foi conectada ao contrato do Ritmika.');
+        return remoteChecklistRepository.completeExecution(id, answers);
     },
 
     async retryExecution(id) {
@@ -143,7 +101,7 @@ export const checklistProducaoService = {
             return localChecklistRepository.retryExecution(id);
         }
 
-        throw new Error('Retry remoto ainda não foi conectado ao contrato do Ritmika.');
+        return remoteChecklistRepository.retryExecution(id);
     }
 };
 
