@@ -4,7 +4,7 @@ import { logger } from '../lib/logger';
 
 const AuthContext = createContext();
 
-const isLocalData = import.meta.env.VITE_DATA_MODE !== 'remote';
+const isLocalData = !import.meta.env.PROD && import.meta.env.VITE_DATA_MODE !== 'remote';
 const LOCAL_SESSION_KEY = 'ritmika.local.session.v1';
 const LOCAL_USER = {
     id: 'local-manager',

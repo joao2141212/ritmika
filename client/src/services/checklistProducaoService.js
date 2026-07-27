@@ -2,7 +2,10 @@
 import { localChecklistRepository } from '../data/localChecklistRepository';
 import { remoteChecklistRepository } from '../data/remoteChecklistRepository';
 
-const isLocalData = () => import.meta.env.VITE_DATA_MODE !== 'remote';
+const isLocalData = () => {
+    if (import.meta.env.PROD) return false;
+    return import.meta.env.VITE_DATA_MODE !== 'remote';
+};
 
 export const checklistProducaoService = {
     async getAll() {
