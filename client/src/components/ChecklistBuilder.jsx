@@ -1,4 +1,7 @@
 import { useState } from 'react';
+// JSX runtime usage is not recognized by the project's no-unused-vars rule.
+// eslint-disable-next-line no-unused-vars
+import { motion } from 'framer-motion';
 import { checklistProducaoService } from '../services/checklistProducaoService';
 import { logger } from '../lib/logger';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';

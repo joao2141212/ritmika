@@ -1,4 +1,7 @@
 import { useState } from 'react';
+// JSX runtime usage is not recognized by the project's no-unused-vars rule.
+// eslint-disable-next-line no-unused-vars
+import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import '../styles/login.css'; // Will create this next

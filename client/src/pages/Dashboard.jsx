@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react';
+// JSX runtime usage is not recognized by the project's no-unused-vars rule.
+// eslint-disable-next-line no-unused-vars
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, Clock, AlertTriangle, Calendar, ChevronRight, Bell } from 'lucide-react';
 import { toast } from 'react-hot-toast';

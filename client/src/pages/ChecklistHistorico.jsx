@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react';
+// JSX runtime usage is not recognized by the project's no-unused-vars rule.
+// eslint-disable-next-line no-unused-vars
+import { motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, Filter, Download, ExternalLink, FileCheck2 } from 'lucide-react';
 import { checklistProducaoService, contagemService, executionService } from '../services/checklistProducaoService';
