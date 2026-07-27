@@ -61,7 +61,13 @@ Os artefatos gerados em `evidence/canonical-checklists` são somente um smoke
 test do clone local. O diferencial de 100% feito contra o próprio artefato é
 um teste do compilador, não prova de paridade source/clone.
 
-Ainda não há `SOURCE TRACE` autorizado do Koncluí nem fixture sintética
-equivalente para Notion/Trello. Essas features permanecem `incomplete` até
-existirem captura antes/depois, confirmação de sucesso, erro/retry/cancelamento
-e diferencial entre sistemas distintos.
+Há `SOURCE TRACE` autorizado parcial do Koncluí, incluindo Network/CDP,
+requisições REST observadas, paginação estável e replay read-only. A extração
+validada recuperou 58 checklists, 2 unidades, 25 setores, 4 momentos, 16
+perfis e 5.300 respostas, com cada lote salvo antes da importação. Isso fecha
+o contrato observado de dados do primeiro vertical, mas não prova paridade de
+backend, mídia/evidências, jobs, notificações ou módulos que ainda não foram
+exercitados.
+
+O método reutilizável para todos os forks está em
+`/Users/pedroduarte/Documents/fork-builds/tools/app-fork-recovery/REST_NETWORK_EXTRACTION_METHOD.md`.

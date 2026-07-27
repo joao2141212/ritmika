@@ -34,7 +34,7 @@ foi persistido nessa captura.
 - `/ideas`
 - `/news`
 
-## Contrato de rede parcial
+## Contrato de rede observado e parcial
 
 Base observada: `https://dfxsntdrtzidbuauvxdx.supabase.co`
 
@@ -45,6 +45,8 @@ Base observada: `https://dfxsntdrtzidbuauvxdx.supabase.co`
 | GET | `/rest/v1/support_settings` | 200 | leitura de configurações de suporte |
 | POST | `/rest/v1/rpc/fn_has_user_workspace_access` | 200 | verificação de acesso ao workspace |
 | POST | `/rest/v1/rpc/fn_feature_flags` | 200 | leitura de flags de funcionalidade |
+| GET | `/rest/v1/checklists` | 200 | leitura paginada de modelos de checklist |
+| GET | `/rest/v1/responses` | 200 | leitura paginada de respostas do workspace |
 
 ### Caminhos observados, método/payload ainda pendentes
 
@@ -76,10 +78,22 @@ Base observada: `https://dfxsntdrtzidbuauvxdx.supabase.co`
 
 ## Classificação
 
-- `SOURCE`: rotas, DOM, endpoints e três métodos/status foram observados.
-- `PARTIAL`: contratos completos, filtros, paginação, shapes e relações ainda não foram registrados.
+- `SOURCE`: rotas, DOM, Network/CDP, endpoints REST/RPC, paginação e respostas
+  foram observados no painel autenticado.
+- `PARTIAL`: contratos completos de módulos não exercitados, filtros de todas
+  as telas, mídia/evidências, jobs e efeitos server-side ainda não foram
+  registrados.
 - `GUESS`: regras privadas, RLS, permissões e efeitos server-side.
 - `REBUILT`: lista, busca, criação, contagem, histórico e persistência local do primeiro slice.
+
+## Extração REST validada
+
+O replay read-only da rede autorizada recuperou 58 checklists, 2 unidades, 25
+setores, 4 momentos, 16 perfis e 5.300 respostas. A paginação foi refeita com
+ordenação estável por ID depois que o primeiro replay por offset apresentou uma
+duplicação. Cada lote corrigido foi salvo em staging local antes da importação
+e o resultado final fechou em 5.300 IDs únicos. O procedimento reutilizável
+está em `/Users/pedroduarte/Documents/fork-builds/tools/app-fork-recovery/REST_NETWORK_EXTRACTION_METHOD.md`.
 
 ## Slice local validado
 

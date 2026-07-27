@@ -11,13 +11,15 @@
 
 - Pedro informou que o acesso ao painel foi autorizado pelos gestores.
 - A sessão observada era autenticada e foi tratada como ambiente operacional, não como conta de teste confirmada.
-- Não persistir cookies, tokens, senhas, valores de storage, dados de clientes, screenshots de dados reais ou exportação do banco original.
+- Não persistir cookies, tokens, senhas ou valores de storage. Quando o
+  proprietário autorizar a cópia de dados reais, o export bruto fica somente
+  em staging local controlado, fora do Git, da memória e dos logs do agent.
 - Fora do escopo desta fase: mutações no Koncluí, envio de mensagens, alteração de permissões e inferência de backend privado.
 
 ## Evidência atual
 
-- `SOURCE`: shell, navegação, DOM e caminhos REST/RPC observados no painel autenticado.
-- `PARTIAL`: contratos completos de request/response, paginação, RLS e efeitos server-side ainda não foram fechados.
+- `SOURCE`: shell, navegação, DOM, Network/CDP e caminhos REST/RPC observados no painel autenticado.
+- `PARTIAL`: contratos completos de módulos não exercitados, mídia/evidências, jobs e efeitos server-side ainda não foram fechados.
 - `GUESS`: nenhum comportamento privado deve ser considerado confirmado.
 - `REBUILT`: primeiro fluxo local de checklists, contagem, histórico e criação, usando somente fixtures sintéticas.
 
