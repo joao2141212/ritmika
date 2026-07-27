@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ritmika.local/schemas/ui-state.schema.json",
+  "title": "UIState",
+  "type": "object",
+  "required": ["id", "app", "feature", "side", "url", "semanticRoute", "viewport", "accessibilityTree", "domSnapshot", "layoutSnapshot", "styleDigest", "focusPath", "overlayStack", "scrollContainers", "scrollOffsets", "visibleVirtualRanges", "pendingIndicators", "storageDigest", "timestamp"],
+  "properties": {
+    "id": { "type": "string" },
+    "app": { "type": "string" },
+    "feature": { "type": "string" },
+    "side": { "enum": ["source", "clone"] },
+    "url": { "type": "string" },
+    "semanticRoute": { "type": "string" },
+    "viewport": { "type": "object" },
+    "accessibilityTree": {},
+    "domSnapshot": {},
+    "layoutSnapshot": { "type": "object" },
+    "styleDigest": { "type": "object" },
+    "focusPath": { "type": "array", "items": { "type": "string" } },
+    "overlayStack": { "type": "array" },
+    "scrollContainers": { "type": "array" },
+    "scrollOffsets": { "type": "object" },
+    "visibleVirtualRanges": { "type": "array" },
+    "pendingIndicators": { "type": "array", "items": { "type": "string" } },
+    "storageDigest": { "type": "object" },
+    "timestamp": { "type": "integer" }
+  },
+  "additionalProperties": true
+}

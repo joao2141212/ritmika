@@ -6,6 +6,9 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import ChecklistBuilder from './components/ChecklistBuilder';
 import ChecklistExecution from './components/ChecklistExecution';
+import ChecklistWorkspace from './components/ChecklistWorkspace';
+import ChecklistBuilderWorkspace from './components/ChecklistBuilderWorkspace';
+import ChecklistExecutionWorkspace from './components/ChecklistExecutionWorkspace';
 import ChecklistDetails from './components/ChecklistDetails';
 import Settings from './pages/Settings';
 
@@ -54,9 +57,10 @@ function App() {
             </ProtectedRoute>
           }>
             <Route index element={<Dashboard />} />
-            <Route path="checklists" element={<Checklists />} />
-            <Route path="checklists/new" element={<ChecklistBuilder />} />
-            <Route path="checklists/:id/execute" element={<ChecklistExecution />} />
+            <Route path="checklists" element={<ChecklistWorkspace />} />
+            <Route path="checklists/new" element={<ChecklistBuilderWorkspace />} />
+            <Route path="checklists/:id/edit" element={<ChecklistBuilderWorkspace />} />
+            <Route path="checklists/:id/execute" element={<ChecklistExecutionWorkspace />} />
             <Route path="checklists/:id/contagem" element={<ChecklistContagem />} />
             <Route path="checklists/:id/historico" element={<ChecklistHistorico />} />
             <Route path="checklists/:id/details" element={<ChecklistDetails />} />

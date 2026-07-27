@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ritmika.local/schemas/design-system-ir.schema.json",
+  "title": "DesignSystemIR",
+  "type": "object",
+  "required": ["kind", "version", "tokens", "components", "provenance"],
+  "properties": {
+    "kind": { "const": "DesignSystemIR" },
+    "version": { "type": "string" },
+    "tokens": { "type": "array" },
+    "components": { "type": "array" },
+    "provenance": { "type": "array" }
+  },
+  "additionalProperties": true
+}

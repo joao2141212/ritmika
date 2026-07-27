@@ -1,0 +1,13 @@
+{
+  "id": "trello-card-move-undo",
+  "app": "trello",
+  "feature": "card-move-between-lists",
+  "initialFixture": "synthetic-board-with-two-lists",
+  "steps": [
+    { "command": "createCard", "args": { "list": "source", "contentKind": "synthetic" }, "safety": "mutating" },
+    { "command": "openMenu", "args": { "name": "card-modal" }, "safety": "read-only" },
+    { "command": "closeOverlay", "args": { "name": "card-modal" }, "safety": "reversible" },
+    { "command": "moveCard", "args": { "destinationList": "target", "position": "end" }, "safety": "reversible" },
+    { "command": "undo", "safety": "reversible" }
+  ]
+}

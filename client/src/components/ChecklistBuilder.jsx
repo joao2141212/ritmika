@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import axios from 'axios';
+import { checklistProducaoService } from '../services/checklistProducaoService';
+import { logger } from '../lib/logger';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -127,11 +128,15 @@ const ChecklistBuilder = () => {
             return;
         }
         try {
-            await axios.post('http://localhost:3000/api/checklists', { title, items });
+            await checklistProducaoService.create({ title, items });
             toast.success('Checklist criado com sucesso!');
             navigate('/checklists');
         } catch (error) {
-            console.error(error);
+            logger.error({
+                fn: 'ChecklistBuilder.handleSave',
+                status: 'error',
+                error: error instanceof Error ? error.message : String(error),
+            });
             toast.error('Erro ao salvar checklist');
         }
     };

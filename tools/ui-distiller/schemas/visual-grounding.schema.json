@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ritmika.local/schemas/visual-grounding.schema.json",
+  "title": "VisualGrounding",
+  "type": "object",
+  "required": ["kind", "version", "action", "tier", "confidence", "provenance"],
+  "properties": {
+    "kind": { "const": "VisualGrounding" },
+    "version": { "type": "string" },
+    "action": { "type": "string" },
+    "tier": { "enum": ["structural", "geometry", "pixel-fallback"] },
+    "confidence": { "type": "number" },
+    "provenance": { "type": "array" }
+  },
+  "additionalProperties": true
+}

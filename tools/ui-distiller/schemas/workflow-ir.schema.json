@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ritmika.local/schemas/workflow-ir.schema.json",
+  "title": "WorkflowIR",
+  "type": "object",
+  "required": ["kind", "version", "initialState", "states", "transitions", "semanticMappingRequired", "provenance"],
+  "properties": {
+    "kind": { "const": "WorkflowIR" },
+    "version": { "type": "string" },
+    "initialState": { "type": "string" },
+    "states": { "type": "array" },
+    "transitions": { "type": "array" },
+    "semanticMappingRequired": { "type": "boolean" },
+    "provenance": { "type": "array" }
+  },
+  "additionalProperties": true
+}

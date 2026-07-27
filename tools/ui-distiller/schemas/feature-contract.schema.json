@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ritmika.local/schemas/feature-contract.schema.json",
+  "title": "FeatureContract",
+  "type": "object",
+  "required": ["id", "app", "feature", "version", "preconditions", "triggers", "semanticActions", "persistentEffects", "successStates", "errorStates", "loadingStates", "transitions", "evidencePaths"],
+  "properties": {
+    "id": { "type": "string" },
+    "app": { "type": "string" },
+    "feature": { "type": "string" },
+    "version": { "type": "string" },
+    "triggers": { "type": "object" },
+    "semanticActions": { "type": "array" },
+    "persistentEffects": { "type": "array" },
+    "successStates": { "type": "array" },
+    "errorStates": { "type": "array" },
+    "transitions": { "type": "array" },
+    "evidencePaths": { "type": "array" }
+  },
+  "additionalProperties": true
+}

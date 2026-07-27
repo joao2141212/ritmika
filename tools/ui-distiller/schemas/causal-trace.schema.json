@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ritmika.local/schemas/causal-trace.schema.json",
+  "title": "CausalTrace",
+  "type": "object",
+  "required": ["kind", "version", "transitionId", "userEvent", "handler", "runtimeMutations", "semanticMutation", "renderEffects", "networkIntent", "confirmation", "recovery", "evidence"],
+  "properties": {
+    "kind": { "const": "CausalTrace" },
+    "version": { "type": "string" },
+    "transitionId": { "type": "string" },
+    "userEvent": { "type": "object" },
+    "handler": { "type": "object" },
+    "runtimeMutations": { "type": "array" },
+    "semanticMutation": { "type": "object" },
+    "renderEffects": { "type": "array" },
+    "networkIntent": { "type": "array" },
+    "confirmation": { "type": "object" },
+    "recovery": { "type": "object" },
+    "evidence": { "type": "array" }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ritmika.local/schemas/render-ir.schema.json",
+  "title": "RenderIR",
+  "type": "object",
+  "required": ["kind", "version", "route", "viewport", "regions", "assets", "motions", "sourceStateId", "provenance"],
+  "properties": {
+    "kind": { "const": "RenderIR" },
+    "version": { "type": "string" },
+    "route": { "type": "string" },
+    "viewport": { "type": "object" },
+    "regions": { "type": "array" },
+    "assets": { "type": "array" },
+    "motions": { "type": "array" },
+    "sourceStateId": { "type": "string" },
+    "provenance": { "type": "array" }
+  },
+  "additionalProperties": true
+}

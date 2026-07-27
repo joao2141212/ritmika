@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ritmika.local/schemas/distillation-manifest.schema.json",
+  "title": "DistillationManifest",
+  "type": "object",
+  "required": ["runId", "app", "feature", "statesVisited", "transitionsVisited", "frontierRemaining", "tracesGenerated", "captureFailures", "replayFailures", "unsupportedStates", "finalStatus"],
+  "properties": {
+    "runId": { "type": "string" },
+    "app": { "type": "string" },
+    "feature": { "type": "string" },
+    "statesVisited": { "type": "array" },
+    "transitionsVisited": { "type": "array" },
+    "frontierRemaining": { "type": "integer" },
+    "tracesGenerated": { "type": "array" },
+    "captureFailures": { "type": "array" },
+    "replayFailures": { "type": "array" },
+    "unsupportedStates": { "type": "array" },
+    "finalStatus": { "enum": ["in-progress", "blocked", "passed", "partial"] }
+  },
+  "additionalProperties": true
+}

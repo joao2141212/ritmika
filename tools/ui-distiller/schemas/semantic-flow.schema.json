@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ritmika.local/schemas/semantic-flow.schema.json",
+  "title": "SemanticFlow",
+  "type": "object",
+  "required": ["id", "app", "feature", "initialFixture", "steps"],
+  "properties": {
+    "id": { "type": "string" },
+    "app": { "type": "string" },
+    "feature": { "type": "string" },
+    "initialFixture": { "type": "string" },
+    "steps": { "type": "array", "items": { "type": "object", "required": ["command"] } }
+  },
+  "additionalProperties": true
+}

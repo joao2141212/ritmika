@@ -1,0 +1,12 @@
+{
+  "id": "notion-text-heading-undo",
+  "app": "notion",
+  "feature": "text-block-to-heading",
+  "initialFixture": "synthetic-page-with-empty-text-block",
+  "steps": [
+    { "command": "createBlock", "args": { "type": "text", "contentKind": "synthetic" }, "safety": "mutating" },
+    { "command": "openMenu", "args": { "name": "slash" }, "safety": "read-only" },
+    { "command": "activateCommand", "args": { "name": "heading" }, "safety": "mutating" },
+    { "command": "undo", "safety": "reversible" }
+  ]
+}

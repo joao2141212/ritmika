@@ -3,11 +3,33 @@ import { supabase } from '../lib/supabase';
 
 const AuthContext = createContext();
 
+const isLocalData = import.meta.env.VITE_DATA_MODE !== 'remote';
+const LOCAL_SESSION_KEY = 'ritmika.local.session.v1';
+const LOCAL_USER = {
+    id: 'local-manager',
+    name: 'Gestor Local',
+    email: 'demo@ritmika.local',
+    role: 'admin',
+};
+
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        if (isLocalData) {
+            let storedUser = null;
+            try {
+                storedUser = JSON.parse(window.localStorage.getItem(LOCAL_SESSION_KEY) || 'null');
+            } catch {
+                storedUser = null;
+            }
+
+            setUser(storedUser || LOCAL_USER);
+            setLoading(false);
+            return undefined;
+        }
+
         // Check active session
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (session?.user) {
@@ -49,6 +71,16 @@ export const AuthProvider = ({ children }) => {
     };
 
     const login = async (email, password) => {
+        if (isLocalData) {
+            if (!email?.trim() || !password) {
+                return { success: false, error: 'Informe um e-mail e uma senha para entrar no modo demo.' };
+            }
+
+            window.localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify(LOCAL_USER));
+            setUser(LOCAL_USER);
+            return { success: true };
+        }
+
         try {
             const { data, error } = await supabase.auth.signInWithPassword({
                 email,
@@ -67,11 +99,24 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = async () => {
+        if (isLocalData) {
+            window.localStorage.removeItem(LOCAL_SESSION_KEY);
+            setUser(null);
+            return;
+        }
+
         await supabase.auth.signOut();
         setUser(null);
     };
 
     const signup = async (email, password, name, role = 'employee') => {
+        if (isLocalData) {
+            return {
+                success: true,
+                data: { user: { ...LOCAL_USER, name: name?.trim() || LOCAL_USER.name } },
+            };
+        }
+
         try {
             const { data, error } = await supabase.auth.signUp({
                 email,

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ritmika.local/schemas/ui-transition.schema.json",
+  "title": "UITransition",
+  "type": "object",
+  "required": ["id", "feature", "sourceStateId", "targetStateId", "semanticAction", "networkIntent", "requestSequence", "websocketSequence", "storageDelta", "domDelta", "accessibilityDelta", "layoutDelta", "visualDelta", "focusDelta", "selectionDelta", "successAssertions", "failureAssertions", "duration", "settleReason", "evidencePaths"],
+  "properties": {
+    "id": { "type": "string" },
+    "feature": { "type": "string" },
+    "sourceStateId": { "type": "string" },
+    "targetStateId": { "type": "string" },
+    "semanticAction": { "type": "object" },
+    "networkIntent": { "type": "array" },
+    "requestSequence": { "type": "array" },
+    "websocketSequence": { "type": "array" },
+    "duration": { "type": "number" },
+    "settleReason": { "type": "string" },
+    "evidencePaths": { "type": "array" }
+  },
+  "additionalProperties": true
+}

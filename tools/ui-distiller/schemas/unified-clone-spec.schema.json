@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ritmika.local/schemas/unified-clone-spec.schema.json",
+  "title": "UnifiedCloneSpec",
+  "type": "object",
+  "required": ["kind", "version", "app", "feature", "states", "render", "designSystem", "workflow", "causalTraces", "visualGrounding", "provenance", "completion", "status", "limitations"],
+  "properties": {
+    "kind": { "const": "UnifiedCloneSpec" },
+    "version": { "type": "string" },
+    "app": { "type": "string" },
+    "feature": { "type": "string" },
+    "states": { "type": "array" },
+    "render": { "type": "array" },
+    "designSystem": { "type": "object" },
+    "workflow": { "type": "object" },
+    "causalTraces": { "type": "array" },
+    "visualGrounding": { "type": "array" },
+    "provenance": { "type": "array" },
+    "completion": { "type": "object" },
+    "status": { "enum": ["incomplete", "complete"] },
+    "limitations": { "type": "array" }
+  },
+  "additionalProperties": true
+}

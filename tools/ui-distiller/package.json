@@ -1,0 +1,32 @@
+{
+  "name": "@ritmika/ui-distiller",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Behavioral UI distillation compiler using Playwright and Chrome DevTools Protocol.",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "tsx --test tests/*.test.ts",
+    "capture": "npm run build && node dist/src/cli.js capture",
+    "capture-action": "npm run build && node dist/src/canonical-cli.js capture-action",
+    "doctor": "npm run build && node dist/src/canonical-cli.js doctor",
+    "recording-to-flow": "npm run build && node dist/src/canonical-cli.js recording-to-flow",
+    "compile": "npm run build && node dist/src/canonical-cli.js compile",
+    "graph": "npm run build && node dist/src/canonical-cli.js graph",
+    "diff": "npm run build && node dist/src/canonical-cli.js diff",
+    "unified-spec": "npm run build && node dist/src/canonical-cli.js unified-spec",
+    "validate": "npm run build && npm test"
+  },
+  "dependencies": {
+    "@rrweb/record": "^2.0.0",
+    "@rrweb/replay": "^2.0.0",
+    "ajv": "^8.17.1",
+    "playwright": "^1.55.0",
+    "xstate": "^5.20.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  }
+}
