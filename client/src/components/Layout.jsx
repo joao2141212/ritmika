@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { createElement, useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
     LayoutDashboard,
     CheckSquare,
     Users,
     Settings,
+    Bell,
     LogOut,
     Menu,
     X,
@@ -14,13 +14,13 @@ import {
 } from 'lucide-react';
 import '../styles/layout.css';
 
-const SidebarItem = ({ to, icon: Icon, label, active }) => (
+const SidebarItem = ({ to, icon, label, active }) => (
     <Link to={to} className={`sidebar-item ${active ? 'active' : ''}`}>
         <div className="icon-wrapper">
-            <Icon size={20} />
+            {createElement(icon, { size: 20 })}
         </div>
         <span className="label">{label}</span>
-        {active && <motion.div layoutId="active-pill" className="active-indicator" />}
+        {active && <div className="active-indicator" />}
     </Link>
 );
 
@@ -31,28 +31,13 @@ const Layout = () => {
 
     return (
         <div className="app-layout">
-            <motion.aside
-                className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}
-                animate={{ width: isSidebarOpen ? 280 : 80 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            >
+            <aside className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
                 <div className="sidebar-header">
                     <div className="logo-container">
                         <div className="logo-icon"><Zap size={24} fill="white" /></div>
-                        <AnimatePresence>
-                            {isSidebarOpen && (
-                                <motion.span
-                                    className="logo-text"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                >
-                                    Ritmika
-                                </motion.span>
-                            )}
-                        </AnimatePresence>
+                        {isSidebarOpen && <span className="logo-text">Ritmika</span>}
                     </div>
-                    <button className="toggle-btn" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+                    <button className="toggle-btn" aria-label={isSidebarOpen ? 'Recolher menu' : 'Expandir menu'} onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
                         {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
                     </button>
                 </div>
@@ -61,6 +46,7 @@ const Layout = () => {
                     <SidebarItem to="/" icon={LayoutDashboard} label="Visão Geral" active={location.pathname === '/'} />
                     <SidebarItem to="/checklists" icon={CheckSquare} label="Checklists" active={location.pathname.includes('/checklists')} />
                     <SidebarItem to="/team" icon={Users} label="Equipe" active={location.pathname === '/team'} />
+                    <SidebarItem to="/notifications" icon={Bell} label="Notificações" active={location.pathname === '/notifications'} />
                     <SidebarItem to="/settings" icon={Settings} label="Configurações" active={location.pathname === '/settings'} />
                 </nav>
 
@@ -74,11 +60,11 @@ const Layout = () => {
                             </div>
                         )}
                     </div>
-                    <button onClick={logout} className="logout-btn">
+                    <button onClick={logout} className="logout-btn" aria-label="Sair do Ritmika">
                         <LogOut size={20} />
                     </button>
                 </div>
-            </motion.aside>
+            </aside>
 
             <main className="main-content">
                 <Outlet />

@@ -4,7 +4,7 @@
 
 - Projeto: `ritmika`
 - Alvo: `https://app.konclui.com/`
-- Nível atual: `L2 do original + primeiro slice local reconstruído`
+- Nível atual: `L3 do original + vertical remoto operacional no Ritmika`
 - Recon segura: `/Users/pedroduarte/Documents/fork-builds/ritmika/recon`
 - Data: 2026-07-27, America/Sao_Paulo
 
@@ -84,7 +84,8 @@ Base observada: `https://dfxsntdrtzidbuauvxdx.supabase.co`
   as telas, mídia/evidências, jobs e efeitos server-side ainda não foram
   registrados.
 - `GUESS`: regras privadas, RLS, permissões e efeitos server-side.
-- `REBUILT`: lista, busca, criação, contagem, histórico e persistência local do primeiro slice.
+- `REBUILT`: lista, busca, criação, contagem, histórico, execução, dashboard,
+  equipe, configurações, notificações e persistência remota do vertical.
 
 ## Extração REST validada
 
@@ -105,14 +106,14 @@ O modo padrão do cliente é local quando `VITE_DATA_MODE` não é `remote`.
 - Rotas validadas: `/checklists`, `/checklists/new`, `/checklists/:id/contagem` e `/checklists/:id/historico`.
 - Smoke validado: busca por `Bebidas`, criação de contagem com 2 produtos, histórico após reload e criação de checklist após reload.
 
-## Próxima fatia vertical
+## Próximo gap controlado
 
-Expandir localmente `checklists`:
+Completar somente os contratos ainda não comprovados da fonte:
 
-1. detalhe/setup conectado ao mesmo repositório;
-2. edição e arquivamento com estados de erro e retry;
-3. API local substituta, se o contrato necessário for fechado;
-4. teste responsivo e matriz de estados.
+1. importação retroativa de mídia/evidências, se o endpoint de origem for
+   exercitado em leitura autorizada;
+2. notificações históricas da fonte, se o contrato REST/RPC for fechado;
+3. testes responsivos e matriz de estados em telas publicadas.
 
 O fork local não deve depender do Supabase original para iniciar.
 
@@ -122,3 +123,24 @@ O fork local não deve depender do Supabase original para iniciar.
 - Estado: núcleo implementado e validado com typecheck, 4 testes puros e uma captura do fork local.
 - Evidência local gerada em `tools/ui-distiller/evidence/clone/ritmika-checklists/` e ignorada pelo Git.
 - Notion/Trello: sem source trace ou parity report executado, pois nenhuma sessão sintética autorizada foi fornecida.
+
+## Atualização operacional 2026-07-27
+
+- O cliente remoto do Ritmika está ativo com a migração
+  `supabase/migrations/20260727_ritmika_operational_schema.sql`.
+- O schema normalizado contém itens, produtos, contagens, evidências privadas,
+  notificações, eventos de execução e configurações do workspace. O backfill
+  confirmou 351 itens e 351 produtos, com RLS ativo.
+- O bucket `ritmika-evidences` é privado; a interface usa upload autenticado e
+  URL assinada por tempo limitado.
+- O dashboard remoto lê 5.302 respostas da cópia no Ritmika, com 1.977
+  finalizadas, 3.325 pendentes e 58 checklists disponíveis.
+- Equipe, Configurações, Contagem, Histórico, Detalhes e Notificações agora
+  leem o modelo remoto. A interface publicada do cliente usa white mode.
+- O build Vite e o lint do cliente passaram. A validação autenticada local
+  confirmou `/`, `/checklists`, `/notifications`, `/team`, `/settings`,
+  `/:id/contagem`, `/:id/historico`, `/:id/details` e `/:id/execute`.
+- Limite atual: a mídia/evidência histórica do Koncluí ainda não foi importada
+  porque os endpoints de mídia da fonte permanecem fora do contrato REST
+  exercitado. A funcionalidade de evidência no Ritmika está pronta para novos
+  uploads sem alterar a fonte.

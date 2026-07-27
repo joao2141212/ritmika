@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, Filter, Download } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { checklistProducaoService, contagemService, formatDate } from '../services/checklistProducaoService';
+import { ArrowLeft, Calendar, Filter, Download, ExternalLink, FileCheck2 } from 'lucide-react';
+import { checklistProducaoService, contagemService, executionService } from '../services/checklistProducaoService';
 import toast from 'react-hot-toast';
 import '../styles/historico.css';
 
@@ -12,6 +11,7 @@ const ChecklistHistorico = () => {
     
     const [checklist, setChecklist] = useState(null);
     const [contagens, setContagens] = useState([]);
+    const [execucoes, setExecucoes] = useState([]);
     const [loading, setLoading] = useState(true);
     
     // Filters
@@ -20,6 +20,8 @@ const ChecklistHistorico = () => {
 
     useEffect(() => {
         loadData();
+    // The loader is intentionally tied to the route id and filter state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
     const loadData = async () => {
@@ -28,12 +30,26 @@ const ChecklistHistorico = () => {
             const checklistData = await checklistProducaoService.getById(id);
             setChecklist(checklistData);
             
-            await loadContagens();
+            await Promise.all([loadContagens(), loadExecucoes()]);
         } catch (error) {
             console.error('Erro ao carregar dados:', error);
             toast.error('Erro ao carregar histórico');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadExecucoes = async () => {
+        try {
+            const data = await executionService.getByChecklist(id, {
+                limit: 100,
+                from: dataInicio || undefined,
+                to: dataFim || undefined,
+            });
+            setExecucoes(data);
+        } catch (error) {
+            console.error('Erro ao carregar execuções:', error);
+            toast.error('Erro ao carregar execuções');
         }
     };
 
@@ -48,7 +64,7 @@ const ChecklistHistorico = () => {
     };
 
     const handleFilter = () => {
-        loadContagens();
+        Promise.all([loadContagens(), loadExecucoes()]);
     };
 
     const exportToCSV = () => {
@@ -152,6 +168,37 @@ const ChecklistHistorico = () => {
                     </button>
                 </div>
             </div>
+
+            <section className="execution-history-panel glass-panel">
+                <div className="history-section-heading">
+                    <div>
+                        <h2><FileCheck2 size={18} /> Execuções do checklist</h2>
+                        <p>{execucoes.length} execuções encontradas</p>
+                    </div>
+                </div>
+                {execucoes.length === 0 ? (
+                    <p className="history-empty-inline">Nenhuma execução registrada para este período.</p>
+                ) : (
+                    <div className="execution-history-list">
+                        {execucoes.map((execucao) => (
+                            <div className="execution-history-row" key={execucao.id}>
+                                <div>
+                                    <strong>{new Date(execucao.started_at || execucao.created_at).toLocaleString('pt-BR')}</strong>
+                                    <span>{execucao.user_name || 'Usuário'} · {execucao.progress || 0}% preenchido</span>
+                                </div>
+                                <div className="execution-history-actions">
+                                    <span className={'execution-status ' + (execucao.status === 'completed' ? 'completed' : 'in-progress')}>
+                                        {execucao.status === 'completed' ? 'Concluída' : 'Em andamento'}
+                                    </span>
+                                    <button type="button" onClick={() => navigate('/checklists/' + id + '/details', { state: { executionId: execucao.id } })} aria-label="Abrir detalhes">
+                                        <ExternalLink size={15} />
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </section>
 
             {/* Lista de contagens */}
             <div className="contagens-list">

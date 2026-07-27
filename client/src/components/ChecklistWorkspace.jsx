@@ -113,7 +113,7 @@ const ChecklistWorkspace = () => {
                     <p className="checklist-eyebrow">Operação · Checklists</p>
                     <h1>Modelos de checklist</h1>
                     <p className="checklist-subtitle">
-                        Crie, publique, atribua e acompanhe execuções em um fluxo local controlado.
+                        Crie, publique, atribua e acompanhe execuções no workspace remoto.
                     </p>
                 </div>
                 <button

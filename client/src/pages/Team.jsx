@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
 import { Trophy, Medal, User, Star } from 'lucide-react';
 import { storage, STORAGE_KEYS, simulateApiDelay } from '../data/mockData';
 import '../styles/team.css'; // Will create next
 
 const Team = () => {
     const [users, setUsers] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchTeam = async () => {

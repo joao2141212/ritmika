@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { Plus, Play, Edit, Search, Clock, ListChecks } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { checklistProducaoService } from '../services/checklistProducaoService';
 import '../styles/checklists.css';
 

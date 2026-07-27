@@ -6,7 +6,6 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSo
 import { CSS } from '@dnd-kit/utilities';
 import { Plus, Trash2, GripVertical, Save, ArrowLeft, Settings2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import '../styles/builder.css';
 

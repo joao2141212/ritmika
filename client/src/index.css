@@ -104,3 +104,163 @@ button:active {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--border-highlight);
 }
+
+/* Canonical product surface: white mode */
+:root {
+  --bg-app: #f7f9fc;
+  --bg-card: #ffffff;
+  --bg-secondary: #f0f4f6;
+  --text-primary: #14212b;
+  --text-secondary: #5f717d;
+  --text-muted: #8a98a0;
+  --accent-primary: #0c8c7d;
+  --accent-glow: rgba(12, 140, 125, 0.16);
+  --accent-secondary: #75cdbf;
+  --success: #159b8a;
+  --success-bg: #e8f7f3;
+  --warning: #c78d22;
+  --warning-bg: #fff6df;
+  --danger: #d95353;
+  --danger-bg: #fff0f0;
+  --border-subtle: #e2e9ee;
+  --border-highlight: #c9d7de;
+  --shadow-sm: 0 1px 2px rgba(24, 48, 64, 0.05);
+  --shadow-md: 0 8px 24px rgba(24, 48, 64, 0.06);
+  --shadow-lg: 0 16px 40px rgba(24, 48, 64, 0.08);
+  --glass-bg: #ffffff;
+  --glass-border: #e2e9ee;
+  --primary-color: #0c8c7d;
+  --secondary-color: #087d70;
+  --primary-rgb: 12, 140, 125;
+  --secondary-rgb: 8, 125, 112;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  background: #f7f9fc;
+  color: #14212b;
+}
+
+.glass-panel {
+  background: #ffffff;
+  border-color: #e2e9ee;
+  box-shadow: 0 8px 24px rgba(24, 48, 64, 0.05);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+button {
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+button:active {
+  transform: none;
+}
+
+input,
+select,
+textarea {
+  border-color: #dbe4ea;
+  background: #ffffff;
+  color: #14212b;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #9aa7ae;
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid rgba(12, 140, 125, 0.2);
+  outline-offset: 2px;
+}
+
+.login-container,
+.contagem-container,
+.historico-container,
+.settings-container,
+.team-container,
+.checklists-container,
+.builder-container,
+.execution-container,
+.details-container {
+  color: var(--text-primary);
+}
+
+.login-container {
+  background: #f7f9fc;
+}
+
+.login-background {
+  display: none;
+}
+
+.login-card,
+.settings-section,
+.leaderboard,
+.form-header,
+.categoria-section,
+.filters-panel,
+.contagem-grupo,
+.score-card,
+.detail-item,
+.builder-meta,
+.builder-item,
+.execution-item {
+  background: #ffffff;
+  border-color: #e2e9ee;
+}
+
+.save-btn,
+.login-btn,
+.create-btn,
+.submit-btn {
+  background: #0c8c7d;
+}
+
+.save-btn:hover:not(:disabled),
+.login-btn:hover,
+.create-btn:hover,
+.submit-btn:hover {
+  background: #087d70;
+}
+
+.header-title h1,
+.execution-header h1 {
+  background: none;
+  color: var(--text-primary);
+  -webkit-text-fill-color: initial;
+}
+
+.avatar-large {
+  background: #dff4ef;
+  border-color: #c7e8e2;
+  color: #087d70;
+}
+
+.team-container .leaderboard-row:hover,
+.team-container .leaderboard-row.winner {
+  background: #f4faf9;
+}
+
+.contagem-container .produto-item,
+.historico-container .items-table th,
+.historico-container .items-table tr:hover {
+  background: #f8fafb;
+}
+
+.contagem-container .form-field input,
+.contagem-container .form-field select,
+.contagem-container .input-group input,
+.historico-container .filter-field input {
+  background: #ffffff;
+}

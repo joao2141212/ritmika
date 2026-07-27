@@ -71,3 +71,21 @@ exercitados.
 
 O método reutilizável para todos os forks está em
 `/Users/pedroduarte/Documents/fork-builds/tools/app-fork-recovery/REST_NETWORK_EXTRACTION_METHOD.md`.
+
+## Estado implementado no Ritmika
+
+O vertical remoto agora está registrado no codebase e no Supabase do Ritmika:
+
+- `ritmika_checklist_items` e `ritmika_products` normalizam os 351 itens
+  importados dos 58 checklists.
+- `ritmika_count_entries` substitui as tabelas legadas de contagem.
+- `ritmika_evidences` e o bucket privado `ritmika-evidences` sustentam mídia
+  nova com Storage autenticado.
+- `ritmika_notifications`, `ritmika_execution_events` e
+  `ritmika_workspace_settings` fecham os contratos operacionais necessários.
+- Dashboard, ranking de equipe, configurações, notificações, execução,
+  histórico e detalhes usam os adapters remotos.
+
+A prova atual cobre build, lint, RLS por sessão autenticada e DOM/pixels do
+cliente local. Ela não declara paridade completa dos endpoints privados da
+fonte nem importação retroativa de mídia histórica.

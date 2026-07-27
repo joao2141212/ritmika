@@ -673,7 +673,68 @@
     padding: 28px;
     border: 1px solid #9bdcd3;
     border-radius: 18px;
-    background: linear-gradient(135deg, #f2fffc, #fff);
+    background: #ffffff;
+}
+
+.execution-evidence {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid #e6edef;
+}
+
+.execution-evidence-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    color: #71808c;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.execution-evidence-head > span,
+.evidence-upload-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.evidence-upload-button {
+    padding: 6px 9px;
+    border: 1px solid #cfe5e1;
+    border-radius: 8px;
+    background: #f2fbf9;
+    color: #087d70;
+    cursor: pointer;
+    font-size: 11px;
+}
+
+.evidence-upload-button:hover {
+    border-color: #8dcfc3;
+    background: #e7f7f3;
+}
+
+.execution-evidence input[type="file"] {
+    display: none;
+}
+
+.execution-evidence-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.execution-evidence-list a {
+    max-width: 100%;
+    overflow: hidden;
+    padding: 5px 8px;
+    border-radius: 7px;
+    background: #f3f6f7;
+    color: #0b8d7c;
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .completion-state h2 {

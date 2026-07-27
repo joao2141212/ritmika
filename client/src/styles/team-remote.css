@@ -1,0 +1,193 @@
+.team-remote {
+    min-height: 100%;
+    padding: 32px clamp(20px, 4vw, 56px) 48px;
+    background: #f7f9fc;
+    color: #14212b;
+}
+
+.team-remote-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.team-remote-header h1 {
+    margin: 0;
+    color: #14212b;
+    font-size: clamp(28px, 3vw, 40px);
+    letter-spacing: -0.03em;
+}
+
+.team-remote-header p:last-child {
+    margin: 8px 0 0;
+    color: #71808c;
+    font-size: 14px;
+}
+
+.team-remote-refresh,
+.team-remote-state button {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 40px;
+    padding: 0 13px;
+    border: 1px solid #dbe4ea;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #38515f;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.team-remote-refresh:hover,
+.team-remote-state button:hover {
+    border-color: #9bcfc7;
+    color: #087d70;
+}
+
+.team-remote-refresh:disabled {
+    cursor: wait;
+    opacity: 0.5;
+}
+
+.team-remote-panel {
+    min-height: 250px;
+    border: 1px solid #e2e9ee;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 8px 24px rgba(24, 48, 64, 0.05);
+}
+
+.team-remote-state {
+    display: flex;
+    min-height: 250px;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 24px;
+    color: #71808c;
+    text-align: center;
+}
+
+.team-remote-error {
+    flex-direction: column;
+    color: #c84444;
+}
+
+.team-remote-list-head,
+.team-remote-row {
+    display: grid;
+    grid-template-columns: 100px minmax(220px, 1fr) 160px 180px;
+    align-items: center;
+    gap: 18px;
+}
+
+.team-remote-list-head {
+    padding: 15px 20px;
+    border-bottom: 1px solid #e8eef1;
+    color: #87949c;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.team-remote-row {
+    min-height: 76px;
+    padding: 12px 20px;
+    border-bottom: 1px solid #edf1f3;
+}
+
+.team-remote-row:last-child {
+    border-bottom: 0;
+}
+
+.team-rank {
+    color: #85939c;
+    font-size: 13px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.team-rank svg {
+    color: #d09b2e;
+}
+
+.team-person {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.team-avatar {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    place-items: center;
+    border-radius: 11px;
+    background: #dff4ef;
+    color: #087d70;
+    font-weight: 800;
+}
+
+.team-person div:last-child,
+.team-metric {
+    display: grid;
+    gap: 4px;
+}
+
+.team-person strong,
+.team-metric strong {
+    color: #14212b;
+    font-size: 13px;
+}
+
+.team-person span,
+.team-metric span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #85939c;
+    font-size: 11px;
+}
+
+.team-completion {
+    color: #0c8c7d;
+}
+
+.team-completion strong {
+    color: #0c8c7d;
+}
+
+@media (max-width: 800px) {
+    .team-remote {
+        padding: 24px 16px 32px;
+    }
+
+    .team-remote-header {
+        flex-direction: column;
+    }
+
+    .team-remote-refresh {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .team-remote-list-head {
+        display: none;
+    }
+
+    .team-remote-row {
+        grid-template-columns: 34px 1fr 100px;
+        gap: 10px;
+        padding: 15px;
+    }
+
+    .team-metric:last-child {
+        grid-column: 2 / -1;
+    }
+}

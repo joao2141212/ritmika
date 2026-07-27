@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
     ArrowLeft,
     Barcode,
@@ -7,13 +7,15 @@ import {
     CheckCircle2,
     Clock3,
     MapPin,
+    Paperclip,
     RotateCcw,
     Save,
     Send,
     Signature,
+    Upload,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { checklistProducaoService } from '../services/checklistProducaoService';
+import { checklistProducaoService, evidenceService, executionService } from '../services/checklistProducaoService';
 import { logger } from '../lib/logger';
 import '../styles/checklist-workspace.css';
 
@@ -43,9 +45,17 @@ const executionItemsOf = (checklist) => {
 
 const isAnswered = (value) => value !== undefined && value !== null && value !== '';
 
+const groupEvidence = (rows = []) => rows.reduce((groups, evidence) => {
+    const key = evidence.metadata?.item_source_id || evidence.checklist_item_id || 'general';
+    groups[key] = groups[key] || [];
+    groups[key].push(evidence);
+    return groups;
+}, {});
+
 const ChecklistExecutionWorkspace = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const [checklist, setChecklist] = useState(null);
     const [execution, setExecution] = useState(null);
     const [answers, setAnswers] = useState({});
@@ -54,6 +64,8 @@ const ChecklistExecutionWorkspace = () => {
     const [saving, setSaving] = useState(false);
     const [completed, setCompleted] = useState(false);
     const [error, setError] = useState('');
+    const [evidenceByItem, setEvidenceByItem] = useState({});
+    const [evidenceBusy, setEvidenceBusy] = useState({});
 
     useEffect(() => {
         let active = true;
@@ -62,14 +74,20 @@ const ChecklistExecutionWorkspace = () => {
                 setLoading(true);
                 const data = await checklistProducaoService.getById(id);
                 if (!data) throw new Error('Checklist não encontrado');
-                const started = await checklistProducaoService.startExecution(id, {
-                    user_name: 'Operador local',
-                    execution_type: 'manual',
-                });
+                const requestedExecutionId = location.state?.executionId;
+                const started = requestedExecutionId
+                    ? await executionService.getById(requestedExecutionId)
+                    : await checklistProducaoService.startExecution(id, {
+                        execution_type: 'manual',
+                    });
+                if (!started) throw new Error('Execução não encontrada');
+                const evidence = await evidenceService.list(started.id);
                 if (!active) return;
                 setChecklist(data);
                 setExecution(started);
                 setAnswers(started.answers || {});
+                setCompleted(started.status === 'completed' || Boolean(started.completed_at));
+                setEvidenceByItem(groupEvidence(evidence));
             } catch (openError) {
                 logger.error({
                     fn: 'ChecklistExecutionWorkspace.openExecution',
@@ -77,14 +95,14 @@ const ChecklistExecutionWorkspace = () => {
                     checklistId: id,
                     error: openError instanceof Error ? openError.message : String(openError),
                 });
-                if (active) setError('Não foi possível iniciar esta execução local.');
+                if (active) setError('Não foi possível iniciar esta execução remota.');
             } finally {
                 if (active) setLoading(false);
             }
         };
         openExecution();
         return () => { active = false; };
-    }, [id]);
+    }, [id, location.state?.executionId]);
 
     const items = useMemo(() => executionItemsOf(checklist), [checklist]);
     const answerableItems = useMemo(() => items.filter((item) => item.type !== 'separator'), [items]);
@@ -169,6 +187,74 @@ const ChecklistExecutionWorkspace = () => {
         }
     };
 
+    const uploadEvidence = async (item, event) => {
+        const file = event.target.files?.[0];
+        event.target.value = '';
+        if (!file || !execution) return;
+        try {
+            setEvidenceBusy((current) => ({ ...current, [item.id]: true }));
+            const uploaded = await evidenceService.upload({
+                responseId: execution.id,
+                checklistId: checklist?.id || id,
+                itemId: item.id,
+                file,
+                title: item.title + ' · ' + file.name,
+            });
+            setEvidenceByItem((current) => ({
+                ...current,
+                [item.id]: [uploaded, ...(current[item.id] || [])],
+            }));
+            toast.success('Evidência anexada.');
+        } catch (uploadError) {
+            logger.error({
+                fn: 'ChecklistExecutionWorkspace.uploadEvidence',
+                status: 'error',
+                executionId: execution.id,
+                itemId: item.id,
+                error: uploadError instanceof Error ? uploadError.message : String(uploadError),
+            });
+            toast.error(uploadError instanceof Error ? uploadError.message : 'Não foi possível anexar a evidência.');
+        } finally {
+            setEvidenceBusy((current) => ({ ...current, [item.id]: false }));
+        }
+    };
+
+    const renderEvidence = (item) => {
+        const evidence = evidenceByItem[item.id] || [];
+        return (
+            <div className="execution-evidence">
+                <div className="execution-evidence-head">
+                    <span><Paperclip size={14} /> Evidências ({evidence.length})</span>
+                    <label className="evidence-upload-button" htmlFor={'evidence-' + item.id}>
+                        <Upload size={14} />
+                        {evidenceBusy[item.id] ? 'Enviando…' : 'Anexar'}
+                    </label>
+                    <input
+                        id={'evidence-' + item.id}
+                        type="file"
+                        accept="image/*,application/pdf,video/*"
+                        onChange={(event) => uploadEvidence(item, event)}
+                        disabled={Boolean(evidenceBusy[item.id])}
+                    />
+                </div>
+                {evidence.length > 0 && (
+                    <div className="execution-evidence-list">
+                        {evidence.map((itemEvidence) => (
+                            <a
+                                href={itemEvidence.url || '#'}
+                                target="_blank"
+                                rel="noreferrer"
+                                key={itemEvidence.id || itemEvidence.storage_path}
+                            >
+                                {itemEvidence.title || 'Abrir evidência'}
+                            </a>
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     const renderAnswer = (item) => {
         const value = answers[item.id];
         const type = item.type === 'boolean' ? 'check' : item.type;
@@ -194,7 +280,7 @@ const ChecklistExecutionWorkspace = () => {
         return <textarea className="light-textarea" value={value || ''} onChange={(event) => setAnswer(item.id, event.target.value)} placeholder="Digite sua resposta" />;
     };
 
-    if (loading) return <section className="ritmika-light-mode"><div className="empty-state">Iniciando execução local…</div></section>;
+    if (loading) return <section className="ritmika-light-mode"><div className="empty-state">Carregando execução remota…</div></section>;
     if (error || !checklist) return <section className="ritmika-light-mode"><div className="error-state"><p>{error || 'Checklist não encontrado.'}</p><button type="button" className="light-button secondary" onClick={() => navigate('/checklists')}>Voltar</button></div></section>;
 
     return (
@@ -202,7 +288,7 @@ const ChecklistExecutionWorkspace = () => {
             <header className="execution-topbar">
                 <div>
                     <button type="button" className="light-button secondary" onClick={() => navigate('/checklists')}><ArrowLeft size={16} /> Checklists</button>
-                    <p className="execution-eyebrow">Execução · Operador local</p>
+                    <p className="execution-eyebrow">Execução · Workspace Ritmika</p>
                     <h1>{titleOf(checklist)}</h1>
                     <p className="execution-subtitle">Responda aos itens, salve o progresso e conclua quando os obrigatórios estiverem preenchidos.</p>
                 </div>
@@ -222,7 +308,7 @@ const ChecklistExecutionWorkspace = () => {
                         <section className="completion-state">
                             <CheckCircle2 size={34} color="#0e9f8d" />
                             <h2>Execução concluída</h2>
-                            <p>O resultado foi persistido no histórico local do Ritmika.</p>
+                            <p>O resultado foi persistido no histórico do workspace Ritmika.</p>
                             <div className="execution-meta"><span>Score</span><strong>{execution?.score ?? 100}%</strong><span>Status: completed</span></div>
                             <div className="builder-actions"><button type="button" className="light-button secondary" onClick={() => navigate('/checklists')}>Voltar à lista</button><button type="button" className="light-button primary" onClick={retry}><RotateCcw size={16} /> Executar novamente</button></div>
                         </section>
@@ -234,8 +320,9 @@ const ChecklistExecutionWorkspace = () => {
                                     return (
                                         <article className={`execution-item ${missingItems.includes(item.id) ? 'missing' : ''}`} key={item.id}>
                                             <div><h3>{index + 1}. {item.title}{item.required ? <span className="required-mark"> *</span> : null}</h3>{item.description && <p>{item.description}</p>}</div>
-                                            {renderAnswer(item)}
-                                            {item.allow_not_applicable && <label className="checkbox-row"><input type="checkbox" checked={answers[item.id] === '__not_applicable__'} onChange={(event) => setAnswer(item.id, event.target.checked ? '__not_applicable__' : '')} /> Não se aplica</label>}
+                                             {renderAnswer(item)}
+                                             {item.allow_not_applicable && <label className="checkbox-row"><input type="checkbox" checked={answers[item.id] === '__not_applicable__'} onChange={(event) => setAnswer(item.id, event.target.checked ? '__not_applicable__' : '')} /> Não se aplica</label>}
+                                            {renderEvidence(item)}
                                         </article>
                                     );
                                 })}

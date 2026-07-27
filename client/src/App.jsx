@@ -3,19 +3,20 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 
-import Dashboard from './pages/Dashboard';
+import Dashboard from './pages/DashboardRemote';
 import ChecklistBuilder from './components/ChecklistBuilder';
 import ChecklistExecution from './components/ChecklistExecution';
 import ChecklistWorkspace from './components/ChecklistWorkspace';
 import ChecklistBuilderWorkspace from './components/ChecklistBuilderWorkspace';
 import ChecklistExecutionWorkspace from './components/ChecklistExecutionWorkspace';
-import ChecklistDetails from './components/ChecklistDetails';
-import Settings from './pages/Settings';
+import ChecklistDetails from './components/ChecklistDetailsRemote';
+import Settings from './pages/SettingsRemote';
 
 import Checklists from './pages/Checklists';
 import ChecklistContagem from './pages/ChecklistContagem';
 import ChecklistHistorico from './pages/ChecklistHistorico';
-import Team from './pages/Team';
+import Team from './pages/TeamRemote';
+import Notifications from './pages/Notifications';
 
 // Placeholder pages
 
@@ -43,9 +44,9 @@ function App() {
         <OfflineSync />
         <Toaster position="top-right" toastOptions={{
           style: {
-            background: '#1c2128',
-            color: '#fff',
-            border: '1px solid rgba(255,255,255,0.1)'
+            background: '#ffffff',
+            color: '#14212b',
+            border: '1px solid #dbe4ea'
           }
         }} />
         <Routes>
@@ -66,6 +67,7 @@ function App() {
             <Route path="checklists/:id/details" element={<ChecklistDetails />} />
             <Route path="settings" element={<Settings />} />
             <Route path="team" element={<Team />} />
+            <Route path="notifications" element={<Notifications />} />
           </Route>
         </Routes>
       </Router>

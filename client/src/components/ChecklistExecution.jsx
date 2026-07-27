@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
 import SignatureCanvas from 'react-signature-canvas';
 import { Camera, Check, AlertCircle, X } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { checklistAPI, submissionAPI } from '../data/mockData';
 import '../styles/execution.css'; // Will create next

@@ -1,5 +1,3 @@
-import { supabase } from '../lib/supabase';
-
 // Checklists de Produção
 import { localChecklistRepository } from '../data/localChecklistRepository';
 import { remoteChecklistRepository } from '../data/remoteChecklistRepository';
@@ -111,14 +109,7 @@ export const contagemService = {
             return localChecklistRepository.createContagem(contagem);
         }
 
-        const { data, error } = await supabase
-            .from('contagens')
-            .insert([contagem])
-            .select()
-            .single();
-
-        if (error) throw error;
-        return data;
+        return remoteChecklistRepository.createCountEntry(contagem);
     },
 
     async createBatch(contagens) {
@@ -126,13 +117,7 @@ export const contagemService = {
             return localChecklistRepository.createContagens(contagens);
         }
 
-        const { data, error } = await supabase
-            .from('contagens')
-            .insert(contagens)
-            .select();
-
-        if (error) throw error;
-        return data;
+        return remoteChecklistRepository.createCountEntries(contagens);
     },
 
     async getByChecklist(checklistId, dataInicio, dataFim) {
@@ -140,27 +125,7 @@ export const contagemService = {
             return localChecklistRepository.getContagens(checklistId, dataInicio, dataFim);
         }
 
-        let query = supabase
-            .from('contagens')
-            .select(`
-                *,
-                produtos_checklist (nome, categoria, unidade),
-                profiles (name)
-            `)
-            .eq('checklist_id', checklistId)
-            .order('data_contagem', { ascending: false });
-
-        if (dataInicio) {
-            query = query.gte('data_contagem', dataInicio);
-        }
-        if (dataFim) {
-            query = query.lte('data_contagem', dataFim);
-        }
-
-        const { data, error } = await query;
-
-        if (error) throw error;
-        return data;
+        return remoteChecklistRepository.getCountEntriesByChecklist(checklistId, dataInicio, dataFim);
     },
 
     async getByProduto(produtoId, dataInicio, dataFim) {
@@ -168,23 +133,7 @@ export const contagemService = {
             return localChecklistRepository.getContagensByProduto(produtoId, dataInicio, dataFim);
         }
 
-        let query = supabase
-            .from('contagens')
-            .select('*')
-            .eq('produto_id', produtoId)
-            .order('data_contagem', { ascending: false });
-
-        if (dataInicio) {
-            query = query.gte('data_contagem', dataInicio);
-        }
-        if (dataFim) {
-            query = query.lte('data_contagem', dataFim);
-        }
-
-        const { data, error } = await query;
-
-        if (error) throw error;
-        return data;
+        return remoteChecklistRepository.getCountEntriesByProduct(produtoId, dataInicio, dataFim);
     },
 
     async update(id, updates) {
@@ -192,15 +141,7 @@ export const contagemService = {
             return localChecklistRepository.updateContagem(id, updates);
         }
 
-        const { data, error } = await supabase
-            .from('contagens')
-            .update(updates)
-            .eq('id', id)
-            .select()
-            .single();
-
-        if (error) throw error;
-        return data;
+        return remoteChecklistRepository.updateCountEntry(id, updates);
     },
 
     async delete(id) {
@@ -208,13 +149,94 @@ export const contagemService = {
             return localChecklistRepository.deleteContagem(id);
         }
 
-        const { error } = await supabase
-            .from('contagens')
-            .delete()
-            .eq('id', id);
+        return remoteChecklistRepository.deleteCountEntry(id);
+    }
+};
 
-        if (error) throw error;
-        return true;
+export const executionService = {
+    async getByChecklist(checklistId, options = {}) {
+        if (isLocalData()) return [];
+        return remoteChecklistRepository.listExecutions(checklistId, options);
+    },
+
+    async getById(id) {
+        if (isLocalData()) return null;
+        return remoteChecklistRepository.getExecution(id);
+    }
+};
+
+export const dashboardService = {
+    async getData() {
+        if (isLocalData()) {
+            return {
+                stats: {
+                    totalScheduled: 0,
+                    completed: 0,
+                    pending: 0,
+                    inProgress: 0,
+                    overdue: 0,
+                    completionRate: 0,
+                    unreadNotifications: 0,
+                },
+                tasks: { late: [], now: [], upcoming: [] },
+                recentExecutions: [],
+                checklists: [],
+            };
+        }
+        return remoteChecklistRepository.getDashboardData();
+    }
+};
+
+export const notificationService = {
+    async getAll(limit = 100) {
+        if (isLocalData()) return [];
+        return remoteChecklistRepository.getNotifications(limit);
+    },
+
+    async markRead(id) {
+        if (isLocalData()) return null;
+        return remoteChecklistRepository.markNotificationRead(id);
+    },
+
+    async markAllRead() {
+        if (isLocalData()) return 0;
+        return remoteChecklistRepository.markAllNotificationsRead();
+    }
+};
+
+export const evidenceService = {
+    async list(responseId) {
+        if (isLocalData()) return [];
+        return remoteChecklistRepository.listEvidence(responseId);
+    },
+
+    async upload(payload) {
+        if (isLocalData()) throw new Error('Evidências remotas exigem o modo remoto.');
+        return remoteChecklistRepository.uploadEvidence(payload);
+    }
+};
+
+export const teamService = {
+    async getAll() {
+        if (isLocalData()) return [];
+        return remoteChecklistRepository.getTeam();
+    }
+};
+
+export const settingsService = {
+    async get() {
+        if (isLocalData()) return { profile: null, workspace: { default_theme: 'light', settings: {} } };
+        return remoteChecklistRepository.getSettings();
+    },
+
+    async updateProfile(updates) {
+        if (isLocalData()) return updates;
+        return remoteChecklistRepository.updateProfile(updates);
+    },
+
+    async updateWorkspaceSettings(updates) {
+        if (isLocalData()) return updates;
+        return remoteChecklistRepository.updateWorkspaceSettings(updates);
     }
 };
 

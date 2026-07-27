@@ -1,0 +1,260 @@
+.details-remote,
+.details-remote-state {
+    min-height: 100%;
+    background: #f7f9fc;
+    color: #14212b;
+}
+
+.details-remote {
+    padding: 30px clamp(20px, 4vw, 56px) 50px;
+}
+
+.details-remote-header {
+    margin-bottom: 22px;
+}
+
+.details-remote-header h1 {
+    margin: 0;
+    color: #14212b;
+    font-size: clamp(26px, 3vw, 38px);
+    letter-spacing: -0.03em;
+}
+
+.details-remote-back,
+.details-download,
+.details-remote-state button {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 40px;
+    padding: 0 13px;
+    border: 1px solid #dbe4ea;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #38515f;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.details-remote-back {
+    margin-bottom: 22px;
+}
+
+.details-remote-back:hover,
+.details-download:hover,
+.details-remote-state button:hover {
+    border-color: #9bcfc7;
+    color: #087d70;
+}
+
+.details-remote-meta {
+    margin: 8px 0 0;
+    color: #71808c;
+    font-size: 13px;
+}
+
+.details-remote-summary {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 18px;
+    padding: 20px;
+    border: 1px solid #e2e9ee;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 8px 24px rgba(24, 48, 64, 0.05);
+}
+
+.details-score {
+    display: grid;
+    min-width: 110px;
+    justify-items: center;
+    gap: 3px;
+}
+
+.details-score strong {
+    color: #0c8c7d;
+    font-size: 32px;
+    letter-spacing: -0.04em;
+}
+
+.details-score span,
+.details-counts span {
+    color: #71808c;
+    font-size: 12px;
+}
+
+.details-counts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    flex: 1;
+}
+
+.details-counts span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 750;
+}
+
+.details-counts .is-ok {
+    color: #0c8c7d;
+}
+
+.details-counts .is-fail {
+    color: #c84444;
+}
+
+.details-counts .is-pending {
+    color: #9a7525;
+}
+
+.details-download {
+    border-color: #0c8c7d;
+    background: #0c8c7d;
+    color: #ffffff;
+}
+
+.details-download:hover {
+    background: #087d70;
+    color: #ffffff;
+}
+
+.details-remote-list {
+    display: grid;
+    gap: 10px;
+}
+
+.details-remote-item {
+    border: 1px solid #e2e9ee;
+    border-left: 3px solid #0c8c7d;
+    border-radius: 13px;
+    background: #ffffff;
+    box-shadow: 0 5px 16px rgba(24, 48, 64, 0.04);
+}
+
+.details-remote-item.fail {
+    border-left-color: #d95353;
+}
+
+.details-remote-item.pending {
+    border-left-color: #c78d22;
+}
+
+.details-remote-item-header {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 17px 18px;
+    border: 0;
+    background: transparent;
+    color: #14212b;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+}
+
+.details-item-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 14px;
+    font-weight: 750;
+}
+
+.details-remote-item.ok .details-item-title {
+    color: #0c8c7d;
+}
+
+.details-remote-item.fail .details-item-title {
+    color: #c84444;
+}
+
+.details-remote-item.pending .details-item-title {
+    color: #9a7525;
+}
+
+.details-remote-item-body {
+    padding: 0 18px 18px 46px;
+    color: #5f717d;
+    font-size: 13px;
+}
+
+.details-remote-item-body p {
+    margin: 7px 0;
+}
+
+.details-remote-item-body strong {
+    color: #38515f;
+}
+
+.details-evidence-line,
+.details-evidence-list a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.details-evidence-line {
+    color: #087d70;
+}
+
+.details-evidence-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.details-evidence-list a {
+    padding: 7px 9px;
+    border-radius: 8px;
+    background: #eff9f7;
+    color: #087d70;
+    font-size: 12px;
+}
+
+.details-remote-empty,
+.details-remote-state {
+    display: flex;
+    min-height: 220px;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #71808c;
+    text-align: center;
+}
+
+.details-remote-state {
+    flex-direction: column;
+}
+
+.details-remote-error {
+    color: #c84444;
+}
+
+@media (max-width: 720px) {
+    .details-remote {
+        padding: 24px 16px 32px;
+    }
+
+    .details-remote-summary {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .details-score {
+        justify-items: start;
+    }
+
+    .details-download {
+        width: 100%;
+        justify-content: center;
+    }
+}

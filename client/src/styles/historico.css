@@ -173,6 +173,114 @@
     border-radius: 16px;
 }
 
+.execution-history-panel {
+    margin: 18px 0;
+    padding: 20px;
+}
+
+.history-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.history-section-heading h2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 16px;
+}
+
+.history-section-heading h2 svg {
+    color: var(--accent-primary);
+}
+
+.history-section-heading p,
+.history-empty-inline {
+    margin: 5px 0 0;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.execution-history-list {
+    display: grid;
+    gap: 8px;
+}
+
+.execution-history-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 12px 0;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.execution-history-row > div:first-child {
+    display: grid;
+    gap: 4px;
+}
+
+.execution-history-row strong {
+    color: var(--text-primary);
+    font-size: 13px;
+}
+
+.execution-history-row span {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.execution-history-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.execution-history-actions button {
+    display: grid;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    background: var(--bg-card);
+    color: var(--accent-primary);
+    cursor: pointer;
+}
+
+.execution-status {
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 11px !important;
+    font-weight: 750;
+}
+
+.execution-status.completed {
+    background: var(--success-bg);
+    color: var(--success) !important;
+}
+
+.execution-status.in-progress {
+    background: var(--warning-bg);
+    color: var(--warning) !important;
+}
+
+@media (max-width: 640px) {
+    .execution-history-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .execution-history-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
 .empty-state p {
     color: var(--text-secondary);
     font-size: 1.1rem;

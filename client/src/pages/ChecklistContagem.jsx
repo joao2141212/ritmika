@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Calendar, User, Clock } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { checklistProducaoService, contagemService, getDiaSemana, formatDate } from '../services/checklistProducaoService';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -25,6 +24,8 @@ const ChecklistContagem = () => {
 
     useEffect(() => {
         loadChecklist();
+    // The loader is intentionally tied to the route id and kept local to this page.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
     const loadChecklist = async () => {

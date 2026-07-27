@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { CheckCircle, Clock, AlertTriangle, Calendar, ChevronRight, Bell } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import axios from 'axios';
 import { storage, STORAGE_KEYS, simulateApiDelay, mockDashboardData } from '../data/mockData';
 import '../styles/dashboard.css';
 

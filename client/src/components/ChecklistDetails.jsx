@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { ChevronDown, ChevronUp, CheckCircle, AlertTriangle, Camera, PenTool, FileText } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { toast } from 'react-hot-toast';

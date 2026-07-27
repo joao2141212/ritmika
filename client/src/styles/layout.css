@@ -180,3 +180,87 @@
     padding: 0;
     position: relative;
 }
+
+/* White workspace shell */
+.app-layout {
+    background: #f7f9fc;
+}
+
+.sidebar {
+    background: #ffffff;
+    border-right-color: #e1e9ee;
+    box-shadow: 8px 0 24px rgba(24, 48, 64, 0.04);
+}
+
+.sidebar.open {
+    width: 280px;
+}
+
+.sidebar.closed {
+    width: 80px;
+}
+
+.sidebar.closed .sidebar-item {
+    justify-content: center;
+    padding-inline: 10px;
+}
+
+.sidebar.closed .label {
+    display: none;
+}
+
+.sidebar.closed .sidebar-footer {
+    padding-inline: 12px;
+}
+
+.sidebar-header,
+.sidebar-footer {
+    border-color: #e8eef1;
+}
+
+.logo-icon {
+    background: #0c8c7d;
+    box-shadow: none;
+}
+
+.logo-text,
+.name {
+    color: #14212b;
+}
+
+.toggle-btn,
+.logout-btn,
+.sidebar-item {
+    color: #71808c;
+}
+
+.toggle-btn:hover,
+.logout-btn:hover {
+    background: #f0f7f6;
+    color: #087d70;
+}
+
+.sidebar-item:hover,
+.sidebar-item.active {
+    background: #eff9f7;
+    color: #087d70;
+}
+
+.active-indicator {
+    background: #0c8c7d;
+    box-shadow: none;
+}
+
+.avatar {
+    background: #dff4ef;
+    border-color: #c7e8e2;
+    color: #087d70;
+}
+
+.role {
+    color: #8a98a0;
+}
+
+.main-content {
+    background: #f7f9fc;
+}

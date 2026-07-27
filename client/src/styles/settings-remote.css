@@ -1,0 +1,318 @@
+.settings-remote {
+    min-height: 100%;
+    padding: 32px clamp(20px, 4vw, 56px) 48px;
+    background: #f7f9fc;
+    color: #14212b;
+}
+
+.settings-remote-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.settings-remote-header h1 {
+    margin: 0;
+    color: #14212b;
+    font-size: clamp(28px, 3vw, 40px);
+    letter-spacing: -0.03em;
+}
+
+.settings-remote-header p:last-child {
+    margin: 8px 0 0;
+    color: #71808c;
+    font-size: 14px;
+}
+
+.settings-theme-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border: 1px solid #c9e8e2;
+    border-radius: 999px;
+    background: #eff9f7;
+    color: #087d70;
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.settings-remote-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.settings-remote-panel {
+    display: grid;
+    gap: 16px;
+    padding: 22px;
+    border: 1px solid #e2e9ee;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 8px 24px rgba(24, 48, 64, 0.05);
+}
+
+.settings-remote-section-heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #edf1f3;
+}
+
+.settings-remote-section-heading > span {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    border-radius: 10px;
+    background: #eff9f7;
+    color: #087d70;
+}
+
+.settings-remote-section-heading h2 {
+    margin: 0;
+    color: #14212b;
+    font-size: 16px;
+}
+
+.settings-remote-section-heading p {
+    margin: 3px 0 0;
+    color: #85939c;
+    font-size: 11px;
+}
+
+.settings-field {
+    display: grid;
+    gap: 7px;
+}
+
+.settings-field > span {
+    color: #5f717d;
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.settings-field input {
+    min-height: 40px;
+    padding: 0 11px;
+    border: 1px solid #dbe4ea;
+    border-radius: 9px;
+    color: #14212b;
+    font: inherit;
+}
+
+.settings-field input[readonly] {
+    background: #f5f8f9;
+    color: #71808c;
+}
+
+.settings-account-meta {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #0c8c7d;
+    font-size: 11px;
+}
+
+.settings-toggle-row,
+.settings-static-row,
+.settings-system-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 46px;
+    border: 0;
+    background: transparent;
+    color: #38515f;
+    text-align: left;
+}
+
+.settings-toggle-row > span,
+.settings-static-row > span,
+.settings-system-row > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.settings-toggle-row > svg,
+.settings-static-row > span > svg,
+.settings-system-row svg {
+    color: #0c8c7d;
+}
+
+.settings-toggle-row span span,
+.settings-static-row span span,
+.settings-system-row span span {
+    display: grid;
+    gap: 3px;
+}
+
+.settings-toggle-row strong,
+.settings-static-row strong,
+.settings-system-row strong {
+    color: #14212b;
+    font-size: 13px;
+}
+
+.settings-toggle-row small,
+.settings-static-row small,
+.settings-system-row small {
+    color: #85939c;
+    font-size: 11px;
+}
+
+.settings-toggle-row input {
+    width: 40px;
+    height: 22px;
+    accent-color: #0c8c7d;
+}
+
+.settings-static-row {
+    padding-top: 10px;
+    border-top: 1px solid #edf1f3;
+}
+
+.settings-static-row > strong {
+    color: #0c8c7d;
+    font-size: 12px;
+}
+
+.settings-system-panel {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: center;
+}
+
+.settings-system-panel .settings-remote-section-heading {
+    border-bottom: 0;
+}
+
+.settings-system-row {
+    padding: 10px 12px;
+    border: 1px solid #e1e9ee;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.settings-system-row:hover {
+    border-color: #9bcfc7;
+    background: #f8fcfb;
+}
+
+.settings-system-row.danger svg,
+.settings-system-row.danger strong {
+    color: #c84444;
+}
+
+.settings-logout {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 40px;
+    border: 1px solid #f0caca;
+    border-radius: 10px;
+    background: #fff5f5;
+    color: #c84444;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.settings-logout:hover {
+    background: #c84444;
+    color: #ffffff;
+}
+
+.settings-remote-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.settings-save {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 42px;
+    padding: 0 17px;
+    border: 0;
+    border-radius: 10px;
+    background: #0c8c7d;
+    color: #ffffff;
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.settings-save:hover {
+    background: #087d70;
+}
+
+.settings-save:disabled {
+    cursor: wait;
+    opacity: 0.55;
+}
+
+.settings-remote-state {
+    display: flex;
+    min-height: 300px;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #71808c;
+}
+
+.settings-remote-error {
+    flex-direction: column;
+    color: #c84444;
+}
+
+.settings-remote-state button {
+    min-height: 38px;
+    padding: 0 12px;
+    border: 1px solid #dbe4ea;
+    border-radius: 9px;
+    background: #ffffff;
+    color: #38515f;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+}
+
+@media (max-width: 820px) {
+    .settings-remote {
+        padding: 24px 16px 32px;
+    }
+
+    .settings-remote-header {
+        flex-direction: column;
+    }
+
+    .settings-remote-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .settings-system-panel {
+        grid-column: auto;
+        grid-template-columns: 1fr;
+        align-items: stretch;
+    }
+
+    .settings-remote-actions {
+        grid-column: auto;
+    }
+
+    .settings-save {
+        width: 100%;
+        justify-content: center;
+    }
+}

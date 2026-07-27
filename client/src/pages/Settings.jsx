@@ -1,6 +1,5 @@
-import { useState } from 'react';
+import { createElement, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { motion } from 'framer-motion';
 import {
     User,
     Bell,
@@ -17,22 +16,20 @@ import {
 import { toast } from 'react-hot-toast';
 import '../styles/settings.css';
 
-const SettingsSection = ({ title, icon: Icon, children }) => (
-    <motion.div
+const SettingsSection = ({ title, icon: SectionIcon, children }) => (
+    <div
         className="settings-section glass-panel"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
     >
         <div className="section-header">
             <div className="section-icon">
-                <Icon size={20} />
+                {createElement(SectionIcon, { size: 20 })}
             </div>
             <h2>{title}</h2>
         </div>
         <div className="section-content">
             {children}
         </div>
-    </motion.div>
+    </div>
 );
 
 const Toggle = ({ label, checked, onChange }) => (
