@@ -218,6 +218,16 @@ paridade completa por inferência.
 Nenhuma dessas provas sozinha significa paridade. O fechamento exige a
 combinação banco + contrato + UI + execução publicada.
 
+## Diário de execução
+
+- 2026-07-27: CBM-Anchor reancorado no projeto correto; o mapa confirmou uma
+  vertical remota operacional L3, ainda sem paridade completa.
+- 2026-07-27, commit 43c34e7: builds de produção passaram a forçar o caminho
+  remoto, impedindo fallback silencioso para demo/local. O modo local ficou
+  restrito ao desenvolvimento não-prod explícito.
+- 2026-07-27: build e lint passaram após a correção; segue pendente a prova
+  autenticada do bundle publicado e as fases de lifecycle/diferencial.
+
 ## Definition of Done
 
 O Ritmika só será marcado como paridade real quando:
