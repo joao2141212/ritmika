@@ -42,29 +42,37 @@ const Login = () => {
                     <p>Operações gastronômicas no ritmo certo</p>
                 </div>
 
-                {error && <div className="error-message">{error}</div>}
+                {error && (
+                    <div className="error-message" role="alert" aria-live="polite">
+                        {error}
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
-                        <label>Email</label>
+                        <label htmlFor="login-email">Email</label>
                         <input
+                            id="login-email"
                             type="email"
                             className="input-field"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="seu@email.com"
+                            autoComplete="email"
                             required
                         />
                     </div>
 
                     <div className="form-group">
-                        <label>Senha</label>
+                        <label htmlFor="login-password">Senha</label>
                         <input
+                            id="login-password"
                             type="password"
                             className="input-field"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="••••••••"
+                            autoComplete="current-password"
                             required
                         />
                     </div>
