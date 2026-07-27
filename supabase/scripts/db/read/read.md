@@ -11,3 +11,4 @@ Leituras Supabase agrupadas em uma chamada curta.
 # Verificação adicionada
 
 `verify_security_state.sql` faz uma leitura compacta das tabelas Ritmika com RLS, quantidade de policies, escopo por `workspace_id`, tabelas protegidas sem policy e privacidade do bucket `ritmika-evidences`. Não altera o banco.
+# `inspect_dashboard_dimensions.sql` descreve as colunas das dimensões de perfis, unidades, setores, momentos e referências dimensionais dos checklists. É somente leitura e não retorna nomes de clientes.
