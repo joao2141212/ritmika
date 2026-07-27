@@ -166,7 +166,7 @@ export const executionService = {
 };
 
 export const dashboardService = {
-    async getData() {
+    async getData(periodDays) {
         if (isLocalData()) {
             return {
                 stats: {
@@ -183,7 +183,7 @@ export const dashboardService = {
                 checklists: [],
             };
         }
-        return remoteChecklistRepository.getDashboardData();
+        return remoteChecklistRepository.getDashboardData(periodDays);
     }
 };
 
@@ -191,6 +191,11 @@ export const notificationService = {
     async getAll(limit = 100) {
         if (isLocalData()) return [];
         return remoteChecklistRepository.getNotifications(limit);
+    },
+
+    async create(payload) {
+        if (isLocalData()) return null;
+        return remoteChecklistRepository.createNotification(payload);
     },
 
     async markRead(id) {

@@ -524,6 +524,30 @@ const resolveChecklistForWorkspace = async (workspaceId, id) => {
     return checklist;
 };
 
+const getDashboardPeriod = (periodDays = 30) => {
+    if (String(periodDays).toLowerCase() === 'all') {
+        return {
+            days: 'all',
+            startIso: null,
+            endIso: null,
+            label: 'Todo o histórico',
+        };
+    }
+
+    const days = Math.min(Math.max(Number(periodDays) || 30, 1), 365);
+    const end = new Date();
+    end.setHours(24, 0, 0, 0);
+    const start = new Date(end);
+    start.setDate(start.getDate() - days);
+
+    return {
+        days,
+        startIso: start.toISOString(),
+        endIso: end.toISOString(),
+        label: `Últimos ${days} dias`,
+    };
+};
+
 export const remoteChecklistRepository = {
     async getManagerList() {
         const context = await getWorkspaceContext();
@@ -870,6 +894,42 @@ export const remoteChecklistRepository = {
         return execution;
     },
 
+    async createNotification({
+        recipientProfileId = null,
+        sourceId,
+        kind = 'system',
+        title,
+        body,
+        route = '/notifications',
+        entityType = null,
+        entityId = null,
+        metadata = {},
+    } = {}) {
+        const context = await getWorkspaceContext();
+        const profile = recipientProfileId
+            ? null
+            : await getProfileForUser(context.workspaceId, context.userId);
+        const result = await requireSupabase()
+            .from('ritmika_notifications')
+            .insert({
+                workspace_id: context.workspaceId,
+                recipient_profile_id: recipientProfileId || profile?.id || null,
+                source_id: sourceId || makeClientId('ritmika-notification'),
+                kind,
+                title: title || 'Atualização do workspace',
+                body: body || null,
+                route,
+                entity_type: entityType,
+                entity_id: entityId ? String(entityId) : null,
+                metadata,
+            })
+            .select('*')
+            .single();
+        return mapNotification(unwrap('createNotification', result, {
+            workspaceId: context.workspaceId,
+        }));
+    },
+
     async getNotifications(limit = 100) {
         const context = await getWorkspaceContext();
         const profile = await getProfileForUser(context.workspaceId, context.userId);
@@ -917,25 +977,30 @@ export const remoteChecklistRepository = {
         return unreadIds.length;
     },
 
-    async getDashboardData() {
+    async getDashboardData(periodDays = 30) {
         const context = await getWorkspaceContext();
         const client = requireSupabase();
+        const period = getDashboardPeriod(periodDays);
         const nowIso = new Date().toISOString();
+        const scopedToPeriod = (query) => {
+            if (!period.startIso) return query;
+            return query.gte('execution_date', period.startIso).lt('execution_date', period.endIso);
+        };
         const [checklistsResult, responsesResult, totalResult, completedResult, overdueResult, unreadResult] = await Promise.all([
             client
                 .from('ritmika_checklists')
                 .select('id,title,status,items,schedule,unit_id,sector_id,moment_id,metadata')
                 .eq('workspace_id', context.workspaceId)
                 .order('title', { ascending: true }),
-            client
+            scopedToPeriod(client
                 .from('ritmika_responses')
                 .select('id,checklist_id,profile_id,source_user_id,is_finished,response_data,execution_date,started_at,completed_at,qtd_items,qtd_items_answered,metadata,created_at,updated_at,checklist_snapshot')
                 .eq('workspace_id', context.workspaceId)
                 .order('execution_date', { ascending: false, nullsFirst: false })
-                .limit(1000),
-            client.from('ritmika_responses').select('id', { count: 'exact', head: true }).eq('workspace_id', context.workspaceId),
-            client.from('ritmika_responses').select('id', { count: 'exact', head: true }).eq('workspace_id', context.workspaceId).eq('is_finished', true),
-            client.from('ritmika_responses').select('id', { count: 'exact', head: true }).eq('workspace_id', context.workspaceId).eq('is_finished', false).lt('execution_date', nowIso),
+                .limit(1000)),
+            scopedToPeriod(client.from('ritmika_responses').select('id', { count: 'exact', head: true }).eq('workspace_id', context.workspaceId)),
+            scopedToPeriod(client.from('ritmika_responses').select('id', { count: 'exact', head: true }).eq('workspace_id', context.workspaceId).eq('is_finished', true)),
+            scopedToPeriod(client.from('ritmika_responses').select('id', { count: 'exact', head: true }).eq('workspace_id', context.workspaceId).eq('is_finished', false).lt('execution_date', nowIso)),
             client.from('ritmika_notifications').select('id', { count: 'exact', head: true }).eq('workspace_id', context.workspaceId).is('read_at', null),
         ]);
         const checklistRows = unwrap('getDashboardData.checklists', checklistsResult, { workspaceId: context.workspaceId }) || [];
@@ -993,6 +1058,7 @@ export const remoteChecklistRepository = {
 
         return {
             workspace_id: context.workspaceId,
+            period,
             checklists: checklistRows,
             stats: {
                 totalScheduled,
@@ -1207,10 +1273,47 @@ export const remoteChecklistRepository = {
             workspaceId: context.workspaceId,
             responseId: response?.id || null,
         });
+        try {
+            await this.createNotification({
+                recipientProfileId: profile?.id || null,
+                sourceId: `evidence-upload:${evidence.id}`,
+                kind: 'evidence_uploaded',
+                title: 'Evidência anexada',
+                body: title || file.name || 'Uma nova evidência foi anexada ao workspace.',
+                route: '/notifications',
+                entityType: 'evidence',
+                entityId: evidence.id,
+                metadata: {
+                    response_id: response?.id || null,
+                    checklist_id: resolvedChecklistId,
+                    checklist_item_id: item?.id || null,
+                },
+            });
+        } catch (notificationError) {
+            reportError('uploadEvidence.notification', notificationError, {
+                workspaceId: context.workspaceId,
+                evidenceId: evidence.id,
+            });
+        }
         return this.getEvidenceUrl(evidence);
     },
 
     async getEvidenceUrl(evidence) {
+        const sourceUrl = evidence?.metadata?.source_url;
+        if (sourceUrl) {
+            return {
+                ...evidence,
+                url: sourceUrl,
+                isHistorical: Boolean(evidence?.metadata?.historical_import),
+            };
+        }
+        if (!evidence?.storage_bucket || !evidence?.storage_path) {
+            return {
+                ...evidence,
+                url: null,
+                isHistorical: Boolean(evidence?.metadata?.historical_import),
+            };
+        }
         const client = requireSupabase();
         const result = await client
             .storage
@@ -1223,6 +1326,7 @@ export const remoteChecklistRepository = {
         return {
             ...evidence,
             url: result.data?.signedUrl || null,
+            isHistorical: Boolean(evidence?.metadata?.historical_import),
         };
     },
 

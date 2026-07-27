@@ -247,6 +247,7 @@ const ChecklistExecutionWorkspace = () => {
                                 key={itemEvidence.id || itemEvidence.storage_path}
                             >
                                 {itemEvidence.title || 'Abrir evidência'}
+                                {itemEvidence.isHistorical && <small>Histórica</small>}
                             </a>
                         ))}
                     </div>

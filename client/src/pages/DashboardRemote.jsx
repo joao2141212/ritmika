@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     AlertTriangle,
@@ -68,25 +68,26 @@ const DashboardRemote = () => {
     const { user } = useAuth();
     const [data, setData] = useState(EMPTY_DATA);
     const [activeTab, setActiveTab] = useState('todo');
+    const [periodDays, setPeriodDays] = useState(30);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    const loadDashboard = async () => {
+    const loadDashboard = useCallback(async () => {
         try {
             setLoading(true);
             setError('');
-            setData(await dashboardService.getData());
+            setData(await dashboardService.getData(periodDays));
         } catch (loadError) {
             setError(loadError instanceof Error ? loadError.message : 'Não foi possível carregar o dashboard.');
             toast.error('Não foi possível carregar o dashboard.');
         } finally {
             setLoading(false);
         }
-    };
+    }, [periodDays]);
 
     useEffect(() => {
         loadDashboard();
-    }, []);
+    }, [loadDashboard]);
 
     const stats = data.stats || EMPTY_DATA.stats;
     const tasks = data.tasks || EMPTY_DATA.tasks;
@@ -101,6 +102,19 @@ const DashboardRemote = () => {
                     <p className="remote-dashboard-subtitle">
                         A operação real do Ritmika, sincronizada com os dados do workspace.
                     </p>
+                    <label className="remote-period-control">
+                        <span>Período</span>
+                        <select
+                            value={periodDays}
+                            onChange={(event) => setPeriodDays(event.target.value === 'all' ? 'all' : Number(event.target.value))}
+                            aria-label="Período do dashboard"
+                        >
+                            <option value={30}>Últimos 30 dias</option>
+                            <option value={7}>Últimos 7 dias</option>
+                            <option value={90}>Últimos 90 dias</option>
+                            <option value="all">Todo o histórico</option>
+                        </select>
+                    </label>
                 </div>
                 <div className="remote-header-actions">
                     <button

@@ -52,6 +52,32 @@
     font-size: 14px;
 }
 
+.remote-period-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin-top: 16px;
+    color: #526674;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.remote-period-control select {
+    min-height: 36px;
+    padding: 0 30px 0 11px;
+    border: 1px solid #dbe4ea;
+    border-radius: 9px;
+    background: #ffffff;
+    color: #203845;
+    font: inherit;
+    font-size: 12px;
+}
+
+.remote-period-control select:focus-visible {
+    outline: 3px solid rgba(21, 155, 138, 0.2);
+    outline-offset: 2px;
+}
+
 .remote-header-actions {
     gap: 10px;
 }
