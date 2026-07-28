@@ -23,6 +23,15 @@ inferirem manutencao de Auth, workspaces, roles e dados sem custo alto.
   e `RITMIKA_MANAGER_ROLES` para adaptar novos clientes sem criar codigo por
   segmento.
 
+## Scripts de QA visual
+
+- `supabase/scripts/auth/read/production-ui-sweep.mjs`
+  - Efeito: leitura Auth/REST e captura local de screenshots em `evidence/`.
+  - Uso: `npx --yes dotenv-cli -e .env -- node supabase/scripts/auth/read/production-ui-sweep.mjs`
+  - Escopo: usa somente workspace QA `ritmika_qa`; nao muta Konclui.
+  - Prova: valida rotas autenticadas em producao desktop/mobile, HTTP, erro JS,
+    overflow horizontal e screenshots das telas principais.
+
 ## Regras
 
 - Scripts do Ritmika nunca mutam Konclui.
