@@ -345,7 +345,7 @@ const ConfigurationsRemote = () => {
                         ))}
                     </nav>
                     <div className="settings-security-note">
-                        <ShieldCheck size={17} />
+                        <Shield size={17} />
                         <span><strong>Ambiente protegido</strong><small>Alterações respeitam perfil e RLS.</small></span>
                     </div>
                 </aside>
