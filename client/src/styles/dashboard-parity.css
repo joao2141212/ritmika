@@ -405,17 +405,42 @@
 }
 
 @media (max-width: 760px) {
+    .remote-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .remote-stat-card {
+        min-height: 112px;
+        padding: 14px;
+    }
+
+    .remote-stat-card:last-child {
+        grid-column: 1 / -1;
+    }
+
     .dashboard-floating-actions {
         right: 12px;
         bottom: 12px;
-        left: 12px;
+        left: auto;
+        gap: 8px;
     }
 
     .dashboard-support-button,
     .dashboard-koru-button {
-        flex: 1;
+        flex: 0 0 48px;
+        width: 48px;
+        height: 48px;
         justify-content: center;
-        padding: 0 8px;
+        padding: 0;
+        border-radius: 999px;
+        font-size: 0;
+    }
+
+    .dashboard-support-button svg,
+    .dashboard-koru-button svg {
+        width: 20px;
+        height: 20px;
     }
 
     .koru-modal-backdrop {
