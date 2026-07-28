@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import AppErrorBoundary from './components/AppErrorBoundary';
 
 const Layout = lazy(() => import('./components/Layout'));
 const Login = lazy(() => import('./pages/Login'));
@@ -62,7 +63,8 @@ import OfflineSync from './components/OfflineSync';
 function App() {
   return (
     <AuthProvider>
-      <Router>
+      <AppErrorBoundary>
+        <Router>
         <OfflineSync />
         <Toaster position="top-right" toastOptions={{
           style: {
@@ -102,7 +104,8 @@ function App() {
           </Route>
         </Routes>
         </Suspense>
-      </Router>
+        </Router>
+      </AppErrorBoundary>
     </AuthProvider>
   );
 }

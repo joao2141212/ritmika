@@ -1,0 +1,96 @@
+.app-recovery {
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: #f4f8f9;
+    color: #14212b;
+}
+
+.app-recovery-card {
+    width: min(100%, 520px);
+    padding: clamp(28px, 6vw, 48px);
+    border: 1px solid #dbe6e9;
+    border-radius: 24px;
+    background: #fff;
+    box-shadow: 0 24px 60px rgba(24, 48, 64, 0.12);
+}
+
+.app-recovery-mark {
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+    background: #0c8c7d;
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: 900;
+}
+
+.app-recovery-eyebrow {
+    margin: 24px 0 8px;
+    color: #087d70;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.app-recovery h1 {
+    margin: 0;
+    font-size: clamp(1.7rem, 5vw, 2.35rem);
+    line-height: 1.08;
+}
+
+.app-recovery-card > p:not(.app-recovery-eyebrow) {
+    margin: 16px 0 0;
+    color: #617481;
+    line-height: 1.6;
+}
+
+.app-recovery-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 28px;
+}
+
+.app-recovery-actions button {
+    min-height: 44px;
+    padding: 0 18px;
+    border-radius: 12px;
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.app-recovery-primary {
+    border: 1px solid #0c8c7d;
+    background: #0c8c7d;
+    color: #fff;
+}
+
+.app-recovery-secondary {
+    border: 1px solid #d3e0e4;
+    background: #fff;
+    color: #314955;
+}
+
+.app-recovery-actions button:focus-visible {
+    outline: 3px solid rgba(12, 140, 125, 0.25);
+    outline-offset: 3px;
+}
+
+.app-recovery-card small {
+    display: block;
+    margin-top: 22px;
+    color: #8a9aa3;
+}
+
+@media (max-width: 520px) {
+    .app-recovery-actions,
+    .app-recovery-actions button {
+        width: 100%;
+    }
+}
