@@ -1,4 +1,4 @@
-import { createElement, useState } from 'react';
+import { createElement, useEffect, useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -36,10 +36,19 @@ const Layout = () => {
         typeof window === 'undefined' ? true : window.innerWidth > 760
     ));
 
+    useEffect(() => {
+        if (!isSidebarOpen) return undefined;
+        const closeOnEscape = (event) => {
+            if (event.key === 'Escape' && window.innerWidth <= 760) setIsSidebarOpen(false);
+        };
+        window.addEventListener('keydown', closeOnEscape);
+        return () => window.removeEventListener('keydown', closeOnEscape);
+    }, [isSidebarOpen]);
+
     return (
         <div className="app-layout">
             <a className="skip-link" href="#main-content">Pular para o conteúdo</a>
-            <aside className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
+            <aside className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`} aria-label="Navegação principal">
                 <div className="sidebar-header">
                     <div className="logo-container">
                         <div className="logo-icon"><Zap size={24} fill="white" /></div>
@@ -50,7 +59,12 @@ const Layout = () => {
                     </button>
                 </div>
 
-                <nav className="sidebar-nav">
+                <nav
+                    className="sidebar-nav"
+                    onClick={() => {
+                        if (window.innerWidth <= 760) setIsSidebarOpen(false);
+                    }}
+                >
                     <SidebarItem to="/" icon={LayoutDashboard} label="Dashboard" active={location.pathname === '/'} />
                     <SidebarItem to="/checklists" icon={CheckSquare} label="Checklists" active={location.pathname.includes('/checklists')} />
                     <SidebarItem to="/team" icon={Users} label="Equipe" active={location.pathname === '/team'} />
@@ -78,6 +92,15 @@ const Layout = () => {
                     </button>
                 </div>
             </aside>
+
+            {isSidebarOpen && (
+                <button
+                    type="button"
+                    className="sidebar-backdrop"
+                    aria-label="Fechar menu"
+                    onClick={() => setIsSidebarOpen(false)}
+                />
+            )}
 
             <main id="main-content" className="main-content" tabIndex="-1">
                 <Outlet />
