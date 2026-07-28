@@ -862,3 +862,36 @@
         min-width: 100%;
     }
 }
+
+/* Shared geometry prevents independent jumps when the navigation tray changes width. */
+.checklist-topbar,
+.checklist-toolbar,
+.checklist-parity-toolbar,
+.manager-stats,
+.checklist-bulk-toolbar,
+.checklist-table-shell {
+    width: 100%;
+    max-width: 1680px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.manager-stats {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+@media (max-width: 1280px) {
+    .manager-stats {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 680px) {
+    .manager-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .manager-stat:last-child:nth-child(odd) {
+        grid-column: 1 / -1;
+    }
+}

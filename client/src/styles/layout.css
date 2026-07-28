@@ -190,6 +190,8 @@
     background: #ffffff;
     border-right-color: #e1e9ee;
     box-shadow: 8px 0 24px rgba(24, 48, 64, 0.04);
+    flex: 0 0 auto;
+    transition: width 220ms ease;
 }
 
 .sidebar.open {
@@ -267,6 +269,7 @@
 
 .main-content {
     background: #f7f9fc;
+    min-width: 0;
 }
 
 .sidebar-backdrop {
