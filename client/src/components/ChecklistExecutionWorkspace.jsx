@@ -56,6 +56,8 @@ const ChecklistExecutionWorkspace = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
+    const executionIdFromUrl = new URLSearchParams(location.search).get('executionId');
+    const requestedExecutionId = executionIdFromUrl || location.state?.executionId || null;
     const [checklist, setChecklist] = useState(null);
     const [execution, setExecution] = useState(null);
     const [answers, setAnswers] = useState({});
@@ -74,13 +76,26 @@ const ChecklistExecutionWorkspace = () => {
                 setLoading(true);
                 const data = await checklistProducaoService.getById(id);
                 if (!data) throw new Error('Checklist não encontrado');
-                const requestedExecutionId = location.state?.executionId;
                 const started = requestedExecutionId
                     ? await executionService.getById(requestedExecutionId)
                     : await checklistProducaoService.startExecution(id, {
                         execution_type: 'manual',
                     });
                 if (!started) throw new Error('Execução não encontrada');
+                if (!requestedExecutionId) {
+                    const search = new URLSearchParams(location.search);
+                    search.set('executionId', started.id);
+                    navigate({
+                        pathname: location.pathname,
+                        search: `?${search.toString()}`,
+                    }, {
+                        replace: true,
+                        state: {
+                            ...location.state,
+                            executionId: started.id,
+                        },
+                    });
+                }
                 const evidence = await evidenceService.list(started.id);
                 if (!active) return;
                 setChecklist(data);
@@ -93,6 +108,8 @@ const ChecklistExecutionWorkspace = () => {
                     fn: 'ChecklistExecutionWorkspace.openExecution',
                     status: 'error',
                     checklistId: id,
+                    executionId: requestedExecutionId,
+                    executionIdSource: executionIdFromUrl ? 'url' : location.state?.executionId ? 'navigation_state' : 'new',
                     error: openError instanceof Error ? openError.message : String(openError),
                 });
                 if (active) setError('Não foi possível iniciar esta execução remota.');
@@ -102,7 +119,15 @@ const ChecklistExecutionWorkspace = () => {
         };
         openExecution();
         return () => { active = false; };
-    }, [id, location.state?.executionId]);
+    }, [
+        executionIdFromUrl,
+        id,
+        location.pathname,
+        location.search,
+        location.state,
+        navigate,
+        requestedExecutionId,
+    ]);
 
     const items = useMemo(() => executionItemsOf(checklist), [checklist]);
     const answerableItems = useMemo(() => items.filter((item) => item.type !== 'separator'), [items]);
