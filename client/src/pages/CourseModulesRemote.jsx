@@ -5,6 +5,49 @@ import { parityService } from '../services/checklistProducaoService';
 import '../styles/parity-pages.css';
 import '../styles/course-parity.css';
 
+const lessonContentToText = (content) => {
+    if (content == null) return '';
+
+    if (typeof content === 'string') {
+        const value = content.trim();
+        if (!value) return '';
+
+        try {
+            return lessonContentToText(JSON.parse(value));
+        } catch {
+            return value;
+        }
+    }
+
+    if (Array.isArray(content)) {
+        return content.map(lessonContentToText).filter(Boolean).join('\n\n');
+    }
+
+    if (typeof content === 'object') {
+        if (Array.isArray(content.blocks)) {
+            return content.blocks
+                .map((block) => lessonContentToText(
+                    block?.content
+                    ?? block?.text
+                    ?? block?.value
+                    ?? block?.data?.content
+                    ?? block?.data?.text
+                ))
+                .filter(Boolean)
+                .join('\n\n');
+        }
+
+        return lessonContentToText(
+            content.content
+            ?? content.text
+            ?? content.value
+            ?? content.description
+        );
+    }
+
+    return String(content);
+};
+
 const CourseModulesRemote = () => {
     const navigate = useNavigate();
     const { id } = useParams();
@@ -81,7 +124,11 @@ const CourseModulesRemote = () => {
                             Marcar como concluída
                         </button>}
                 </div>
-                {selectedLesson.content ? <div className="parity-lesson-content">{typeof selectedLesson.content === 'string' ? selectedLesson.content : JSON.stringify(selectedLesson.content, null, 2)}</div> : <div className="parity-state-inline">O conteúdo desta aula ainda não foi carregado no workspace.</div>}
+                {selectedLesson.content
+                    ? <div className="parity-lesson-content" style={{ whiteSpace: 'pre-wrap' }}>
+                        {lessonContentToText(selectedLesson.content) || 'Este conteúdo ainda não possui um formato de leitura disponível.'}
+                    </div>
+                    : <div className="parity-state-inline">O conteúdo desta aula ainda não foi carregado no workspace.</div>}
             </section>}
         </div>
     );

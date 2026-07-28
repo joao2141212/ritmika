@@ -16,7 +16,33 @@ const EMPTY_GRID = {
     types: [],
 };
 
+import '../styles/notifications-inbox.css';
+
 const formatDate = (value) => value ? new Date(value).toLocaleString('pt-BR') : '-';
+
+const notificationLabel = (value, fallback = 'Não informado') => {
+    const raw = String(value || '').trim();
+    if (!raw) return fallback;
+
+    const key = raw.toLocaleLowerCase('pt-BR').replace(/[\s_-]+/g, '_');
+    const labels = {
+        execution: 'Execução',
+        completed: 'Concluída',
+        open: 'Em aberto',
+        new: 'Nova',
+        active: 'Ativa',
+        inactive: 'Inativa',
+        whatsapp: 'WhatsApp',
+        push: 'Push',
+        email: 'E-mail',
+        system: 'Sistema',
+    };
+
+    if (labels[key]) return labels[key];
+
+    const readable = raw.replace(/[_-]+/g, ' ');
+    return readable.charAt(0).toLocaleUpperCase('pt-BR') + readable.slice(1);
+};
 
 const Notifications = () => {
     const navigate = useNavigate();
@@ -27,6 +53,7 @@ const Notifications = () => {
     const [loading, setLoading] = useState(true);
     const [working, setWorking] = useState(false);
     const [error, setError] = useState('');
+    const [filtersOpen, setFiltersOpen] = useState(false);
 
     const loadGrid = async (nextFilters = filters, nextPage = pageIndex) => {
         try {
@@ -55,6 +82,14 @@ const Notifications = () => {
     const submitSearch = (event) => {
         event.preventDefault();
         updateFilter('search', draftSearch);
+    };
+
+    const activeFilterCount = Object.values(filters).filter(Boolean).length;
+
+    const clearFilters = () => {
+        setDraftSearch('');
+        setPageIndex(0);
+        setFilters({ search: '', unitId: '', channel: '', type: '', readState: '' });
     };
 
     const markRead = async (notification) => {
@@ -132,24 +167,45 @@ const Notifications = () => {
                         <Search size={17} />
                         <input value={draftSearch} onChange={(event) => setDraftSearch(event.target.value)} placeholder="Buscar por nome ou telefone..." />
                     </div>
-                    <select value={filters.unitId} onChange={(event) => updateFilter('unitId', event.target.value)} aria-label="Filtrar por unidade">
-                        <option value="">Todas as unidades</option>
-                        {grid.units.map((unit) => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
-                    </select>
-                    <select value={filters.channel} onChange={(event) => updateFilter('channel', event.target.value)} aria-label="Filtrar por canal">
-                        <option value="">Todos os canais</option>
-                        {grid.channels.map((channel) => <option key={channel} value={channel.toLocaleLowerCase('pt-BR')}>{channel}</option>)}
-                    </select>
-                    <select value={filters.type} onChange={(event) => updateFilter('type', event.target.value)} aria-label="Filtrar por tipo">
-                        <option value="">Todos os tipos</option>
-                        {grid.types.map((type) => <option key={type} value={type.toLocaleLowerCase('pt-BR')}>{type}</option>)}
-                    </select>
-                    <select value={filters.readState} onChange={(event) => updateFilter('readState', event.target.value)} aria-label="Filtrar por leitura">
-                        <option value="">Todas</option>
-                        <option value="unread">Não lidas</option>
-                        <option value="read">Lidas</option>
-                    </select>
-                    <button type="submit" className="notifications-action primary"><Filter size={16} /> Filtrar</button>
+                    <div className="notifications-filter-actions">
+                        <button type="submit" className="notifications-action primary"><Search size={16} /> Buscar</button>
+                        <button
+                            type="button"
+                            className="notifications-action"
+                            onClick={() => setFiltersOpen((current) => !current)}
+                            aria-expanded={filtersOpen}
+                        >
+                            <Filter size={16} />
+                            {filtersOpen ? 'Ocultar filtros' : 'Filtros'}
+                            {activeFilterCount > 0 ? ' (' + activeFilterCount + ')' : ''}
+                        </button>
+                        {activeFilterCount > 0 && (
+                            <button type="button" className="notifications-action" onClick={clearFilters}>
+                                Limpar filtros
+                            </button>
+                        )}
+                    </div>
+                    {filtersOpen && (
+                        <div className="notifications-filter-controls" aria-label="Filtros avançados">
+                            <select value={filters.unitId} onChange={(event) => updateFilter('unitId', event.target.value)} aria-label="Filtrar por unidade">
+                                <option value="">Todas as unidades</option>
+                                {grid.units.map((unit) => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
+                            </select>
+                            <select value={filters.channel} onChange={(event) => updateFilter('channel', event.target.value)} aria-label="Filtrar por canal">
+                                <option value="">Todos os canais</option>
+                                {grid.channels.map((channel) => <option key={channel} value={channel.toLocaleLowerCase('pt-BR')}>{notificationLabel(channel)}</option>)}
+                            </select>
+                            <select value={filters.type} onChange={(event) => updateFilter('type', event.target.value)} aria-label="Filtrar por tipo">
+                                <option value="">Todos os tipos</option>
+                                {grid.types.map((type) => <option key={type} value={type.toLocaleLowerCase('pt-BR')}>{notificationLabel(type)}</option>)}
+                            </select>
+                            <select value={filters.readState} onChange={(event) => updateFilter('readState', event.target.value)} aria-label="Filtrar por leitura">
+                                <option value="">Todas</option>
+                                <option value="unread">Não lidas</option>
+                                <option value="read">Lidas</option>
+                            </select>
+                        </div>
+                    )}
                 </form>
 
                 {loading ? (
@@ -157,24 +213,32 @@ const Notifications = () => {
                 ) : error ? (
                     <div className="notifications-state notifications-error"><span>{error}</span><button type="button" className="notifications-action" onClick={() => loadGrid(filters, pageIndex)}>Tentar novamente</button></div>
                 ) : grid.rows.length === 0 ? (
-                    <div className="notifications-state notifications-empty"><Bell size={28} /><strong>Nenhuma notificação encontrada</strong><span>Altere os filtros ou aguarde novos eventos do workspace.</span></div>
+                    <div className="notifications-state notifications-empty">
+                        <Bell size={28} />
+                        <strong>Nenhuma notificação encontrada</strong>
+                        <span>{activeFilterCount > 0 ? 'Nenhum evento corresponde aos filtros aplicados.' : 'Aguarde novos eventos do workspace.'}</span>
+                        {activeFilterCount > 0 && <button type="button" className="notifications-action" onClick={clearFilters}>Limpar filtros</button>}
+                    </div>
                 ) : (
                     <div className="notifications-grid-wrap">
                         <div className="notifications-grid-table">
-                            <div className="notifications-grid-head"><span>Nome</span><span>Telefone</span><span>Unidade</span><span>Data</span><span>Canal</span><span>Tipo</span><span>Leitura</span><span>Mensagem</span><span>Ações</span></div>
+                            <div className="notifications-grid-head"><span>Notificação</span><span>Contexto</span><span>Quando</span><span>Estado</span><span>Ações</span></div>
                             {grid.rows.map((notification) => (
                                 <div className={'notifications-grid-row ' + (notification.read ? 'is-read' : 'is-unread')} key={notification.id}>
-                                    <strong>{notification.name}</strong>
-                                    <span>{notification.phone || '-'}</span>
-                                    <span>{notification.unit_name || '-'}</span>
-                                    <span>{formatDate(notification.created_at)}</span>
-                                    <span>{notification.channel}</span>
-                                    <span>{notification.type}</span>
-                                    <span>{notification.read ? 'Lida' : 'Não lida'}</span>
-                                    <span className="notifications-message" title={notification.message}>{notification.message}</span>
+                                    <div className="notifications-event-cell">
+                                        <strong>{notification.name || notification.phone || 'Notificação'}</strong>
+                                        <span className="notifications-event-message" title={notification.message}>{notification.message || 'Sem mensagem disponível.'}</span>
+                                    </div>
+                                    <div className="notifications-context-cell">
+                                        <span>{notification.unit_name || 'Sem unidade'}</span>
+                                        <small>{notificationLabel(notification.channel, 'Canal não informado')} · {notificationLabel(notification.type, 'Tipo não informado')}</small>
+                                    </div>
+                                    <time className="notifications-when-cell" dateTime={notification.created_at || undefined}>{formatDate(notification.created_at)}</time>
+                                    <span className={'notifications-read-state ' + (notification.read ? 'is-read' : 'is-unread')}>{notification.read ? 'Lida' : 'Não lida'}</span>
                                     <span className="notifications-row-actions">
-                                        {!notification.read && <button type="button" className="notifications-icon-action" onClick={() => markRead(notification)} aria-label="Marcar como lida"><Check size={15} /></button>}
-                                        {notification.route && <button type="button" className="notifications-icon-action" onClick={() => openNotification(notification)} aria-label="Abrir notificação"><ExternalLink size={15} /></button>}
+                                        {!notification.read && <button type="button" className="notifications-action notifications-row-action" onClick={() => markRead(notification)}><Check size={15} /> Marcar como lida</button>}
+                                        {notification.route && <button type="button" className="notifications-action primary notifications-row-action" onClick={() => openNotification(notification)}><ExternalLink size={15} /> Abrir</button>}
+                                        {notification.read && !notification.route && <span className="notifications-no-action">Sem ação pendente</span>}
                                     </span>
                                 </div>
                             ))}

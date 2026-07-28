@@ -61,8 +61,8 @@ const DEFAULT_COLUMNS = {
     sector: true,
     status: true,
     moment: true,
-    execution: true,
-    time: true,
+    execution: false,
+    time: false,
 };
 
 const ChecklistWorkspace = () => {
@@ -86,6 +86,7 @@ const ChecklistWorkspace = () => {
     const [pageSize, setPageSize] = useState(20);
     const [columns, setColumns] = useState(DEFAULT_COLUMNS);
     const [columnsOpen, setColumnsOpen] = useState(false);
+    const [filtersOpen, setFiltersOpen] = useState(false);
     const [bulkMenuOpen, setBulkMenuOpen] = useState(false);
     const [columnFilters, setColumnFilters] = useState({
         checklist: '',
@@ -377,6 +378,30 @@ const ChecklistWorkspace = () => {
         }
     };
 
+    const activeAdvancedFilters = [unitFilter, sectorFilter, momentFilter, folderFilter].filter(Boolean).length;
+    const hasColumnFilters = Object.values(columnFilters).some(Boolean);
+    const hasActiveFilters = Boolean(query.trim())
+        || filter !== 'all'
+        || activeAdvancedFilters > 0
+        || hasColumnFilters;
+
+    const clearFilters = () => {
+        setQuery('');
+        setFilter('all');
+        setUnitFilter('');
+        setSectorFilter('');
+        setMomentFilter('');
+        setFolderFilter('');
+        setColumnFilters({
+            checklist: '',
+            responsible: '',
+            sector: '',
+            status: '',
+            moment: '',
+        });
+        setPage(1);
+    };
+
     return (
         <section className="ritmika-light-mode">
             <header className="checklist-topbar">
@@ -398,6 +423,15 @@ const ChecklistWorkspace = () => {
             </header>
 
             <div className="checklist-toolbar">
+                <label className="search-field">
+                    <Search size={17} aria-hidden="true" />
+                    <input
+                        value={query}
+                        onChange={(event) => setQuery(event.target.value)}
+                        placeholder="Buscar checklist"
+                        aria-label="Buscar checklist"
+                    />
+                </label>
                 <div className="checklist-filters" aria-label="Filtro de status">
                     {[
                         ['all', 'Todos'],
@@ -415,16 +449,26 @@ const ChecklistWorkspace = () => {
                         </button>
                     ))}
                 </div>
-                <label className="search-field">
-                    <Search size={17} aria-hidden="true" />
-                    <input
-                        value={query}
-                        onChange={(event) => setQuery(event.target.value)}
-                        placeholder="Buscar checklist"
-                        aria-label="Buscar checklist"
-                    />
-                </label>
-                <div className="checklist-filter-selects">
+                <div className="checklist-toolbar-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <button
+                        type="button"
+                        className="light-button secondary"
+                        onClick={() => setFiltersOpen((current) => !current)}
+                        aria-expanded={filtersOpen}
+                    >
+                        {filtersOpen ? 'Ocultar filtros' : 'Filtros'}
+                        {activeAdvancedFilters > 0 ? ' (' + activeAdvancedFilters + ')' : ''}
+                    </button>
+                    {hasActiveFilters && (
+                        <button type="button" className="light-button ghost" onClick={clearFilters}>
+                            Limpar filtros
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            {filtersOpen && (
+                <div className="checklist-filter-selects" aria-label="Filtros avançados">
                     <label>
                         <span>Unidade</span>
                         <select value={unitFilter} onChange={(event) => setUnitFilter(event.target.value)}>
@@ -452,8 +496,17 @@ const ChecklistWorkspace = () => {
                             ))}
                         </select>
                     </label>
+                    <label>
+                        <span>Pasta</span>
+                        <select value={folderFilter} onChange={(event) => setFolderFilter(event.target.value)}>
+                            <option value="">Todas as pastas</option>
+                            {folders.map((folder) => (
+                                <option key={folder.id} value={folder.id}>{folder.name}</option>
+                            ))}
+                        </select>
+                    </label>
                 </div>
-            </div>
+            )}
 
             <div className="checklist-parity-toolbar" aria-label="Controles da tabela de checklists">
                 <button
@@ -463,15 +516,6 @@ const ChecklistWorkspace = () => {
                 >
                     <FolderPlus size={15} /> Nova pasta
                 </button>
-                <label className="checklist-folder-filter">
-                    <Folder size={15} aria-hidden="true" />
-                    <select value={folderFilter} onChange={(event) => setFolderFilter(event.target.value)} aria-label="Filtrar por pasta">
-                        <option value="">Todas as pastas</option>
-                        {folders.map((folder) => (
-                            <option key={folder.id} value={folder.id}>{folder.name}</option>
-                        ))}
-                    </select>
-                </label>
                 <div className="checklist-parity-spacer" />
                 <div className="checklist-view-toggle" aria-label="Modo de visualização">
                     <button
@@ -612,7 +656,16 @@ const ChecklistWorkspace = () => {
             {!loading && !error && filteredChecklists.length === 0 && (
                 <div className="empty-state">
                     <ClipboardCheck size={30} aria-hidden="true" />
-                    <p>Nenhum checklist corresponde ao filtro atual.</p>
+                    <p>{hasActiveFilters ? 'Nenhum checklist corresponde aos filtros aplicados.' : 'Ainda não há checklists no workspace.'}</p>
+                    {hasActiveFilters ? (
+                        <button type="button" className="light-button secondary" onClick={clearFilters}>
+                            Limpar filtros
+                        </button>
+                    ) : (
+                        <button type="button" className="light-button primary" onClick={() => navigate('/checklists/new')}>
+                            <Plus size={16} /> Criar checklist
+                        </button>
+                    )}
                 </div>
             )}
 
@@ -691,6 +744,15 @@ const ChecklistWorkspace = () => {
                                                         {titleOf(checklist)}
                                                     </button>
                                                     <small>{itemsOf(checklist).length} itens</small>
+                                                    <div style={{ marginTop: '0.5rem' }}>
+                                                        <button
+                                                            type="button"
+                                                            className="light-button primary"
+                                                            onClick={() => navigate(`/checklists/${encodeURIComponent(checklist.id)}/execute`)}
+                                                        >
+                                                            <Play size={15} /> Executar
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             )}
                                             {columns.responsible && <td>{responsible}</td>}
@@ -702,9 +764,6 @@ const ChecklistWorkspace = () => {
                                             {columns.execution && <td>{scheduleOf(checklist)}</td>}
                                             {columns.time && <td>{checklist.schedule_time || schedule.schedule_time || '—'}</td>}
                                             <td className="checklist-table-actions">
-                                                <button type="button" className="icon-button" onClick={() => navigate(`/checklists/${encodeURIComponent(checklist.id)}/execute`)} aria-label={`Executar ${titleOf(checklist)}`} title="Executar">
-                                                    <Play size={15} />
-                                                </button>
                                                 <button type="button" className="icon-button" onClick={() => navigate(`/checklists/${encodeURIComponent(checklist.id)}/edit`)} aria-label={`Editar ${titleOf(checklist)}`} title="Editar">
                                                     <Pencil size={15} />
                                                 </button>
@@ -742,12 +801,16 @@ const ChecklistWorkspace = () => {
             )}
 
             {!loading && !error && filteredChecklists.length > 0 && viewMode === 'cards' && (
-                <div className="checklist-card-grid">
+                <div className="checklist-card-grid" style={{ overflow: 'visible' }}>
                     {pagedChecklists.map((checklist) => {
                         const published = isPublished(checklist);
                         const items = itemsOf(checklist);
                         return (
-                            <article className="checklist-card" key={checklist.id}>
+                            <article
+                                className="checklist-card"
+                                key={checklist.id}
+                                style={{ height: 'auto', minHeight: 0, overflow: 'visible', paddingBottom: '1.5rem' }}
+                            >
                                 <label className="checklist-card-select">
                                     <input
                                         type="checkbox"
@@ -773,7 +836,7 @@ const ChecklistWorkspace = () => {
                                     <span><CalendarDays size={14} /> {scheduleOf(checklist)}</span>
                                     <span><UsersRound size={14} /> {(checklist.responsaveis || []).length || 1} responsável(is)</span>
                                 </div>
-                                <div className="checklist-card-actions">
+                                <div className="checklist-card-actions" style={{ flexWrap: 'wrap' }}>
                                     <button
                                         type="button"
                                         className="light-button primary"

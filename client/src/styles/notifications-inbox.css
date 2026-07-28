@@ -1,0 +1,102 @@
+.notifications-page .notifications-filter-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.notifications-page .notifications-filter-controls {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.notifications-page .notifications-grid-head,
+.notifications-page .notifications-grid-row {
+    grid-template-columns: minmax(15rem, 2fr) minmax(11rem, 1.1fr) minmax(8.5rem, 0.8fr) minmax(7rem, 0.65fr) auto;
+    align-items: center;
+}
+
+.notifications-page .notifications-event-cell,
+.notifications-page .notifications-context-cell {
+    display: grid;
+    min-width: 0;
+    gap: 0.25rem;
+}
+
+.notifications-page .notifications-event-message {
+    overflow: hidden;
+    color: inherit;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.notifications-page .notifications-context-cell small,
+.notifications-page .notifications-when-cell,
+.notifications-page .notifications-read-state,
+.notifications-page .notifications-no-action {
+    color: inherit;
+    opacity: 0.72;
+}
+
+.notifications-page .notifications-read-state.is-unread {
+    font-weight: 700;
+    opacity: 1;
+}
+
+.notifications-page .notifications-row-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.notifications-page .notifications-row-action {
+    white-space: nowrap;
+}
+
+@media (max-width: 980px) {
+    .notifications-page .notifications-grid-head,
+    .notifications-page .notifications-grid-row {
+        grid-template-columns: minmax(14rem, 2fr) minmax(10rem, 1fr) minmax(7rem, 0.75fr) auto;
+    }
+
+    .notifications-page .notifications-read-state {
+        display: none;
+    }
+
+    .notifications-page .notifications-grid-head > span:nth-child(4) {
+        display: none;
+    }
+}
+
+@media (max-width: 720px) {
+    .notifications-page .notifications-grid-head {
+        display: none;
+    }
+
+    .notifications-page .notifications-grid-row {
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: start;
+    }
+
+    .notifications-page .notifications-event-cell,
+    .notifications-page .notifications-row-actions {
+        grid-column: 1 / -1;
+    }
+
+    .notifications-page .notifications-event-message {
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        white-space: normal;
+    }
+
+    .notifications-page .notifications-row-actions {
+        justify-content: flex-start;
+    }
+}

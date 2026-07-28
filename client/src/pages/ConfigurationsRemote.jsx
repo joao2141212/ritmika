@@ -49,6 +49,8 @@ const ConfigurationsRemote = () => {
     const [apiDraft, setApiDraft] = useState({ endpoint_url: '', webhook_url: '', public_key: '' });
     const [unitDraft, setUnitDraft] = useState(EMPTY_UNIT);
     const [sectorDraft, setSectorDraft] = useState(EMPTY_SECTOR);
+    const [unitFormOpen, setUnitFormOpen] = useState(false);
+    const [sectorFormOpen, setSectorFormOpen] = useState(false);
     const [userDrafts, setUserDrafts] = useState({});
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -165,6 +167,7 @@ const ConfigurationsRemote = () => {
                 ? current.map((item) => item.id === saved.id ? saved : item)
                 : [...current, saved].sort((left, right) => left.name.localeCompare(right.name, 'pt-BR')));
             setUnitDraft(EMPTY_UNIT);
+            setUnitFormOpen(false);
             toast.success(unitDraft.id ? 'Unidade atualizada.' : 'Unidade criada.');
         } catch (saveError) {
             toast.error(saveError instanceof Error ? saveError.message : 'Não foi possível salvar a unidade.');
@@ -199,6 +202,7 @@ const ConfigurationsRemote = () => {
                 ? current.map((item) => item.id === saved.id ? saved : item)
                 : [...current, saved].sort((left, right) => left.name.localeCompare(right.name, 'pt-BR')));
             setSectorDraft(EMPTY_SECTOR);
+            setSectorFormOpen(false);
             toast.success(sectorDraft.id ? 'Setor atualizado.' : 'Setor criado.');
         } catch (saveError) {
             toast.error(saveError instanceof Error ? saveError.message : 'Não foi possível salvar o setor.');
@@ -353,26 +357,30 @@ const ConfigurationsRemote = () => {
 
             {activeTab === 'units' && (
                 <section className="settings-remote-panel settings-entity-panel">
-                    <div className="settings-entity-toolbar"><div className="settings-remote-section-heading"><span><Building2 size={18} /></span><div><h2>Unidades</h2><p>{units.length} unidades ativas no workspace</p></div></div><button type="button" className="settings-save" onClick={() => setUnitDraft(EMPTY_UNIT)}><Plus size={16} /> Nova unidade</button></div>
+                    <div className="settings-entity-toolbar"><div className="settings-remote-section-heading"><span><Building2 size={18} /></span><div><h2>Unidades</h2><p>{units.length} unidades ativas no workspace</p></div></div>{!unitFormOpen && <button type="button" className="settings-save" onClick={() => { setUnitDraft(EMPTY_UNIT); setUnitFormOpen(true); }}><Plus size={16} /> Nova unidade</button>}</div>
+                    {unitFormOpen && (
                     <form onSubmit={saveUnit} className="settings-entity-form">
-                        <label className="settings-field"><span>Nome</span><input value={unitDraft.name} onChange={(event) => setUnitDraft({ ...unitDraft, name: event.target.value })} placeholder="Ex.: Loja Centro" required /></label>
+                        <label className="settings-field"><span>Nome</span><input value={unitDraft.name} onChange={(event) => setUnitDraft({ ...unitDraft, name: event.target.value })} placeholder="Ex.: Loja Centro" required autoFocus /></label>
                         <label className="settings-field"><span>Endereço</span><input value={unitDraft.address} onChange={(event) => setUnitDraft({ ...unitDraft, address: event.target.value })} placeholder="Opcional" /></label>
                         <label className="settings-field"><span>Fuso horário</span><select value={unitDraft.timezone} onChange={(event) => setUnitDraft({ ...unitDraft, timezone: event.target.value })}><option value="America/Sao_Paulo">America/Sao_Paulo</option><option value="UTC">UTC</option></select></label>
-                        <div className="settings-inline-actions"><button type="submit" className="settings-save" disabled={entitySaving}>{entitySaving ? <LoaderCircle size={15} className="is-spinning" /> : <Save size={15} />}{unitDraft.id ? 'Atualizar' : 'Criar'}</button>{unitDraft.id && <button type="button" className="settings-system-row" onClick={() => setUnitDraft(EMPTY_UNIT)}>Cancelar</button>}</div>
+                        <div className="settings-inline-actions"><button type="submit" className="settings-save" disabled={entitySaving}>{entitySaving ? <LoaderCircle size={15} className="is-spinning" /> : <Save size={15} />}{unitDraft.id ? 'Atualizar' : 'Criar'}</button><button type="button" className="settings-system-row" onClick={() => { setUnitDraft(EMPTY_UNIT); setUnitFormOpen(false); }}>Cancelar</button></div>
                     </form>
-                    <div className="settings-entity-list">{units.length === 0 ? <div className="settings-empty-note">Nenhuma unidade cadastrada. Crie a primeira para vincular checklists.</div> : units.map((unit) => <article className="settings-entity-row" key={unit.id}><div><strong>{unit.name}</strong><small>{formatUnitAddress(unit.address) || 'Sem endereço'} · {unit.timezone || 'America/Sao_Paulo'}</small></div><div className="settings-inline-actions"><button type="button" className="settings-icon-action" onClick={() => setUnitDraft({ id: unit.id, name: unit.name || '', address: formatUnitAddress(unit.address), timezone: unit.timezone || 'America/Sao_Paulo' })} aria-label={`Editar ${unit.name}`}><Pencil size={15} /></button><button type="button" className="settings-icon-action danger" onClick={() => archiveUnit(unit)} aria-label={`Arquivar ${unit.name}`}><Archive size={15} /></button></div></article>)}</div>
+                    )}
+                    <div className="settings-entity-list">{units.length === 0 ? <div className="settings-empty-note">Nenhuma unidade cadastrada. Crie a primeira para vincular checklists.</div> : units.map((unit) => <article className="settings-entity-row" key={unit.id}><div><strong>{unit.name}</strong><small>{formatUnitAddress(unit.address) || 'Sem endereço'} · {unit.timezone || 'America/Sao_Paulo'}</small></div><div className="settings-inline-actions"><button type="button" className="settings-icon-action" onClick={() => { setUnitDraft({ id: unit.id, name: unit.name || '', address: formatUnitAddress(unit.address), timezone: unit.timezone || 'America/Sao_Paulo' }); setUnitFormOpen(true); }} aria-label={`Editar ${unit.name}`} title="Editar"><Pencil size={15} /></button><button type="button" className="settings-icon-action danger" onClick={() => archiveUnit(unit)} aria-label={`Arquivar ${unit.name}`} title="Arquivar"><Archive size={15} /></button></div></article>)}</div>
                 </section>
             )}
 
             {activeTab === 'sectors' && (
                 <section className="settings-remote-panel settings-entity-panel">
-                    <div className="settings-entity-toolbar"><div className="settings-remote-section-heading"><span><Layers3 size={18} /></span><div><h2>Setores</h2><p>{sectors.length} setores ativos no workspace</p></div></div><button type="button" className="settings-save" onClick={() => setSectorDraft(EMPTY_SECTOR)}><Plus size={16} /> Novo setor</button></div>
+                    <div className="settings-entity-toolbar"><div className="settings-remote-section-heading"><span><Layers3 size={18} /></span><div><h2>Setores</h2><p>{sectors.length} setores ativos no workspace</p></div></div>{!sectorFormOpen && <button type="button" className="settings-save" onClick={() => { setSectorDraft(EMPTY_SECTOR); setSectorFormOpen(true); }}><Plus size={16} /> Novo setor</button>}</div>
+                    {sectorFormOpen && (
                     <form onSubmit={saveSector} className="settings-entity-form">
-                        <label className="settings-field"><span>Nome</span><input value={sectorDraft.name} onChange={(event) => setSectorDraft({ ...sectorDraft, name: event.target.value })} placeholder="Ex.: Cozinha" required /></label>
+                        <label className="settings-field"><span>Nome</span><input value={sectorDraft.name} onChange={(event) => setSectorDraft({ ...sectorDraft, name: event.target.value })} placeholder="Ex.: Cozinha" required autoFocus /></label>
                         <label className="settings-field"><span>Chave do sistema</span><input value={sectorDraft.system_key} onChange={(event) => setSectorDraft({ ...sectorDraft, system_key: event.target.value })} placeholder="Opcional" /></label>
-                        <div className="settings-inline-actions"><button type="submit" className="settings-save" disabled={entitySaving}>{entitySaving ? <LoaderCircle size={15} className="is-spinning" /> : <Save size={15} />}{sectorDraft.id ? 'Atualizar' : 'Criar'}</button>{sectorDraft.id && <button type="button" className="settings-system-row" onClick={() => setSectorDraft(EMPTY_SECTOR)}>Cancelar</button>}</div>
+                        <div className="settings-inline-actions"><button type="submit" className="settings-save" disabled={entitySaving}>{entitySaving ? <LoaderCircle size={15} className="is-spinning" /> : <Save size={15} />}{sectorDraft.id ? 'Atualizar' : 'Criar'}</button><button type="button" className="settings-system-row" onClick={() => { setSectorDraft(EMPTY_SECTOR); setSectorFormOpen(false); }}>Cancelar</button></div>
                     </form>
-                    <div className="settings-entity-list">{sectors.length === 0 ? <div className="settings-empty-note">Nenhum setor cadastrado. Crie o primeiro para classificar checklists.</div> : sectors.map((sector) => <article className="settings-entity-row" key={sector.id}><div><strong>{sector.name}</strong><small>{sector.system_key || 'Setor próprio'}</small></div><div className="settings-inline-actions"><button type="button" className="settings-icon-action" onClick={() => setSectorDraft({ id: sector.id, name: sector.name || '', system_key: sector.system_key || '' })} aria-label={`Editar ${sector.name}`}><Pencil size={15} /></button><button type="button" className="settings-icon-action danger" onClick={() => archiveSector(sector)} aria-label={`Arquivar ${sector.name}`}><Archive size={15} /></button></div></article>)}</div>
+                    )}
+                    <div className="settings-entity-list">{sectors.length === 0 ? <div className="settings-empty-note">Nenhum setor cadastrado. Crie o primeiro para classificar checklists.</div> : sectors.map((sector) => <article className="settings-entity-row" key={sector.id}><div><strong>{sector.name}</strong><small>{sector.system_key || 'Setor próprio'}</small></div><div className="settings-inline-actions"><button type="button" className="settings-icon-action" onClick={() => { setSectorDraft({ id: sector.id, name: sector.name || '', system_key: sector.system_key || '' }); setSectorFormOpen(true); }} aria-label={`Editar ${sector.name}`} title="Editar"><Pencil size={15} /></button><button type="button" className="settings-icon-action danger" onClick={() => archiveSector(sector)} aria-label={`Arquivar ${sector.name}`} title="Arquivar"><Archive size={15} /></button></div></article>)}</div>
                 </section>
             )}
 
