@@ -110,7 +110,15 @@ const ChecklistContagem = () => {
             toast.success(`Contagem salva! ${contagensArray.length} produtos registrados`);
             navigate('/checklists');
         } catch (error) {
-            console.error('Erro ao salvar contagem:', error);
+            logger.error({
+                file: 'client/src/pages/ChecklistContagem.jsx',
+                function: 'ChecklistContagem.handleSubmit',
+                operation: 'checklist_count.save',
+                errorCode: 'CHECKLIST_COUNT_SAVE_FAILED',
+                checklistId: id,
+                userId: user?.id,
+                error,
+            });
             toast.error('Erro ao salvar contagem');
         } finally {
             setSaving(false);

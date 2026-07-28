@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, Filter, Download, ExternalLink, FileCheck2 } from 'lucide-react';
 import { checklistProducaoService, contagemService, executionService } from '../services/checklistProducaoService';
+import { logger } from '../lib/logger';
 import toast from 'react-hot-toast';
 import '../styles/historico.css';
 
@@ -35,7 +36,14 @@ const ChecklistHistorico = () => {
             
             await Promise.all([loadContagens(), loadExecucoes()]);
         } catch (error) {
-            console.error('Erro ao carregar dados:', error);
+            logger.error({
+                file: 'client/src/pages/ChecklistHistorico.jsx',
+                function: 'ChecklistHistorico.loadData',
+                operation: 'checklist_history.load',
+                errorCode: 'CHECKLIST_HISTORY_LOAD_FAILED',
+                checklistId: id,
+                error,
+            });
             toast.error('Erro ao carregar histórico');
         } finally {
             setLoading(false);
@@ -51,7 +59,14 @@ const ChecklistHistorico = () => {
             });
             setExecucoes(data);
         } catch (error) {
-            console.error('Erro ao carregar execuções:', error);
+            logger.error({
+                file: 'client/src/pages/ChecklistHistorico.jsx',
+                function: 'ChecklistHistorico.loadExecucoes',
+                operation: 'checklist_history.executions.load',
+                errorCode: 'CHECKLIST_HISTORY_EXECUTIONS_FAILED',
+                checklistId: id,
+                error,
+            });
             toast.error('Erro ao carregar execuções');
         }
     };
@@ -61,7 +76,14 @@ const ChecklistHistorico = () => {
             const data = await contagemService.getByChecklist(id, dataInicio, dataFim);
             setContagens(data);
         } catch (error) {
-            console.error('Erro ao carregar contagens:', error);
+            logger.error({
+                file: 'client/src/pages/ChecklistHistorico.jsx',
+                function: 'ChecklistHistorico.loadContagens',
+                operation: 'checklist_history.counts.load',
+                errorCode: 'CHECKLIST_HISTORY_COUNTS_FAILED',
+                checklistId: id,
+                error,
+            });
             toast.error('Erro ao carregar contagens');
         }
     };

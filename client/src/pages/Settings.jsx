@@ -1,6 +1,7 @@
-import { createElement, useState } from 'react';
+import { createElement, useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { logger } from '../lib/logger';
+import { settingsService } from '../services/checklistProducaoService';
 import {
     User,
     Bell,
@@ -68,32 +69,112 @@ const Settings = () => {
         soundEffects: true
     });
 
+    useEffect(() => {
+        let active = true;
+
+        const loadSettings = async () => {
+            try {
+                setLoading(true);
+                const data = await settingsService.get();
+                if (!active) return;
+                setProfile({
+                    name: data.profile?.name || user?.name || '',
+                    email: data.profile?.email || user?.email || '',
+                    phone: data.profile?.phone || '',
+                });
+                setPreferences((current) => ({ ...current, ...(data.profile?.preferences || {}) }));
+                logger.info({
+                    file: 'client/src/pages/Settings.jsx',
+                    function: 'Settings.loadSettings',
+                    operation: 'settings.load',
+                    status: 'success',
+                    userId: user?.id,
+                });
+            } catch (loadError) {
+                logger.error({
+                    file: 'client/src/pages/Settings.jsx',
+                    function: 'Settings.loadSettings',
+                    operation: 'settings.load',
+                    errorCode: 'SETTINGS_LEGACY_LOAD_FAILED',
+                    userId: user?.id,
+                    error: loadError,
+                });
+                toast.error(loadError instanceof Error ? loadError.message : 'Não foi possível carregar as configurações.');
+            } finally {
+                if (active) setLoading(false);
+            }
+        };
+
+        loadSettings();
+        return () => { active = false; };
+    }, [user?.email, user?.id, user?.name]);
+
     const handleSaveProfile = async () => {
-        logger.warn({
-            file: 'client/src/pages/Settings.jsx',
-            function: 'Settings.handleSaveProfile',
-            operation: 'settings.profile.save',
-            status: 'degraded',
-            errorCode: 'LEGACY_SETTINGS_MOCK_PATH',
-        });
-        setLoading(true);
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setLoading(false);
-        toast.success('Perfil atualizado com sucesso!');
+        try {
+            setLoading(true);
+            await settingsService.updateProfile({
+                name: profile.name.trim(),
+                phone: profile.phone.trim(),
+                preferences,
+            });
+            await settingsService.updateWorkspaceSettings({
+                settings: {
+                    interface: preferences.darkMode ? 'dark' : 'light',
+                    preferences,
+                },
+            });
+            logger.info({
+                file: 'client/src/pages/Settings.jsx',
+                function: 'Settings.handleSaveProfile',
+                operation: 'settings.profile.save',
+                status: 'success',
+                userId: user?.id,
+            });
+            toast.success('Perfil atualizado com sucesso!');
+        } catch (saveError) {
+            logger.error({
+                file: 'client/src/pages/Settings.jsx',
+                function: 'Settings.handleSaveProfile',
+                operation: 'settings.profile.save',
+                errorCode: 'SETTINGS_PROFILE_SAVE_FAILED',
+                userId: user?.id,
+                error: saveError,
+            });
+            toast.error(saveError instanceof Error ? saveError.message : 'Não foi possível atualizar o perfil.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleSync = async () => {
-        logger.warn({
-            file: 'client/src/pages/Settings.jsx',
-            function: 'Settings.handleSync',
-            operation: 'settings.sync',
-            status: 'degraded',
-            errorCode: 'LEGACY_SETTINGS_SYNC_MOCK_PATH',
-        });
         const toastId = toast.loading('Sincronizando dados...');
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        toast.success('Tudo atualizado!', { id: toastId });
+        try {
+            const data = await settingsService.get();
+            setProfile({
+                name: data.profile?.name || user?.name || '',
+                email: data.profile?.email || user?.email || '',
+                phone: data.profile?.phone || '',
+            });
+            setPreferences((current) => ({ ...current, ...(data.profile?.preferences || {}) }));
+            logger.info({
+                file: 'client/src/pages/Settings.jsx',
+                function: 'Settings.handleSync',
+                operation: 'settings.sync',
+                status: 'success',
+                userId: user?.id,
+            });
+            toast.success('Tudo atualizado!', { id: toastId });
+        } catch (syncError) {
+            logger.error({
+                file: 'client/src/pages/Settings.jsx',
+                function: 'Settings.handleSync',
+                operation: 'settings.sync',
+                errorCode: 'SETTINGS_SYNC_FAILED',
+                userId: user?.id,
+                error: syncError,
+            });
+            toast.error(syncError instanceof Error ? syncError.message : 'Não foi possível sincronizar as configurações.', { id: toastId });
+        }
     };
 
     const handleClearCache = () => {
