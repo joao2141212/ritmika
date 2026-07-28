@@ -143,6 +143,9 @@ const mapChecklist = (row, references) => {
     const profile = row.responsible_profile_id
         ? references.profiles.get(String(row.responsible_profile_id))
         : null;
+    const unit = row.unit_id ? references.units.get(String(row.unit_id)) : null;
+    const sector = row.sector_id ? references.sectors.get(String(row.sector_id)) : null;
+    const moment = row.moment_id ? references.moments.get(String(row.moment_id)) : null;
     const items = (Array.isArray(row.items) ? row.items : [])
         .map((item, index) => normalizeItem(item, index, String(row.id)));
     const sourceStatus = row.status || 'draft';
@@ -161,6 +164,10 @@ const mapChecklist = (row, references) => {
         tipo: row.checklist_kind || 'operacional',
         frequencia: frequency,
         turno_ativado: Boolean(metadata.turno_ativado || schedule.turno_ativado),
+        unit_name: unit?.name || row.unit_name || null,
+        sector_name: sector?.name || row.sector_name || null,
+        moment_name: moment?.name || row.moment_name || metadata.display_moment || null,
+        folder_id: metadata.folder_id || null,
         responsaveis: profile?.name ? [profile.name] : [],
         user_name: profile?.name || null,
         user_id: row.responsible_profile_id || null,
@@ -524,8 +531,24 @@ const resolveChecklistForWorkspace = async (workspaceId, id) => {
     return checklist;
 };
 
-const getDashboardPeriod = (periodDays = 30) => {
-    if (String(periodDays).toLowerCase() === 'all') {
+const getDashboardPeriod = (periodInput = 30) => {
+    const options = periodInput && typeof periodInput === 'object' ? periodInput : { periodDays: periodInput };
+    if (options.from || options.to) {
+        const start = options.from ? new Date(`${options.from}T00:00:00`) : null;
+        const end = options.to ? new Date(`${options.to}T00:00:00`) : null;
+        if (start && end && !Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime()) && start <= end) {
+            const exclusiveEnd = new Date(end);
+            exclusiveEnd.setDate(exclusiveEnd.getDate() + 1);
+            return {
+                days: 'custom',
+                startIso: start.toISOString(),
+                endIso: exclusiveEnd.toISOString(),
+                label: `${start.toLocaleDateString('pt-BR')} a ${end.toLocaleDateString('pt-BR')}`,
+            };
+        }
+    }
+
+    if (String(options.periodDays).toLowerCase() === 'all') {
         return {
             days: 'all',
             startIso: null,
@@ -534,7 +557,7 @@ const getDashboardPeriod = (periodDays = 30) => {
         };
     }
 
-    const days = Math.min(Math.max(Number(periodDays) || 30, 1), 365);
+    const days = Math.min(Math.max(Number(options.periodDays) || 30, 1), 365);
     const end = new Date();
     end.setHours(24, 0, 0, 0);
     const start = new Date(end);
@@ -560,6 +583,225 @@ export const remoteChecklistRepository = {
         const rows = unwrap('getManagerList', result, { workspaceId: context.workspaceId });
         const references = await getReferenceMaps(context.workspaceId);
         return (rows || []).map((row) => mapChecklist(row, references));
+    },
+
+    async getReferences() {
+        const context = await getWorkspaceContext();
+        const references = await getReferenceMaps(context.workspaceId);
+        const toList = (map, fallbackLabel) => Array.from(map.values())
+            .filter((row) => !row.metadata?.archived_at)
+            .map((row) => ({
+                id: String(row.id),
+                source_id: row.source_id || null,
+                name: row.name || row.email || fallbackLabel,
+                email: row.email || null,
+                role: row.role || null,
+            }))
+            .sort((left, right) => left.name.localeCompare(right.name, 'pt-BR'));
+
+        return {
+            units: toList(references.units, 'Unidade sem nome'),
+            sectors: toList(references.sectors, 'Setor sem nome'),
+            moments: toList(references.moments, 'Momento sem nome'),
+            profiles: toList(references.profiles, 'Usuário sem nome'),
+        };
+    },
+
+    async getChecklistFolders() {
+        const settings = await this.getSettings();
+        const folders = settings.workspace?.settings?.checklistFolders;
+        return Array.isArray(folders)
+            ? folders.filter((folder) => folder && folder.id && folder.name)
+            : [];
+    },
+
+    async createChecklistFolder(name) {
+        const normalizedName = String(name || '').trim();
+        if (!normalizedName) throw new Error('Informe o nome da pasta.');
+
+        const currentFolders = await this.getChecklistFolders();
+        const duplicate = currentFolders.find(
+            (folder) => String(folder.name).trim().toLocaleLowerCase() === normalizedName.toLocaleLowerCase(),
+        );
+        if (duplicate) return duplicate;
+
+        const folder = {
+            id: makeClientId('ritmika-folder'),
+            name: normalizedName,
+            created_at: new Date().toISOString(),
+        };
+        await this.updateWorkspaceSettings({
+            settings: { checklistFolders: [...currentFolders, folder] },
+        });
+        return folder;
+    },
+
+    async moveChecklistsToFolder(ids, folderId = null) {
+        const checklistIds = Array.isArray(ids)
+            ? ids.map((id) => String(id || '').trim()).filter(Boolean)
+            : [];
+        if (checklistIds.length === 0) return 0;
+
+        const context = await getWorkspaceContext();
+        const client = requireSupabase();
+        const result = await client
+            .from('ritmika_checklists')
+            .select('id,metadata')
+            .eq('workspace_id', context.workspaceId)
+            .in('id', checklistIds);
+        const rows = unwrap('moveChecklistsToFolder.select', result, {
+            workspaceId: context.workspaceId,
+            checklistIds,
+        }) || [];
+
+        await Promise.all(rows.map(async (row) => {
+            const metadata = row.metadata && typeof row.metadata === 'object' ? row.metadata : {};
+            const updateResult = await client
+                .from('ritmika_checklists')
+                .update({
+                    metadata: { ...metadata, folder_id: folderId || null },
+                    updated_at: new Date().toISOString(),
+                })
+                .eq('workspace_id', context.workspaceId)
+                .eq('id', row.id);
+            unwrap('moveChecklistsToFolder.update', updateResult, {
+                workspaceId: context.workspaceId,
+                checklistId: String(row.id),
+                folderId: folderId || null,
+            });
+        }));
+
+        return rows.length;
+    },
+
+    async getUnits() {
+        const context = await getWorkspaceContext();
+        const result = await requireSupabase()
+            .from('ritmika_units')
+            .select('*')
+            .eq('workspace_id', context.workspaceId)
+            .order('name', { ascending: true });
+        return (unwrap('getUnits', result, { workspaceId: context.workspaceId }) || [])
+            .filter((row) => !row.metadata?.archived_at);
+    },
+
+    async createUnit(payload = {}) {
+        const context = await getWorkspaceContext();
+        const name = String(payload.name || '').trim();
+        if (!name) throw new Error('Informe o nome da unidade.');
+        const result = await requireSupabase()
+            .from('ritmika_units')
+            .insert({
+                workspace_id: context.workspaceId,
+                source_id: payload.source_id || makeClientId('ritmika-unit'),
+                name,
+                address: payload.address || null,
+                timezone: payload.timezone || 'America/Sao_Paulo',
+                usage_policy: payload.usage_policy || null,
+                metadata: payload.metadata && typeof payload.metadata === 'object' ? payload.metadata : {},
+            })
+            .select('*')
+            .single();
+        return unwrap('createUnit', result, { workspaceId: context.workspaceId });
+    },
+
+    async updateUnit(id, payload = {}) {
+        const context = await getWorkspaceContext();
+        const currentResult = await requireSupabase()
+            .from('ritmika_units')
+            .select('*')
+            .eq('workspace_id', context.workspaceId)
+            .eq('id', String(id))
+            .single();
+        const current = unwrap('updateUnit.current', currentResult, { workspaceId: context.workspaceId, unitId: String(id) });
+        if (!current) throw new Error('Unidade não encontrada.');
+        const metadata = {
+            ...(current.metadata && typeof current.metadata === 'object' ? current.metadata : {}),
+            ...(payload.metadata && typeof payload.metadata === 'object' ? payload.metadata : {}),
+        };
+        if (payload.archived === false) delete metadata.archived_at;
+        const result = await requireSupabase()
+            .from('ritmika_units')
+            .update({
+                name: payload.name === undefined ? current.name : String(payload.name).trim(),
+                address: payload.address === undefined ? current.address : payload.address || null,
+                timezone: payload.timezone === undefined ? current.timezone : payload.timezone || 'America/Sao_Paulo',
+                usage_policy: payload.usage_policy === undefined ? current.usage_policy : payload.usage_policy || null,
+                metadata,
+                updated_at: new Date().toISOString(),
+            })
+            .eq('workspace_id', context.workspaceId)
+            .eq('id', String(id))
+            .select('*')
+            .single();
+        return unwrap('updateUnit', result, { workspaceId: context.workspaceId, unitId: String(id) });
+    },
+
+    async archiveUnit(id) {
+        return this.updateUnit(id, { metadata: { archived_at: new Date().toISOString() } });
+    },
+
+    async getSectors() {
+        const context = await getWorkspaceContext();
+        const result = await requireSupabase()
+            .from('ritmika_sectors')
+            .select('*')
+            .eq('workspace_id', context.workspaceId)
+            .order('name', { ascending: true });
+        return (unwrap('getSectors', result, { workspaceId: context.workspaceId }) || [])
+            .filter((row) => !row.metadata?.archived_at);
+    },
+
+    async createSector(payload = {}) {
+        const context = await getWorkspaceContext();
+        const name = String(payload.name || '').trim();
+        if (!name) throw new Error('Informe o nome do setor.');
+        const result = await requireSupabase()
+            .from('ritmika_sectors')
+            .insert({
+                workspace_id: context.workspaceId,
+                source_id: payload.source_id || makeClientId('ritmika-sector'),
+                name,
+                system_key: payload.system_key || null,
+                metadata: payload.metadata && typeof payload.metadata === 'object' ? payload.metadata : {},
+            })
+            .select('*')
+            .single();
+        return unwrap('createSector', result, { workspaceId: context.workspaceId });
+    },
+
+    async updateSector(id, payload = {}) {
+        const context = await getWorkspaceContext();
+        const currentResult = await requireSupabase()
+            .from('ritmika_sectors')
+            .select('*')
+            .eq('workspace_id', context.workspaceId)
+            .eq('id', String(id))
+            .single();
+        const current = unwrap('updateSector.current', currentResult, { workspaceId: context.workspaceId, sectorId: String(id) });
+        if (!current) throw new Error('Setor não encontrado.');
+        const metadata = {
+            ...(current.metadata && typeof current.metadata === 'object' ? current.metadata : {}),
+            ...(payload.metadata && typeof payload.metadata === 'object' ? payload.metadata : {}),
+        };
+        if (payload.archived === false) delete metadata.archived_at;
+        const result = await requireSupabase()
+            .from('ritmika_sectors')
+            .update({
+                name: payload.name === undefined ? current.name : String(payload.name).trim(),
+                system_key: payload.system_key === undefined ? current.system_key : payload.system_key || null,
+                metadata,
+                updated_at: new Date().toISOString(),
+            })
+            .eq('workspace_id', context.workspaceId)
+            .eq('id', String(id))
+            .select('*')
+            .single();
+        return unwrap('updateSector', result, { workspaceId: context.workspaceId, sectorId: String(id) });
+    },
+
+    async archiveSector(id) {
+        return this.updateSector(id, { metadata: { archived_at: new Date().toISOString() } });
     },
 
     async getAll() {
@@ -649,6 +891,31 @@ export const remoteChecklistRepository = {
             .eq('id', String(id));
         unwrap('publish', result, { workspaceId: context.workspaceId, checklistId: String(id) });
         return true;
+    },
+
+    async bulkUpdateChecklistStatus(ids, status = 'ativo') {
+        const checklistIds = Array.isArray(ids)
+            ? ids.map((id) => String(id || '').trim()).filter(Boolean)
+            : [];
+        if (checklistIds.length === 0) return 0;
+
+        const context = await getWorkspaceContext();
+        const client = requireSupabase();
+        const result = await client
+            .from('ritmika_checklists')
+            .update({ status: toStorageStatus(status), updated_at: new Date().toISOString() })
+            .eq('workspace_id', context.workspaceId)
+            .in('id', checklistIds);
+        unwrap('bulkUpdateChecklistStatus', result, {
+            workspaceId: context.workspaceId,
+            checklistIds,
+            status,
+        });
+        return checklistIds.length;
+    },
+
+    async archiveMany(ids) {
+        return this.bulkUpdateChecklistStatus(ids, 'archived');
     },
 
     async createCountEntry(entry) {
@@ -945,6 +1212,87 @@ export const remoteChecklistRepository = {
             .map(mapNotification);
     },
 
+    async getNotificationGrid(options = {}) {
+        const context = await getWorkspaceContext();
+        const pageIndex = Math.max(Number(options.pageIndex || 0), 0);
+        const pageSize = Math.min(Math.max(Number(options.pageSize || 10), 1), 100);
+        const search = String(options.search || '').trim().toLocaleLowerCase('pt-BR');
+        const unitId = String(options.unitId || '');
+        const channel = String(options.channel || '').toLocaleLowerCase('pt-BR');
+        const type = String(options.type || '').toLocaleLowerCase('pt-BR');
+        const readState = String(options.readState || '');
+        const client = requireSupabase();
+        const [notificationsResult, profilesResult, unitsResult, currentProfile] = await Promise.all([
+            client
+                .from('ritmika_notifications')
+                .select('*')
+                .eq('workspace_id', context.workspaceId)
+                .order('created_at', { ascending: false })
+                .limit(5000),
+            client
+                .from('ritmika_profiles')
+                .select('id,name,email,phone,managed_units')
+                .eq('workspace_id', context.workspaceId),
+            client
+                .from('ritmika_units')
+                .select('id,name')
+                .eq('workspace_id', context.workspaceId)
+                .order('name', { ascending: true }),
+            getProfileForUser(context.workspaceId, context.userId),
+        ]);
+        const rows = unwrap('getNotificationGrid.notifications', notificationsResult, { workspaceId: context.workspaceId }) || [];
+        const profiles = unwrap('getNotificationGrid.profiles', profilesResult, { workspaceId: context.workspaceId }) || [];
+        const units = unwrap('getNotificationGrid.units', unitsResult, { workspaceId: context.workspaceId }) || [];
+        const profileMap = new Map(profiles.map((row) => [String(row.id), row]));
+        const unitMap = new Map(units.map((row) => [String(row.id), row]));
+        const enriched = rows.map((row) => {
+            const metadata = row.metadata && typeof row.metadata === 'object' ? row.metadata : {};
+            const recipient = row.recipient_profile_id ? profileMap.get(String(row.recipient_profile_id)) : null;
+            const resolvedUnitId = metadata.unit_id || metadata.unitId || recipient?.managed_units?.[0] || '';
+            const resolvedChannel = metadata.channel || metadata.channel_name || (metadata.whatsapp ? 'WhatsApp' : 'Push');
+            const resolvedType = metadata.type || row.entity_type || row.kind || 'Sistema';
+            return {
+                ...mapNotification(row),
+                name: recipient?.name || metadata.recipient_name || 'Equipe',
+                phone: recipient?.phone || metadata.phone || null,
+                unit_id: resolvedUnitId ? String(resolvedUnitId) : null,
+                unit_name: unitMap.get(String(resolvedUnitId))?.name || metadata.unit_name || null,
+                channel: String(resolvedChannel),
+                type: String(resolvedType),
+                message: row.body || row.title || '',
+                audience: currentProfile?.id && String(row.recipient_profile_id) === String(currentProfile.id) ? 'mine' : 'team',
+            };
+        });
+        const filtered = enriched.filter((row) => {
+            const haystack = [row.name, row.phone, row.title, row.body, row.message].filter(Boolean).join(' ').toLocaleLowerCase('pt-BR');
+            if (search && !haystack.includes(search)) return false;
+            if (unitId && row.unit_id !== unitId) return false;
+            if (channel && row.channel.toLocaleLowerCase('pt-BR') !== channel) return false;
+            if (type && row.type.toLocaleLowerCase('pt-BR') !== type) return false;
+            if (readState === 'read' && !row.read) return false;
+            if (readState === 'unread' && row.read) return false;
+            return true;
+        });
+        const stats = {
+            total: filtered.length,
+            unread: filtered.filter((row) => !row.read).length,
+            mine: filtered.filter((row) => row.audience === 'mine').length,
+            team: filtered.filter((row) => row.audience === 'team').length,
+            whatsapp: filtered.filter((row) => row.channel.toLocaleLowerCase('pt-BR') === 'whatsapp').length,
+            push: filtered.filter((row) => row.channel.toLocaleLowerCase('pt-BR') === 'push').length,
+        };
+        return {
+            rows: filtered.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize),
+            total: filtered.length,
+            pageIndex,
+            pageSize,
+            stats,
+            units: units.filter((row) => !row.metadata?.archived_at),
+            channels: [...new Set(enriched.map((row) => row.channel))].sort(),
+            types: [...new Set(enriched.map((row) => row.type))].sort(),
+        };
+    },
+
     async markNotificationRead(id) {
         const context = await getWorkspaceContext();
         const result = await requireSupabase()
@@ -977,30 +1325,43 @@ export const remoteChecklistRepository = {
         return unreadIds.length;
     },
 
-    async getDashboardData(periodDays = 30) {
+    async askKoru(message, context = {}) {
+        const normalizedMessage = String(message || '').trim();
+        if (!normalizedMessage) throw new Error('Digite uma pergunta para a Koru.');
+        const result = await requireSupabase().functions.invoke('koru-chat', {
+            body: {
+                message: normalizedMessage,
+                context: context && typeof context === 'object' ? context : {},
+            },
+        });
+        if (result.error) {
+            reportError('askKoru', result.error, { messageLength: normalizedMessage.length });
+            throw result.error;
+        }
+        return result.data;
+    },
+
+    async getDashboardData(periodInput = 30) {
         const context = await getWorkspaceContext();
         const client = requireSupabase();
-        const period = getDashboardPeriod(periodDays);
+        const options = periodInput && typeof periodInput === 'object' ? periodInput : { periodDays: periodInput };
+        const period = getDashboardPeriod(options);
         const nowIso = new Date().toISOString();
         const scopedToPeriod = (query) => {
             if (!period.startIso) return query;
             return query.gte('execution_date', period.startIso).lt('execution_date', period.endIso);
         };
-        const [checklistsResult, responsesResult, totalResult, completedResult, overdueResult, unreadResult, profilesResult, unitsResult, sectorsResult] = await Promise.all([
-            client
-                .from('ritmika_checklists')
-                .select('id,title,status,items,schedule,unit_id,sector_id,moment_id,metadata')
-                .eq('workspace_id', context.workspaceId)
-                .order('title', { ascending: true }),
-            scopedToPeriod(client
-                .from('ritmika_responses')
-                .select('id,checklist_id,profile_id,source_user_id,is_finished,response_data,execution_date,started_at,completed_at,qtd_items,qtd_items_answered,metadata,created_at,updated_at,checklist_snapshot')
-                .eq('workspace_id', context.workspaceId)
-                .order('execution_date', { ascending: false, nullsFirst: false })
-                .limit(1000)),
-            scopedToPeriod(client.from('ritmika_responses').select('id', { count: 'exact', head: true }).eq('workspace_id', context.workspaceId)),
-            scopedToPeriod(client.from('ritmika_responses').select('id', { count: 'exact', head: true }).eq('workspace_id', context.workspaceId).eq('is_finished', true)),
-            scopedToPeriod(client.from('ritmika_responses').select('id', { count: 'exact', head: true }).eq('workspace_id', context.workspaceId).eq('is_finished', false).lt('execution_date', nowIso)),
+        let checklistQuery = client
+            .from('ritmika_checklists')
+            .select('id,title,status,items,schedule,unit_id,sector_id,moment_id,metadata')
+            .eq('workspace_id', context.workspaceId)
+            .order('title', { ascending: true });
+        if (options.unitId) checklistQuery = checklistQuery.eq('unit_id', String(options.unitId));
+        if (options.sectorId) checklistQuery = checklistQuery.eq('sector_id', String(options.sectorId));
+        if (options.momentId) checklistQuery = checklistQuery.eq('moment_id', String(options.momentId));
+
+        const [checklistsResult, unreadResult, profilesResult, unitsResult, sectorsResult, momentsResult] = await Promise.all([
+            checklistQuery,
             client.from('ritmika_notifications').select('id', { count: 'exact', head: true }).eq('workspace_id', context.workspaceId).is('read_at', null),
             client
                 .from('ritmika_profiles')
@@ -1017,12 +1378,42 @@ export const remoteChecklistRepository = {
                 .select('id,name')
                 .eq('workspace_id', context.workspaceId)
                 .order('name', { ascending: true }),
+            client
+                .from('ritmika_moments')
+                .select('id,name')
+                .eq('workspace_id', context.workspaceId)
+                .order('name', { ascending: true }),
         ]);
         const checklistRows = unwrap('getDashboardData.checklists', checklistsResult, { workspaceId: context.workspaceId }) || [];
-        const responseRows = unwrap('getDashboardData.responses', responsesResult, { workspaceId: context.workspaceId }) || [];
         const profileRows = unwrap('getDashboardData.profiles', profilesResult, { workspaceId: context.workspaceId }) || [];
         const unitRows = unwrap('getDashboardData.units', unitsResult, { workspaceId: context.workspaceId }) || [];
         const sectorRows = unwrap('getDashboardData.sectors', sectorsResult, { workspaceId: context.workspaceId }) || [];
+        const momentRows = unwrap('getDashboardData.moments', momentsResult, { workspaceId: context.workspaceId }) || [];
+
+        const checklistIds = checklistRows.map((row) => String(row.id)).filter(Boolean);
+        const hasChecklistScope = Boolean(options.unitId || options.sectorId || options.momentId);
+        const applyResponseScope = (query) => {
+            let scopedQuery = scopedToPeriod(query);
+            if (options.profileId) scopedQuery = scopedQuery.eq('profile_id', String(options.profileId));
+            if (hasChecklistScope) {
+                scopedQuery = checklistIds.length
+                    ? scopedQuery.in('checklist_id', checklistIds)
+                    : scopedQuery.in('checklist_id', ['00000000-0000-0000-0000-000000000000']);
+            }
+            return scopedQuery;
+        };
+        const [responsesResult, totalResult, completedResult, overdueResult] = await Promise.all([
+            applyResponseScope(client
+                .from('ritmika_responses')
+                .select('id,checklist_id,profile_id,source_user_id,is_finished,response_data,execution_date,started_at,completed_at,qtd_items,qtd_items_answered,metadata,created_at,updated_at,checklist_snapshot')
+                .eq('workspace_id', context.workspaceId)
+                .order('execution_date', { ascending: false, nullsFirst: false })
+                .limit(5000)),
+            applyResponseScope(client.from('ritmika_responses').select('id', { count: 'exact', head: true }).eq('workspace_id', context.workspaceId)),
+            applyResponseScope(client.from('ritmika_responses').select('id', { count: 'exact', head: true }).eq('workspace_id', context.workspaceId).eq('is_finished', true)),
+            applyResponseScope(client.from('ritmika_responses').select('id', { count: 'exact', head: true }).eq('workspace_id', context.workspaceId).eq('is_finished', false).lt('execution_date', nowIso)),
+        ]);
+        const responseRows = unwrap('getDashboardData.responses', responsesResult, { workspaceId: context.workspaceId }) || [];
         if (totalResult.error) {
             reportError('getDashboardData.total', totalResult.error, { workspaceId: context.workspaceId });
             throw totalResult.error;
@@ -1128,10 +1519,49 @@ export const remoteChecklistRepository = {
         const profileLabels = new Map(profileRows.map((row) => [String(row.id), row.name || row.email || 'Usuário']));
         const unitLabels = new Map(unitRows.map((row) => [String(row.id), row.name || 'Unidade']));
         const sectorLabels = new Map(sectorRows.map((row) => [String(row.id), row.name || 'Setor']));
+        const momentLabels = new Map(momentRows.map((row) => [String(row.id), row.name || 'Momento']));
+        const metricValue = (row, key, aliases = []) => {
+            const values = [key, ...aliases]
+                .flatMap((name) => [row.metadata?.[name], row.response_data?.[name]])
+                .filter((value) => value !== null && value !== undefined && value !== '');
+            if (values.length === 0) return null;
+            const value = Number(values[0]);
+            return Number.isFinite(value) ? Math.max(0, Math.min(100, Math.round(value))) : null;
+        };
+        const detailRows = responseRows.map((row) => {
+            const checklist = checklistMap.get(String(row.checklist_id));
+            const dueDate = row.execution_date || row.started_at || row.created_at;
+            const dueTime = dueDate ? new Date(dueDate).getTime() : now;
+            const profileId = row.profile_id || row.source_user_id;
+            const status = row.is_finished
+                ? 'Finalizado'
+                : (dueTime < now ? 'Atrasado' : (row.started_at ? 'Iniciado não finalizado' : 'Não iniciado'));
+            return {
+                id: String(row.id),
+                date: dueDate,
+                checklist_id: row.checklist_id,
+                checklist: checklist?.title || row.checklist_snapshot?.title || 'Checklist',
+                unit: unitLabels.get(String(checklist?.unit_id)) || '—',
+                sector: sectorLabels.get(String(checklist?.sector_id)) || '—',
+                moment: momentLabels.get(String(checklist?.moment_id)) || '—',
+                user: profileLabels.get(String(profileId)) || '—',
+                status,
+                punctuality: metricValue(row, 'punctuality', ['pontualidade']),
+                effort: metricValue(row, 'effort', ['esforco']),
+                quality: metricValue(row, 'quality', ['qualidade']),
+                score: metricValue(row, 'score', ['progress']),
+            };
+        });
 
         return {
             workspace_id: context.workspaceId,
             period,
+            filters: {
+                users: profileRows,
+                units: unitRows,
+                sectors: sectorRows,
+                moments: momentRows,
+            },
             checklists: checklistRows,
             stats: {
                 totalScheduled,
@@ -1153,8 +1583,14 @@ export const remoteChecklistRepository = {
                 sectors: buildRanking('sector', sectorLabels),
             },
             trend,
+            details: detailRows,
             recentExecutions: await mapExecutionRows(context.workspaceId, responseRows.slice(0, 12)),
         };
+    },
+
+    async getUsers() {
+        const team = await this.getTeam();
+        return Array.isArray(team?.filters?.users) ? team.filters.users : [];
     },
 
     async getTeam() {
@@ -1208,6 +1644,39 @@ export const remoteChecklistRepository = {
                 };
             })
             .sort((left, right) => right.points - left.points || left.name.localeCompare(right.name));
+    },
+
+    async updateTeamMember(id, updates = {}) {
+        const context = await getWorkspaceContext();
+        const currentResult = await requireSupabase()
+            .from('ritmika_profiles')
+            .select('id,role,managed_units,metadata')
+            .eq('workspace_id', context.workspaceId)
+            .eq('id', String(id))
+            .single();
+        const current = unwrap('updateTeamMember.current', currentResult, {
+            workspaceId: context.workspaceId,
+            profileId: String(id),
+        });
+        if (!current) throw new Error('Usuário do workspace não encontrado.');
+        const result = await requireSupabase()
+            .from('ritmika_profiles')
+            .update({
+                role: updates.role || current.role,
+                managed_units: Array.isArray(updates.managed_units) ? updates.managed_units : current.managed_units || [],
+                metadata: updates.metadata && typeof updates.metadata === 'object'
+                    ? { ...(current.metadata || {}), ...updates.metadata }
+                    : current.metadata || {},
+                updated_at: new Date().toISOString(),
+            })
+            .eq('workspace_id', context.workspaceId)
+            .eq('id', String(id))
+            .select('id,workspace_id,email,name,phone,role,is_owner,managed_units,preferences,metadata')
+            .single();
+        return unwrap('updateTeamMember', result, {
+            workspaceId: context.workspaceId,
+            profileId: String(id),
+        });
     },
 
     async getSettings() {
@@ -1271,13 +1740,277 @@ export const remoteChecklistRepository = {
                 timezone: updates.timezone || current.timezone || 'America/Sao_Paulo',
                 locale: updates.locale || current.locale || 'pt-BR',
                 settings: updates.settings && typeof updates.settings === 'object'
-                    ? updates.settings
+                    ? { ...(current.settings || {}), ...updates.settings }
                     : current.settings || {},
                 updated_at: new Date().toISOString(),
             })
             .select('*')
             .single();
         return unwrap('updateWorkspaceSettings', result, { workspaceId: context.workspaceId });
+    },
+
+    async inviteUser({ name, email, role = 'operator', managed_units = [] } = {}) {
+        const normalizedEmail = String(email || '').trim().toLocaleLowerCase();
+        if (!normalizedEmail) throw new Error('Informe o e-mail do usuário.');
+        const result = await requireSupabase().functions.invoke('invite-user', {
+            body: {
+                name: String(name || '').trim(),
+                email: normalizedEmail,
+                role,
+                managed_units: Array.isArray(managed_units) ? managed_units : [],
+            },
+        });
+        if (result.error) {
+            reportError('inviteUser', result.error, { email: normalizedEmail, role });
+            throw result.error;
+        }
+        return result.data;
+    },
+
+    async getAiAnalyses({ status = '', search = '' } = {}) {
+        const context = await getWorkspaceContext();
+        let query = requireSupabase()
+            .from('ritmika_evidence_ai_analyses')
+            .select('*')
+            .eq('workspace_id', context.workspaceId)
+            .order('created_at', { ascending: false });
+        if (status) query = query.eq('status', status);
+        const result = await query;
+        const rows = unwrap('getAiAnalyses', result, { workspaceId: context.workspaceId }) || [];
+        const normalizedSearch = String(search || '').trim().toLocaleLowerCase('pt-BR');
+        return rows.filter((row) => !normalizedSearch || [row.evidence_id, row.response_id, row.summary, row.alert, row.status].filter(Boolean).join(' ').toLocaleLowerCase('pt-BR').includes(normalizedSearch));
+    },
+
+    async getCourses() {
+        const context = await getWorkspaceContext();
+        const client = requireSupabase();
+        const [coursesResult, modulesResult, lessonsResult] = await Promise.all([
+            client.from('ritmika_lms_courses').select('*').eq('workspace_id', context.workspaceId).order('title', { ascending: true }),
+            client.from('ritmika_lms_modules').select('id,course_id').eq('workspace_id', context.workspaceId).is('deleted_at', null),
+            client.from('ritmika_lms_lessons').select('id,course_id').eq('workspace_id', context.workspaceId).is('deleted_at', null),
+        ]);
+        const courses = unwrap('getCourses.courses', coursesResult, { workspaceId: context.workspaceId }) || [];
+        const modules = unwrap('getCourses.modules', modulesResult, { workspaceId: context.workspaceId }) || [];
+        const lessons = unwrap('getCourses.lessons', lessonsResult, { workspaceId: context.workspaceId }) || [];
+        return courses.map((course) => ({
+            ...course,
+            module_count: modules.filter((module) => String(module.course_id) === String(course.id)).length,
+            lesson_count: lessons.filter((lesson) => String(lesson.course_id) === String(course.id)).length,
+        }));
+    },
+
+    async getCourseContent(courseId) {
+        const context = await getWorkspaceContext();
+        const client = requireSupabase();
+        const profile = await getProfileForUser(context.workspaceId, context.userId);
+        const [modulesResult, lessonsResult, progressResult] = await Promise.all([
+            client.from('ritmika_lms_modules').select('*').eq('workspace_id', context.workspaceId).eq('course_id', String(courseId)).is('deleted_at', null).order('position', { ascending: true }),
+            client.from('ritmika_lms_lessons').select('*').eq('workspace_id', context.workspaceId).eq('course_id', String(courseId)).is('deleted_at', null).order('position', { ascending: true }),
+            profile
+                ? client.from('ritmika_lms_lesson_progress').select('*').eq('workspace_id', context.workspaceId).eq('profile_id', profile.id)
+                : Promise.resolve({ data: [], error: null }),
+        ]);
+        const modules = unwrap('getCourseContent.modules', modulesResult, { workspaceId: context.workspaceId, courseId: String(courseId) }) || [];
+        const lessons = unwrap('getCourseContent.lessons', lessonsResult, { workspaceId: context.workspaceId, courseId: String(courseId) }) || [];
+        const progress = unwrap('getCourseContent.progress', progressResult, { workspaceId: context.workspaceId, courseId: String(courseId) }) || [];
+        const progressMap = new Map(progress.map((row) => [String(row.lesson_id), row]));
+        return modules.map((module) => ({
+            ...module,
+            lessons: lessons
+                .filter((lesson) => String(lesson.module_id) === String(module.id))
+                .map((lesson) => ({ ...lesson, progress: progressMap.get(String(lesson.id)) || null })),
+        }));
+    },
+
+    async updateLessonProgress(lessonId, updates = {}) {
+        const context = await getWorkspaceContext();
+        const profile = await getProfileForUser(context.workspaceId, context.userId);
+        if (!profile) throw new Error('Perfil do workspace não encontrado.');
+        const progressPercent = Math.min(Math.max(Number(updates.progress_percent || 0), 0), 100);
+        const result = await requireSupabase()
+            .from('ritmika_lms_lesson_progress')
+            .upsert({
+                workspace_id: context.workspaceId,
+                profile_id: profile.id,
+                lesson_id: String(lessonId),
+                progress_percent: progressPercent,
+                last_position_seconds: Math.max(Number(updates.last_position_seconds || 0), 0),
+                completed_at: progressPercent >= 100 ? new Date().toISOString() : null,
+                metadata: updates.metadata && typeof updates.metadata === 'object' ? updates.metadata : {},
+                updated_at: new Date().toISOString(),
+            }, { onConflict: 'workspace_id,profile_id,lesson_id' })
+            .select('*')
+            .single();
+        return unwrap('updateLessonProgress', result, { workspaceId: context.workspaceId, lessonId: String(lessonId) });
+    },
+
+    async getIdeas({ status = '', search = '' } = {}) {
+        const context = await getWorkspaceContext();
+        const profile = await getProfileForUser(context.workspaceId, context.userId);
+        let query = requireSupabase()
+            .from('ritmika_product_ideas')
+            .select('*')
+            .eq('workspace_id', context.workspaceId)
+            .order('created_at', { ascending: false });
+        if (status) query = query.eq('status', status);
+        const result = await query;
+        const ideas = unwrap('getIdeas', result, { workspaceId: context.workspaceId }) || [];
+        const votesResult = await requireSupabase()
+            .from('ritmika_product_idea_votes')
+            .select('idea_id,profile_id')
+            .eq('workspace_id', context.workspaceId);
+        const votes = unwrap('getIdeas.votes', votesResult, { workspaceId: context.workspaceId }) || [];
+        const normalizedSearch = String(search || '').trim().toLocaleLowerCase('pt-BR');
+        return ideas
+            .map((idea) => {
+                const ideaVotes = votes.filter((vote) => String(vote.idea_id) === String(idea.id));
+                return {
+                    ...idea,
+                    vote_count: ideaVotes.length,
+                    voted: Boolean(profile && ideaVotes.some((vote) => String(vote.profile_id) === String(profile.id))),
+                };
+            })
+            .filter((idea) => !normalizedSearch || [idea.title, idea.description, idea.category].filter(Boolean).join(' ').toLocaleLowerCase('pt-BR').includes(normalizedSearch));
+    },
+
+    async createIdea(payload = {}) {
+        const context = await getWorkspaceContext();
+        const profile = await getProfileForUser(context.workspaceId, context.userId);
+        const title = String(payload.title || '').trim();
+        if (!title) throw new Error('Informe um título para a sugestão.');
+        const result = await requireSupabase()
+            .from('ritmika_product_ideas')
+            .insert({
+                workspace_id: context.workspaceId,
+                author_profile_id: profile?.id || null,
+                title,
+                description: payload.description || null,
+                category: payload.category || null,
+                status: payload.status || 'open',
+                metadata: payload.metadata && typeof payload.metadata === 'object' ? payload.metadata : {},
+            })
+            .select('*')
+            .single();
+        return unwrap('createIdea', result, { workspaceId: context.workspaceId });
+    },
+
+    async toggleIdeaVote(ideaId) {
+        const context = await getWorkspaceContext();
+        const profile = await getProfileForUser(context.workspaceId, context.userId);
+        if (!profile) throw new Error('Perfil do workspace não encontrado.');
+        const client = requireSupabase();
+        const currentResult = await client
+            .from('ritmika_product_idea_votes')
+            .select('id')
+            .eq('workspace_id', context.workspaceId)
+            .eq('idea_id', String(ideaId))
+            .eq('profile_id', profile.id)
+            .maybeSingle();
+        const current = unwrap('toggleIdeaVote.current', currentResult, { workspaceId: context.workspaceId, ideaId: String(ideaId) });
+        if (current) {
+            const result = await client.from('ritmika_product_idea_votes').delete().eq('workspace_id', context.workspaceId).eq('id', current.id);
+            unwrap('toggleIdeaVote.remove', result, { workspaceId: context.workspaceId, ideaId: String(ideaId) });
+            return { voted: false };
+        }
+        const result = await client
+            .from('ritmika_product_idea_votes')
+            .insert({ workspace_id: context.workspaceId, idea_id: String(ideaId), profile_id: profile.id })
+            .select('*')
+            .single();
+        unwrap('toggleIdeaVote.add', result, { workspaceId: context.workspaceId, ideaId: String(ideaId) });
+        return { voted: true };
+    },
+
+    async getNewsEntries({ category = '', search = '' } = {}) {
+        const context = await getWorkspaceContext();
+        const client = requireSupabase();
+        const result = await client
+            .from('ritmika_product_news_entries')
+            .select('*')
+            .or(`workspace_id.is.null,workspace_id.eq.${context.workspaceId}`)
+            .eq('is_published', true)
+            .order('published_at', { ascending: false, nullsFirst: false });
+        const rows = unwrap('getNewsEntries', result, { workspaceId: context.workspaceId }) || [];
+        const normalizedSearch = String(search || '').trim().toLocaleLowerCase('pt-BR');
+        return rows.filter((row) => {
+            if (category && row.category !== category) return false;
+            if (!normalizedSearch) return true;
+            return [row.title, row.summary, row.body].filter(Boolean).join(' ').toLocaleLowerCase('pt-BR').includes(normalizedSearch);
+        });
+    },
+
+    async getSupportSettings() {
+        const context = await getWorkspaceContext();
+        const result = await requireSupabase()
+            .from('ritmika_support_settings')
+            .select('*')
+            .eq('workspace_id', context.workspaceId)
+            .maybeSingle();
+        return unwrap('getSupportSettings', result, { workspaceId: context.workspaceId });
+    },
+
+    async getAiCreditSummary() {
+        const context = await getWorkspaceContext();
+        const result = await requireSupabase()
+            .from('ritmika_ai_credit_wallets')
+            .select('*')
+            .eq('workspace_id', context.workspaceId)
+            .maybeSingle();
+        const wallet = unwrap('getAiCreditSummary', result, { workspaceId: context.workspaceId });
+        if (!wallet) return null;
+        const availableCredits = Math.max(
+            Number(wallet.included_credits || 0)
+            + Number(wallet.purchased_credits || 0)
+            - Number(wallet.consumed_credits || 0),
+            0,
+        );
+        return {
+            ...wallet,
+            available_credits: availableCredits,
+        };
+    },
+
+    async getBillingSettings() {
+        const context = await getWorkspaceContext();
+        const result = await requireSupabase()
+            .from('ritmika_workspace_billing')
+            .select('*')
+            .eq('workspace_id', context.workspaceId)
+            .maybeSingle();
+        return unwrap('getBillingSettings', result, { workspaceId: context.workspaceId });
+    },
+
+    async getApiSettings() {
+        const context = await getWorkspaceContext();
+        const result = await requireSupabase()
+            .from('ritmika_workspace_api_settings')
+            .select('workspace_id,endpoint_url,webhook_url,public_key,metadata,updated_at')
+            .eq('workspace_id', context.workspaceId)
+            .maybeSingle();
+        return unwrap('getApiSettings', result, { workspaceId: context.workspaceId });
+    },
+
+    async updateApiSettings(updates = {}) {
+        const context = await getWorkspaceContext();
+        const currentResult = await requireSupabase()
+            .from('ritmika_workspace_api_settings')
+            .select('*')
+            .eq('workspace_id', context.workspaceId)
+            .maybeSingle();
+        const current = unwrap('updateApiSettings.current', currentResult, { workspaceId: context.workspaceId }) || {};
+        const result = await requireSupabase()
+            .from('ritmika_workspace_api_settings')
+            .upsert({
+                workspace_id: context.workspaceId,
+                endpoint_url: updates.endpoint_url === undefined ? current.endpoint_url || null : updates.endpoint_url || null,
+                webhook_url: updates.webhook_url === undefined ? current.webhook_url || null : updates.webhook_url || null,
+                public_key: updates.public_key === undefined ? current.public_key || null : updates.public_key || null,
+                metadata: updates.metadata && typeof updates.metadata === 'object' ? { ...(current.metadata || {}), ...updates.metadata } : current.metadata || {},
+                updated_at: new Date().toISOString(),
+            }, { onConflict: 'workspace_id' })
+            .select('workspace_id,endpoint_url,webhook_url,public_key,metadata,updated_at')
+            .single();
+        return unwrap('updateApiSettings', result, { workspaceId: context.workspaceId });
     },
 
     async uploadEvidence({ responseId, checklistId, itemId, file, kind, title } = {}) {

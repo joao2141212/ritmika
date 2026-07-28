@@ -3,7 +3,7 @@
 Reconstrução local incremental do fluxo de checklists, sem exportar banco,
 sessão autenticada ou dados de clientes do Koncluí.
 
-## Rodar o modo local
+## Rodar o app conectado ao Supabase
 
 ```bash
 cd /Users/pedroduarte/Documents/ritmika/client
@@ -11,19 +11,22 @@ npm install
 npm run dev -- --host 127.0.0.1
 ```
 
-O modo local é o padrão. Ele usa fixtures sintéticas e persiste checklists e
-contagens no `localStorage` do navegador com chaves `ritmika.production.*`.
+O app usa Supabase e autenticação real por padrão. Configure `VITE_SUPABASE_URL`
+e `VITE_SUPABASE_ANON_KEY` no arquivo local ignorado pelo Git antes de abrir a
+aplicação. Não existe login demo nem fallback de dados sintéticos no runtime.
 
-## Primeiro fluxo validado
+## Fluxos remotos implementados
 
-- `/checklists`: lista e busca;
-- `/checklists/new`: criação local;
-- `/checklists/:id/contagem`: contagem sintética;
-- `/checklists/:id/historico`: histórico persistente após reload.
+- `/`: dashboard com dados reais do Supabase;
+- `/checklists`: lista e busca remotas;
+- `/checklists/new` e `/checklists/:id/edit`: criação e edição remotas;
+- `/checklists/:id/execute`: salvar, retomar, concluir e repetir execução;
+- `/checklists/:id/contagem` e `/checklists/:id/historico`: contagem e histórico remotos;
+- `/notifications`, `/team` e `/settings`: serviços remotos com escopo de workspace.
 
-Para preservar a integração existente, o modo remoto continua disponível com
-`VITE_DATA_MODE=remote` e as variáveis Supabase correspondentes. Esse caminho
-não foi usado pelo smoke local.
+O runtime não possui login demo, fixtures sintéticas ou fallback local. As
+variáveis Supabase precisam estar configuradas no arquivo local ignorado pelo
+Git antes de abrir a aplicação.
 
 O inventário do fork e os limites de evidência estão em
 `APP_FORK_MANIFEST.md` e `FORK_NOTES.md`.

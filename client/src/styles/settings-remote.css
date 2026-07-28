@@ -316,3 +316,341 @@
         justify-content: center;
     }
 }
+.settings-tab-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 20px 0;
+}
+
+.settings-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 38px;
+    padding: 0 13px;
+    border: 1px solid #dfe3ea;
+    border-radius: 8px;
+    background: #fff;
+    color: #5f6878;
+    cursor: pointer;
+    font: inherit;
+}
+
+.settings-tab.is-active {
+    border-color: #1f6feb;
+    background: #eff6ff;
+    color: #1f6feb;
+    font-weight: 700;
+}
+
+.settings-entity-panel {
+    display: grid;
+    gap: 18px;
+}
+
+.settings-entity-toolbar,
+.settings-inline-actions,
+.settings-entity-row,
+.settings-user-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.settings-entity-form {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    align-items: end;
+    padding: 16px;
+    border: 1px solid #e8eaf0;
+    border-radius: 10px;
+    background: #fafbfc;
+}
+
+.settings-entity-list,
+.settings-user-list {
+    display: grid;
+    gap: 0;
+    border: 1px solid #e8eaf0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.settings-entity-row,
+.settings-user-row {
+    min-height: 66px;
+    padding: 12px 14px;
+    border-bottom: 1px solid #f0f1f4;
+    background: #fff;
+}
+
+.settings-entity-row:last-child,
+.settings-user-row:last-child {
+    border-bottom: 0;
+}
+
+.settings-entity-row > div:first-child,
+.settings-user-row > div:first-child {
+    display: grid;
+    gap: 4px;
+    min-width: 180px;
+}
+
+.settings-entity-row small,
+.settings-user-row small {
+    color: #747d8e;
+    font-size: 12px;
+}
+
+.settings-icon-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid #dfe3ea;
+    border-radius: 7px;
+    background: #fff;
+    color: #5c6676;
+    cursor: pointer;
+}
+
+.settings-icon-action.danger {
+    color: #b42318;
+}
+
+.settings-empty-note {
+    padding: 24px;
+    border: 1px dashed #d8dce5;
+    border-radius: 10px;
+    color: #6e7788;
+    text-align: center;
+}
+
+.settings-user-row select {
+    min-width: 130px;
+    min-height: 36px;
+    border: 1px solid #dfe3ea;
+    border-radius: 7px;
+    background: #fff;
+    color: #303847;
+    padding: 0 8px;
+}
+
+.settings-user-row select[multiple] {
+    min-height: 58px;
+}
+
+.settings-remote-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 18px;
+}
+
+.settings-optional-warning {
+    padding: 11px 14px;
+    border: 1px solid #f0c36d;
+    border-radius: 8px;
+    background: #fff9e8;
+    color: #76520b;
+}
+
+.settings-credit-grid,
+.settings-billing-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.settings-credit-grid > div,
+.settings-billing-grid > div {
+    display: grid;
+    gap: 6px;
+    padding: 16px;
+    border: 1px solid #e8eaf0;
+    border-radius: 10px;
+    background: #fafbfc;
+}
+
+.settings-credit-grid span,
+.settings-billing-grid span {
+    color: #70788a;
+    font-size: 12px;
+}
+
+.settings-credit-grid strong,
+.settings-billing-grid strong {
+    color: #303847;
+    font-size: 20px;
+}
+
+@media (max-width: 900px) {
+    .settings-entity-form {
+        grid-template-columns: 1fr;
+    }
+
+    .settings-user-row {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .settings-user-row select,
+    .settings-user-row .settings-save {
+        width: 100%;
+    }
+
+    .settings-credit-grid,
+    .settings-billing-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+.settings-user-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 18px 0;
+}
+
+.settings-search-field {
+    display: flex;
+    flex: 1 1 260px;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 11px;
+    border: 1px solid #dce4ee;
+    border-radius: 9px;
+    background: #fff;
+    color: #738297;
+}
+
+.settings-search-field input {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    color: #293b52;
+}
+
+.settings-user-tabs {
+    display: inline-flex;
+    gap: 3px;
+    padding: 3px;
+    border: 1px solid #dce4ee;
+    border-radius: 9px;
+    background: #f8fafc;
+}
+
+.settings-user-tabs button {
+    min-height: 32px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: #657386;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.settings-user-tabs button.is-active {
+    background: #fff;
+    color: #173b66;
+    box-shadow: 0 1px 3px rgba(25, 48, 77, 0.12);
+}
+
+.settings-user-unit-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #64748a;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.settings-user-unit-filter select {
+    min-height: 38px;
+    padding: 0 9px;
+    border: 1px solid #dce4ee;
+    border-radius: 8px;
+    background: #fff;
+    color: #32465e;
+}
+
+.settings-dialog-backdrop {
+    position: fixed;
+    z-index: 50;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgba(20, 34, 52, 0.38);
+}
+
+.settings-dialog {
+    width: min(100%, 500px);
+    max-height: min(720px, calc(100vh - 40px));
+    overflow: auto;
+    padding: 22px;
+    border: 1px solid #e0e7ef;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 22px 70px rgba(21, 42, 69, 0.25);
+}
+
+.settings-dialog-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 17px;
+}
+
+.settings-dialog-header h2 {
+    margin: 0;
+    color: #1b2b40;
+    font-size: 20px;
+}
+
+.settings-dialog-help {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    margin: 13px 0 0;
+    color: #728095;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.settings-dialog-actions {
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.settings-dialog .settings-field select[multiple] {
+    min-height: 88px;
+    padding: 8px;
+}
+
+@media (max-width: 760px) {
+    .settings-user-controls {
+        align-items: stretch;
+    }
+
+    .settings-user-tabs,
+    .settings-user-tabs button,
+    .settings-user-unit-filter,
+    .settings-user-unit-filter select {
+        flex: 1 1 100%;
+    }
+
+    .settings-user-tabs button {
+        flex: 1;
+    }
+
+    .settings-user-unit-filter {
+        justify-content: space-between;
+    }
+}

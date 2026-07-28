@@ -94,10 +94,14 @@ const ChecklistBuilderWorkspace = () => {
         title: '',
         description: '',
         status: 'inativo',
-        unit: 'Unidade local',
-        sector: 'Operação',
-        moment: 'Outros',
-        responsible: 'Gestor Local',
+        unit: '',
+        unitId: '',
+        sector: '',
+        sectorId: '',
+        moment: '',
+        momentId: '',
+        responsible: '',
+        responsibleProfileId: '',
         scheduleMode: 'recorrente',
         frequency: 'semanal',
         interval: 1,
@@ -108,6 +112,28 @@ const ChecklistBuilderWorkspace = () => {
         adhocMode: 'disabled',
     });
     const [items, setItems] = useState([emptyItem()]);
+    const [references, setReferences] = useState({ units: [], sectors: [], moments: [], profiles: [] });
+    const [referencesLoading, setReferencesLoading] = useState(true);
+
+    useEffect(() => {
+        let active = true;
+        const loadReferences = async () => {
+            try {
+                const loaded = await checklistProducaoService.getReferences();
+                if (active) setReferences(loaded);
+            } catch (loadError) {
+                logger.error({
+                    fn: 'ChecklistBuilderWorkspace.loadReferences',
+                    status: 'error',
+                    error: loadError instanceof Error ? loadError.message : String(loadError),
+                });
+            } finally {
+                if (active) setReferencesLoading(false);
+            }
+        };
+        loadReferences();
+        return () => { active = false; };
+    }, []);
 
     useEffect(() => {
         if (!editing) return undefined;
@@ -125,9 +151,15 @@ const ChecklistBuilderWorkspace = () => {
                     description: checklist.description || checklist.descricao || '',
                     status: ['ativo', 'active'].includes(checklist.status) ? 'ativo' : 'inativo',
                     unit: checklist.unit_name || checklist.unit || current.unit,
+                    unitId: checklist.unit_id ? String(checklist.unit_id) : current.unitId,
                     sector: checklist.sector_name || checklist.sector || current.sector,
+                    sectorId: checklist.sector_id ? String(checklist.sector_id) : current.sectorId,
                     moment: checklist.moment_name || checklist.moment || current.moment,
+                    momentId: checklist.moment_id ? String(checklist.moment_id) : current.momentId,
                     responsible: checklist.user_name || checklist.responsaveis?.[0] || current.responsible,
+                    responsibleProfileId: checklist.responsible_profile_id
+                        ? String(checklist.responsible_profile_id)
+                        : current.responsibleProfileId,
                     scheduleMode: checklist.schedule_recurrence_type || schedule.mode || current.scheduleMode,
                     frequency: checklist.frequency || schedule.frequency || current.frequency,
                     interval: Number(checklist.schedule_interval || schedule.interval || 1),
@@ -147,7 +179,7 @@ const ChecklistBuilderWorkspace = () => {
                     checklistId: id,
                     error: loadError instanceof Error ? loadError.message : String(loadError),
                 });
-                if (active) setError('Não foi possível abrir este checklist local.');
+                if (active) setError('Não foi possível abrir este checklist remoto.');
             } finally {
                 if (active) setLoading(false);
             }
@@ -157,6 +189,15 @@ const ChecklistBuilderWorkspace = () => {
     }, [editing, id]);
 
     const updateForm = (field, value) => setForm((current) => ({ ...current, [field]: value }));
+
+    const updateReference = (idField, labelField, options, value) => {
+        const selected = options.find((option) => option.id === value);
+        setForm((current) => ({
+            ...current,
+            [idField]: value,
+            [labelField]: selected?.name || '',
+        }));
+    };
 
     const updateItem = (itemId, field, value) => {
         setItems((current) => current.map((item) => (
@@ -208,9 +249,13 @@ const ChecklistBuilderWorkspace = () => {
             descricao: form.description.trim(),
             status,
             unit: form.unit,
+            unit_id: form.unitId || null,
             sector: form.sector,
+            sector_id: form.sectorId || null,
             moment: form.moment,
+            moment_id: form.momentId || null,
             user_name: form.responsible,
+            responsible_profile_id: form.responsibleProfileId || null,
             responsaveis: form.responsible ? [form.responsible] : [],
             schedule_recurrence_type: form.scheduleMode,
             schedule_time: form.time,
@@ -270,7 +315,7 @@ const ChecklistBuilderWorkspace = () => {
     const previewItems = useMemo(() => items.filter((item) => item.type !== 'separator'), [items]);
 
     if (loading) {
-        return <section className="ritmika-light-mode"><div className="empty-state">Abrindo checklist local…</div></section>;
+        return <section className="ritmika-light-mode"><div className="empty-state">Abrindo checklist remoto…</div></section>;
     }
 
     if (error) {
@@ -421,18 +466,31 @@ const ChecklistBuilderWorkspace = () => {
 
                     <section className="builder-panel">
                         <h2><Layers3 size={19} /> Contexto e atribuição</h2>
+                        {referencesLoading && <p className="builder-subtitle">Carregando referências do workspace…</p>}
                         <div className="field-grid three">
                             <label className="field-label">Unidade
-                                <input className="light-input" value={form.unit} onChange={(event) => updateForm('unit', event.target.value)} />
+                                <select className="light-select" value={form.unitId} disabled={referencesLoading} onChange={(event) => updateReference('unitId', 'unit', references.units, event.target.value)}>
+                                    <option value="">Selecione uma unidade</option>
+                                    {references.units.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}
+                                </select>
                             </label>
                             <label className="field-label">Setor
-                                <input className="light-input" value={form.sector} onChange={(event) => updateForm('sector', event.target.value)} />
+                                <select className="light-select" value={form.sectorId} disabled={referencesLoading} onChange={(event) => updateReference('sectorId', 'sector', references.sectors, event.target.value)}>
+                                    <option value="">Selecione um setor</option>
+                                    {references.sectors.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}
+                                </select>
                             </label>
                             <label className="field-label">Momento
-                                <input className="light-input" value={form.moment} onChange={(event) => updateForm('moment', event.target.value)} />
+                                <select className="light-select" value={form.momentId} disabled={referencesLoading} onChange={(event) => updateReference('momentId', 'moment', references.moments, event.target.value)}>
+                                    <option value="">Selecione um momento</option>
+                                    {references.moments.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}
+                                </select>
                             </label>
                             <label className="field-label"><span><UserRound size={14} /> Responsável padrão</span>
-                                <input className="light-input" value={form.responsible} onChange={(event) => updateForm('responsible', event.target.value)} />
+                                <select className="light-select" value={form.responsibleProfileId} disabled={referencesLoading} onChange={(event) => updateReference('responsibleProfileId', 'responsible', references.profiles, event.target.value)}>
+                                    <option value="">Selecione um responsável</option>
+                                    {references.profiles.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}
+                                </select>
                             </label>
                             <label className="field-label">Execução pontual
                                 <select className="light-select" value={form.adhocMode} onChange={(event) => updateForm('adhocMode', event.target.value)}>

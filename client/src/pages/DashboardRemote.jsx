@@ -7,13 +7,23 @@ import {
     CheckCircle2,
     ChevronRight,
     Clock3,
+    Download,
+    LayoutDashboard,
+    LifeBuoy,
     LoaderCircle,
+    MessageCircle,
     RefreshCw,
+    Send,
+    SlidersHorizontal,
+    X,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
-import { dashboardService } from '../services/checklistProducaoService';
+import { dashboardService, settingsService } from '../services/checklistProducaoService';
+import { logger } from '../lib/logger';
 import '../styles/dashboard-remote.css';
+import '../styles/dashboard-filters.css';
+import '../styles/dashboard-parity.css';
 
 const EMPTY_DATA = {
     stats: {
@@ -28,6 +38,49 @@ const EMPTY_DATA = {
     tasks: { late: [], now: [], upcoming: [] },
     rankings: { users: [], units: [], sectors: [] },
     trend: [],
+    filters: { users: [], units: [], sectors: [], moments: [] },
+    details: [],
+};
+
+const DEFAULT_WIDGETS = {
+    summary: true,
+    alerts: true,
+    completion: true,
+    rankings: true,
+    trend: true,
+    details: true,
+    coverage: true,
+};
+
+const WIDGET_CATALOG = [
+    ['summary', 'Situação geral', 'Agendados, pendentes, andamento, atrasos e finalizados.'],
+    ['completion', 'Taxa de conclusão', 'Percentual e volume de execuções finalizadas.'],
+    ['alerts', 'Alertas de pendência', 'Fila remota de atividades atrasadas e próximas.'],
+    ['rankings', 'Rankings', 'Desempenho por usuários, unidades e setores.'],
+    ['trend', 'Evolução de desempenho', 'Indicadores diários do período selecionado.'],
+    ['details', 'Detalhamento', 'Tabela paginada com seleção, colunas e exportação.'],
+    ['coverage', 'Cobertura de dados', 'Quantidade de checklists disponíveis para execução.'],
+];
+
+const DETAIL_COLUMNS = [
+    ['date', 'Data'],
+    ['checklist', 'Checklist'],
+    ['unit', 'Unidade'],
+    ['sector', 'Setor'],
+    ['moment', 'Momento'],
+    ['user', 'Usuário'],
+    ['status', 'Situação'],
+    ['punctuality', 'Pontualidade'],
+    ['effort', 'Esforço'],
+    ['quality', 'Qualidade'],
+];
+
+const DEFAULT_DETAIL_COLUMNS = Object.fromEntries(DETAIL_COLUMNS.map(([key]) => [key, true]));
+
+const formatDetailCell = (item, key) => {
+    if (key === 'date') return item.date ? new Date(item.date).toLocaleString('pt-BR') : '—';
+    if (['punctuality', 'effort', 'quality'].includes(key)) return item[key] === null ? '—' : `${item[key]}%`;
+    return item[key] || '—';
 };
 
 const TaskCard = ({ task, status }) => {
@@ -71,6 +124,21 @@ const DashboardRemote = () => {
     const [data, setData] = useState(EMPTY_DATA);
     const [activeTab, setActiveTab] = useState('todo');
     const [periodDays, setPeriodDays] = useState(30);
+    const [dashboardFilters, setDashboardFilters] = useState({ unitId: '', sectorId: '', profileId: '', momentId: '', from: '', to: '' });
+    const [widgetPrefs, setWidgetPrefs] = useState(DEFAULT_WIDGETS);
+    const [customizationOpen, setCustomizationOpen] = useState(false);
+    const [savingWidgets, setSavingWidgets] = useState(false);
+    const [detailPage, setDetailPage] = useState(0);
+    const [detailPageSize, setDetailPageSize] = useState(10);
+    const [detailColumnsOpen, setDetailColumnsOpen] = useState(false);
+    const [detailColumns, setDetailColumns] = useState(DEFAULT_DETAIL_COLUMNS);
+    const [selectedDetailIds, setSelectedDetailIds] = useState([]);
+    const [koruOpen, setKoruOpen] = useState(false);
+    const [koruDraft, setKoruDraft] = useState('');
+    const [koruBusy, setKoruBusy] = useState(false);
+    const [koruMessages, setKoruMessages] = useState([
+        { id: 'koru-welcome', role: 'assistant', text: 'Olá. Sou a Koru, sua assistente operacional. Posso consultar os dados reais deste workspace.' },
+    ]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -78,24 +146,117 @@ const DashboardRemote = () => {
         try {
             setLoading(true);
             setError('');
-            setData(await dashboardService.getData(periodDays));
+            setData(await dashboardService.getData({ periodDays, ...dashboardFilters }));
         } catch (loadError) {
             setError(loadError instanceof Error ? loadError.message : 'Não foi possível carregar o dashboard.');
             toast.error('Não foi possível carregar o dashboard.');
         } finally {
             setLoading(false);
         }
-    }, [periodDays]);
+    }, [dashboardFilters, periodDays]);
 
     useEffect(() => {
         loadDashboard();
     }, [loadDashboard]);
 
+    useEffect(() => {
+        let active = true;
+        settingsService.get()
+            .then((settings) => {
+                if (!active) return;
+                const storedWidgets = settings?.workspace?.settings?.dashboard?.widgets;
+                if (storedWidgets && typeof storedWidgets === 'object') {
+                    setWidgetPrefs({ ...DEFAULT_WIDGETS, ...storedWidgets });
+                }
+            })
+            .catch((settingsError) => {
+                logger.error({
+                    fn: 'DashboardRemote.loadWidgetPreferences',
+                    status: 'error',
+                    error: settingsError instanceof Error ? settingsError.message : String(settingsError),
+                });
+            });
+        return () => {
+            active = false;
+        };
+    }, []);
+
     const stats = data.stats || EMPTY_DATA.stats;
     const tasks = data.tasks || EMPTY_DATA.tasks;
     const rankings = data.rankings || EMPTY_DATA.rankings;
     const trend = data.trend || EMPTY_DATA.trend;
+    const availableFilters = data.filters || EMPTY_DATA.filters;
     const taskList = activeTab === 'upcoming' ? tasks.upcoming : tasks.late.concat(tasks.now);
+    const details = data.details || EMPTY_DATA.details;
+    const detailPageCount = Math.max(1, Math.ceil(details.length / detailPageSize));
+    const visibleDetails = details.slice(detailPage * detailPageSize, (detailPage + 1) * detailPageSize);
+    const visibleDetailIds = visibleDetails.map((item) => item.id);
+    const allVisibleDetailsSelected = visibleDetailIds.length > 0 && visibleDetailIds.every((id) => selectedDetailIds.includes(id));
+
+    const updateDashboardFilter = (name, value) => {
+        setDashboardFilters((current) => ({ ...current, [name]: value }));
+    };
+
+    const clearDashboardFilters = () => {
+        setDashboardFilters({ unitId: '', sectorId: '', profileId: '', momentId: '', from: '', to: '' });
+    };
+
+    const toggleWidget = (widgetId) => {
+        setWidgetPrefs((current) => ({ ...current, [widgetId]: !current[widgetId] }));
+    };
+
+    const saveWidgetPreferences = async () => {
+        try {
+            setSavingWidgets(true);
+            await settingsService.updateWorkspaceSettings({ settings: { dashboard: { widgets: widgetPrefs } } });
+            setCustomizationOpen(false);
+            toast.success('Dashboard personalizado.');
+        } catch (saveError) {
+            logger.error({
+                fn: 'DashboardRemote.saveWidgetPreferences',
+                status: 'error',
+                error: saveError instanceof Error ? saveError.message : String(saveError),
+            });
+            toast.error('Não foi possível salvar a personalização.');
+        } finally {
+            setSavingWidgets(false);
+        }
+    };
+
+    const toggleDetailSelection = (id) => {
+        setSelectedDetailIds((current) => current.includes(id)
+            ? current.filter((item) => item !== id)
+            : [...current, id]);
+    };
+
+    const toggleAllDetailSelection = () => {
+        setSelectedDetailIds((current) => {
+            if (allVisibleDetailsSelected) return current.filter((id) => !visibleDetailIds.includes(id));
+            return Array.from(new Set([...current, ...visibleDetailIds]));
+        });
+    };
+
+    const exportDetails = () => {
+        const escapeCsv = (value) => `"${String(value ?? '').replaceAll('"', '""')}"`;
+        const rows = details.map((item) => DETAIL_COLUMNS.map(([key]) => {
+            if (key === 'date') return item.date ? new Date(item.date).toLocaleString('pt-BR') : '';
+            if (['punctuality', 'effort', 'quality'].includes(key)) return item[key] === null ? '—' : `${item[key]}%`;
+            return item[key];
+        }));
+        const csv = '\uFEFF' + [
+            DETAIL_COLUMNS.map(([, label]) => label),
+            ...rows,
+        ].map((row) => row.map(escapeCsv).join(';')).join('\n');
+        const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'ritmika-dashboard-detalhamento.csv';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 0);
+        toast.success('Detalhamento exportado.');
+    };
 
     const exportDashboard = () => {
         const escapeCsv = (value) => `"${String(value ?? '').replaceAll('"', '""')}"`;
@@ -124,6 +285,36 @@ const DashboardRemote = () => {
         toast.success('Atividades exportadas.');
     };
 
+    const sendKoruMessage = async (messageOverride = '') => {
+        const message = String(messageOverride || koruDraft).trim();
+        if (!message || koruBusy) return;
+        setKoruDraft('');
+        setKoruMessages((current) => [...current, { id: `koru-user-${Date.now()}`, role: 'user', text: message }]);
+        try {
+            setKoruBusy(true);
+            const result = await dashboardService.askKoru(message, { periodDays, filters: dashboardFilters });
+            setKoruMessages((current) => [...current, {
+                id: `koru-assistant-${Date.now()}`,
+                role: 'assistant',
+                text: result?.reply || 'Não encontrei uma resposta nos dados operacionais.',
+            }]);
+        } catch (koruError) {
+            logger.error({
+                fn: 'DashboardRemote.sendKoruMessage',
+                status: 'error',
+                messageLength: message.length,
+                error: koruError instanceof Error ? koruError.message : String(koruError),
+            });
+            setKoruMessages((current) => [...current, {
+                id: `koru-error-${Date.now()}`,
+                role: 'assistant',
+                text: 'Não consegui consultar a fonte operacional agora. Tente novamente.',
+            }]);
+        } finally {
+            setKoruBusy(false);
+        }
+    };
+
     return (
         <div className="dashboard-remote ritmika-light-mode">
             <header className="remote-dashboard-header">
@@ -146,8 +337,52 @@ const DashboardRemote = () => {
                             <option value="all">Todo o histórico</option>
                         </select>
                     </label>
+                    <div className="remote-dashboard-filters" aria-label="Filtros do dashboard">
+                        <label>
+                            <span>Unidade</span>
+                            <select value={dashboardFilters.unitId} onChange={(event) => updateDashboardFilter('unitId', event.target.value)}>
+                                <option value="">Todas</option>
+                                {availableFilters.units.map((unit) => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
+                            </select>
+                        </label>
+                        <label>
+                            <span>Setor</span>
+                            <select value={dashboardFilters.sectorId} onChange={(event) => updateDashboardFilter('sectorId', event.target.value)}>
+                                <option value="">Todos</option>
+                                {availableFilters.sectors.map((sector) => <option key={sector.id} value={sector.id}>{sector.name}</option>)}
+                            </select>
+                        </label>
+                        <label>
+                            <span>Usuário</span>
+                            <select value={dashboardFilters.profileId} onChange={(event) => updateDashboardFilter('profileId', event.target.value)}>
+                                <option value="">Todos</option>
+                                {availableFilters.users.map((profile) => <option key={profile.id} value={profile.id}>{profile.name || profile.email}</option>)}
+                            </select>
+                        </label>
+                        <label>
+                            <span>Momento</span>
+                            <select value={dashboardFilters.momentId || ''} onChange={(event) => updateDashboardFilter('momentId', event.target.value)}>
+                                <option value="">Todos</option>
+                                {availableFilters.moments.map((moment) => <option key={moment.id} value={moment.id}>{moment.name}</option>)}
+                            </select>
+                        </label>
+                        <label>
+                            <span>De</span>
+                            <input type="date" value={dashboardFilters.from} onChange={(event) => updateDashboardFilter('from', event.target.value)} />
+                        </label>
+                        <label>
+                            <span>Até</span>
+                            <input type="date" value={dashboardFilters.to} onChange={(event) => updateDashboardFilter('to', event.target.value)} />
+                        </label>
+                        <button type="button" className="remote-link-button" onClick={clearDashboardFilters} disabled={!Object.values(dashboardFilters).some(Boolean)}>
+                            Limpar filtros
+                        </button>
+                    </div>
                 </div>
                 <div className="remote-header-actions">
+                    <button type="button" className="remote-refresh-button" onClick={() => setCustomizationOpen(true)}>
+                        <SlidersHorizontal size={16} /> Personalizar dashboard
+                    </button>
                     <button
                         type="button"
                         className="remote-icon-button"
@@ -167,15 +402,15 @@ const DashboardRemote = () => {
                 </div>
             </header>
 
-            <section className="remote-summary-grid" aria-label="Resumo operacional">
+            {widgetPrefs.summary && <section className="remote-summary-grid" aria-label="Resumo operacional">
                 <StatCard label="Agendados" value={stats.totalScheduled} helper="Execuções importadas" tone="primary" />
                 <StatCard label="Pendentes" value={stats.pending} helper="Aguardando conclusão" tone="warning" />
                 <StatCard label="Em andamento" value={stats.inProgress} helper="Execuções abertas" tone="info" />
                 <StatCard label="Atrasados" value={stats.overdue} helper="Com prazo vencido" tone="danger" />
                 <StatCard label="Finalizados" value={stats.completed} helper={stats.completionRate + '% de conclusão'} tone="success" />
-            </section>
+            </section>}
 
-            <section className="remote-dashboard-panel">
+            {widgetPrefs.alerts && <section className="remote-dashboard-panel">
                 <div className="remote-panel-heading">
                     <div>
                         <p className="remote-eyebrow">Fila de trabalho</p>
@@ -221,9 +456,9 @@ const DashboardRemote = () => {
                         ))}
                     </div>
                 )}
-            </section>
+            </section>}
 
-            <section className="remote-dashboard-panel remote-rankings-panel">
+            {widgetPrefs.rankings && <section className="remote-dashboard-panel remote-rankings-panel">
                 <div className="remote-panel-heading">
                     <div>
                         <p className="remote-eyebrow">Desempenho</p>
@@ -256,9 +491,9 @@ const DashboardRemote = () => {
                         </article>
                     ))}
                 </div>
-            </section>
+            </section>}
 
-            <section className="remote-dashboard-panel remote-trend-panel">
+            {widgetPrefs.trend && <section className="remote-dashboard-panel remote-trend-panel">
                 <div className="remote-panel-heading">
                     <div>
                         <p className="remote-eyebrow">Evolução</p>
@@ -282,10 +517,72 @@ const DashboardRemote = () => {
                         ))}
                     </div>
                 )}
-            </section>
+            </section>}
+
+            {widgetPrefs.details && <section className="remote-dashboard-panel remote-detail-panel">
+                <div className="remote-panel-heading">
+                    <div>
+                        <p className="remote-eyebrow">Detalhamento</p>
+                        <h2>Execuções do período</h2>
+                    </div>
+                    <div className="remote-detail-actions">
+                        <button type="button" className="remote-refresh-button" onClick={() => setDetailColumnsOpen((current) => !current)} aria-expanded={detailColumnsOpen}>
+                            <SlidersHorizontal size={15} /> Colunas
+                        </button>
+                        <button type="button" className="remote-refresh-button" onClick={exportDetails} disabled={details.length === 0}>
+                            <Download size={15} /> Exportar
+                        </button>
+                    </div>
+                </div>
+                {detailColumnsOpen && <div className="remote-columns-menu" role="menu" aria-label="Colunas do detalhamento">
+                    {DETAIL_COLUMNS.map(([key, label]) => (
+                        <label key={key}>
+                            <input
+                                type="checkbox"
+                                checked={detailColumns[key]}
+                                onChange={() => setDetailColumns((current) => ({ ...current, [key]: !current[key] }))}
+                            />
+                            {label}
+                        </label>
+                    ))}
+                </div>}
+                {details.length === 0 ? <div className="remote-state remote-state-empty">Nenhuma execução encontrada no período.</div> : <div className="remote-detail-table-wrap">
+                    <table className="remote-detail-table">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" aria-label="Selecionar todas as linhas" checked={allVisibleDetailsSelected} onChange={toggleAllDetailSelection} /></th>
+                                {DETAIL_COLUMNS.filter(([key]) => detailColumns[key]).map(([key, label]) => <th key={key}>{label}</th>)}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {visibleDetails.map((item) => (
+                                <tr key={item.id}>
+                                    <td><input type="checkbox" aria-label={`Selecionar linha ${item.checklist}`} checked={selectedDetailIds.includes(item.id)} onChange={() => toggleDetailSelection(item.id)} /></td>
+                                    {DETAIL_COLUMNS.filter(([key]) => detailColumns[key]).map(([key]) => <td key={key}>{formatDetailCell(item, key)}</td>)}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>}
+                <div className="remote-detail-pagination">
+                    <span>{details.length === 0 ? '0' : `${detailPage * detailPageSize + 1}–${Math.min((detailPage + 1) * detailPageSize, details.length)} de ${details.length}`}</span>
+                    <label>Linhas por página
+                        <select value={detailPageSize} onChange={(event) => { setDetailPageSize(Number(event.target.value)); setDetailPage(0); }}>
+                            <option value={10}>10</option>
+                            <option value={20}>20</option>
+                            <option value={50}>50</option>
+                        </select>
+                    </label>
+                    <button type="button" className="remote-link-button" onClick={() => setDetailPage(0)} disabled={detailPage === 0}>Primeira</button>
+                    <button type="button" className="remote-link-button" onClick={() => setDetailPage((current) => Math.max(0, current - 1))} disabled={detailPage === 0}>Anterior</button>
+                    <span>Página {Math.min(detailPage + 1, detailPageCount)} de {detailPageCount}</span>
+                    <button type="button" className="remote-link-button" onClick={() => setDetailPage((current) => Math.min(detailPageCount - 1, current + 1))} disabled={detailPage >= detailPageCount - 1}>Próxima</button>
+                    <button type="button" className="remote-link-button" onClick={() => setDetailPage(detailPageCount - 1)} disabled={detailPage >= detailPageCount - 1}>Última</button>
+                </div>
+            </section>}
 
             <section className="remote-dashboard-footer-grid">
-                <article className="remote-dashboard-panel compact">
+                {widgetPrefs.completion && <article className="remote-dashboard-panel compact">
                     <div className="remote-panel-heading">
                         <div>
                             <p className="remote-eyebrow">Conclusão</p>
@@ -300,8 +597,8 @@ const DashboardRemote = () => {
                     <div className="remote-progress-track">
                         <span style={{ width: Math.min(stats.completionRate, 100) + '%' }} />
                     </div>
-                </article>
-                <article className="remote-dashboard-panel compact">
+                </article>}
+                {widgetPrefs.coverage && <article className="remote-dashboard-panel compact">
                     <div className="remote-panel-heading">
                         <div>
                             <p className="remote-eyebrow">Cobertura</p>
@@ -317,8 +614,70 @@ const DashboardRemote = () => {
                         Abrir biblioteca
                         <ChevronRight size={16} />
                     </button>
-                </article>
+                </article>}
             </section>
+            <div className="dashboard-floating-actions">
+                <button type="button" className="dashboard-support-button" onClick={() => navigate('/help')}>
+                    <LifeBuoy size={16} /> Abrir central de suporte
+                </button>
+                <button type="button" className="dashboard-koru-button" onClick={() => setKoruOpen(true)}>
+                    <MessageCircle size={17} /> Abrir Koru IA
+                </button>
+            </div>
+            {koruOpen && <div className="koru-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setKoruOpen(false); }}>
+                <section className="koru-modal" role="dialog" aria-modal="true" aria-labelledby="koru-title">
+                    <header className="koru-modal-header">
+                        <div><p className="remote-eyebrow">Assistente operacional</p><h2 id="koru-title"><MessageCircle size={19} /> Koru <span>Online</span></h2><small>Consulta dados reais do painel gestor</small></div>
+                        <button type="button" className="remote-modal-close" onClick={() => setKoruOpen(false)} aria-label="Fechar Koru"><X size={18} /></button>
+                    </header>
+                    <div className="koru-message-list" aria-live="polite">
+                        {koruMessages.map((message) => <div key={message.id} className={`koru-message ${message.role}`}><span>{message.text}</span></div>)}
+                        {koruBusy && <div className="koru-message assistant"><span>Consultando Supabase…</span></div>}
+                    </div>
+                    <div className="koru-suggestions">
+                        {['Resuma os principais alertas de hoje', 'Quais checklists mais atrasaram esta semana?', 'Como estão as unidades nos últimos 7 dias?', 'Quem precisa de acompanhamento agora?'].map((suggestion) => <button type="button" key={suggestion} onClick={() => sendKoruMessage(suggestion)} disabled={koruBusy}>{suggestion}</button>)}
+                    </div>
+                    <form className="koru-composer" onSubmit={(event) => { event.preventDefault(); sendKoruMessage(); }}>
+                        <input value={koruDraft} onChange={(event) => setKoruDraft(event.target.value)} placeholder="Mensagem para Koru" aria-label="Mensagem para Koru" />
+                        <button type="submit" disabled={koruBusy || !koruDraft.trim()} aria-label="Enviar mensagem"><Send size={16} /></button>
+                    </form>
+                </section>
+            </div>}
+            {customizationOpen && <div className="remote-dashboard-modal-backdrop" role="presentation">
+                <section className="remote-dashboard-modal" role="dialog" aria-modal="true" aria-labelledby="dashboard-customization-title">
+                    <div className="remote-dashboard-modal-header">
+                        <div>
+                            <p className="remote-eyebrow">Personalização</p>
+                            <h2 id="dashboard-customization-title"><LayoutDashboard size={20} /> Dashboard</h2>
+                            <p>Escolha os widgets ativos para este workspace. A preferência é salva no Supabase.</p>
+                        </div>
+                        <button type="button" className="remote-modal-close" aria-label="Fechar personalização" onClick={() => setCustomizationOpen(false)}>
+                            <X size={18} />
+                        </button>
+                    </div>
+                    <div className="remote-widget-catalog">
+                        {WIDGET_CATALOG.map(([id, label, description]) => (
+                            <label className="remote-widget-option" key={id}>
+                                <input type="checkbox" checked={Boolean(widgetPrefs[id])} onChange={() => toggleWidget(id)} />
+                                <span>
+                                    <strong>{label}</strong>
+                                    <small>{description}</small>
+                                </span>
+                            </label>
+                        ))}
+                    </div>
+                    <div className="remote-dashboard-modal-actions">
+                        <button type="button" className="remote-link-button" onClick={() => setWidgetPrefs(DEFAULT_WIDGETS)}>Restaurar padrão</button>
+                        <div>
+                            <button type="button" className="remote-refresh-button" onClick={() => setCustomizationOpen(false)}>Cancelar</button>
+                            <button type="button" className="remote-refresh-button primary" onClick={saveWidgetPreferences} disabled={savingWidgets}>
+                                {savingWidgets ? <LoaderCircle size={15} className="is-spinning" /> : <CheckCircle2 size={15} />}
+                                {savingWidgets ? 'Salvando…' : 'Aplicar'}
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </div>}
         </div>
     );
 };

@@ -1,10 +1,11 @@
 # data.md
 
-Repositórios e fixtures que alimentam as fachadas de serviço.
+Boundary de dados de produção do Ritmika.
 
 ## Arquivos
 
-- localChecklistRepository.js: persistência local/legada para desenvolvimento.
-- mockData.js: dados mock de fallback e prototipação.
-- productionChecklistFixtures.js: fixtures operacionais isoladas.
-- remoteChecklistRepository.js: boundary remoto Supabase, mapeamentos, dashboard, execuções, evidências e notificações.
+- remoteChecklistRepository.js: boundary Supabase, mapeamentos, dashboard, execuções, evidências e notificações.
+- ../services/checklistProducaoService.js: fachadas de domínio que delegam ao boundary remoto.
+- ../../../supabase/migrations/: schema, RLS e contratos persistentes.
+
+O runtime não usa fixtures, `localStorage` de demonstração ou login local.

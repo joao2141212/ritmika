@@ -85,12 +85,12 @@ Cada item normalizado inclui `name`, `critical`, `config` e `evidences`; o
 frontend também transporta peso, obrigatório, não se aplica, ordem, labels e
 meta de análise quando disponíveis.
 
-## Implementação local no Ritmika
+## Implementação atual no Ritmika
 
-- `client/src/data/localChecklistRepository.js`: persistência local de
-  modelos, status, execução, conclusão, retry e reset.
-- `client/src/services/checklistProducaoService.js`: boundary local-first para
-  modelos e execução; remoto continua explicitamente não conectado.
+- `client/src/data/remoteChecklistRepository.js`: boundary Supabase para
+  modelos, status, execução, contagem, evidências e notificações.
+- `client/src/services/checklistProducaoService.js`: fachada remota única para
+  modelos, execução e contagem; não há fallback local no runtime.
 - `client/src/components/ChecklistWorkspace.jsx`: lista branca de gestão,
   busca, filtros, publicação e entrada de execução.
 - `client/src/components/ChecklistBuilderWorkspace.jsx`: editor com itens,

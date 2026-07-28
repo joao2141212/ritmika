@@ -251,7 +251,9 @@
 .checklist-card {
     display: flex;
     min-height: 226px;
+    height: auto;
     flex-direction: column;
+    overflow: visible;
     padding: 20px;
 }
 

@@ -14,7 +14,7 @@ Código fonte do frontend Ritmika.
 - assets/assets.md: ativos importados pelo código React; atualmente reservado.
 - components/components.md: componentes e workspaces reutilizáveis.
 - context/context.md: contexto de autenticação.
-- data/data.md: repositórios local, mock e remoto.
+- data/data.md: boundary de dados remoto do Supabase.
 - lib/lib.md: logger e cliente Supabase.
 - pages/pages.md: telas roteadas.
 - services/services.md: fachadas de domínio para as telas.

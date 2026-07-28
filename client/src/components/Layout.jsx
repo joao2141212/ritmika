@@ -7,8 +7,13 @@ import {
     Users,
     Settings,
     Bell,
+    Bot,
+    BookOpen,
+    HelpCircle,
+    Lightbulb,
     LogOut,
     Menu,
+    Newspaper,
     X,
     Zap
 } from 'lucide-react';
@@ -43,11 +48,16 @@ const Layout = () => {
                 </div>
 
                 <nav className="sidebar-nav">
-                    <SidebarItem to="/" icon={LayoutDashboard} label="Visão Geral" active={location.pathname === '/'} />
+                    <SidebarItem to="/" icon={LayoutDashboard} label="Dashboard" active={location.pathname === '/'} />
                     <SidebarItem to="/checklists" icon={CheckSquare} label="Checklists" active={location.pathname.includes('/checklists')} />
                     <SidebarItem to="/team" icon={Users} label="Equipe" active={location.pathname === '/team'} />
                     <SidebarItem to="/notifications" icon={Bell} label="Notificações" active={location.pathname === '/notifications'} />
-                    <SidebarItem to="/settings" icon={Settings} label="Configurações" active={location.pathname === '/settings'} />
+                    <SidebarItem to="/ai-evidence-analyses" icon={Bot} label="Análises IA" active={location.pathname.startsWith('/ai-evidence-analyses')} />
+                    <SidebarItem to="/configurations" icon={Settings} label="Configurações" active={location.pathname === '/settings' || location.pathname === '/configurations'} />
+                    <SidebarItem to="/courses" icon={BookOpen} label="Cursos" active={location.pathname.startsWith('/courses')} />
+                    <SidebarItem to="/help" icon={HelpCircle} label="Ajuda" active={location.pathname === '/help'} />
+                    <SidebarItem to="/ideas" icon={Lightbulb} label="Ideias" active={location.pathname === '/ideas'} />
+                    <SidebarItem to="/news" icon={Newspaper} label="Novidades" active={location.pathname === '/news'} />
                 </nav>
 
                 <div className="sidebar-footer">

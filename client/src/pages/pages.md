@@ -1,17 +1,18 @@
 # pages.md
 
-Telas roteadas do aplicativo.
+Telas roteadas do aplicativo conectado ao Supabase.
 
 ## Arquivos
 
-- Login.jsx: entrada e autenticação.
-- Dashboard.jsx: dashboard local legado.
+- Login.jsx: entrada e autenticação Supabase.
 - DashboardRemote.jsx: dashboard remoto com filtros temporais.
-- Checklists.jsx: catálogo de checklists.
-- ChecklistContagem.jsx: fluxo de contagem.
-- ChecklistHistorico.jsx: histórico de execuções.
-- Notifications.jsx: central de notificações.
-- Team.jsx: equipe no fluxo local.
+- ChecklistContagem.jsx: fluxo remoto de contagem.
+- ChecklistHistorico.jsx: histórico remoto de execuções.
+- ChecklistDetailsRemote.jsx: detalhe remoto do checklist e evidências.
+- Notifications.jsx: central remota de notificações.
 - TeamRemote.jsx: equipe remota.
-- Settings.jsx: configurações locais/legadas.
 - SettingsRemote.jsx: configurações remotas.
+
+Os workspaces roteados de checklist ficam em `components/`: listagem,
+builder e execução usam `checklistProducaoService` e
+`remoteChecklistRepository`.
