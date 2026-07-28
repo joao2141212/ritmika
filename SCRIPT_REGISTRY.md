@@ -11,6 +11,18 @@ inferirem manutencao de Auth, workspaces, roles e dados sem custo alto.
 - App publicado: `https://ritmikapp.netlify.app/`
 - Referencia externa: Konclui autorizado somente leitura
 
+## Modelo de produto
+
+- Ritmika nao e um app de restaurante. E um app de gestao operacional para
+  estabelecimentos, empresas, unidades, setores e equipes.
+- Gastronomia, pizzaria, trattoria, cozinha e nomes semelhantes podem aparecer
+  como dados reais de um cliente importado, mas nao como identidade global,
+  schema global, copy de produto ou regra hardcoded.
+- Roles devem ser tratadas como politica configuravel. A Edge Function
+  `manage-member` usa defaults seguros, mas aceita `RITMIKA_ASSIGNABLE_ROLES`
+  e `RITMIKA_MANAGER_ROLES` para adaptar novos clientes sem criar codigo por
+  segmento.
+
 ## Regras
 
 - Scripts do Ritmika nunca mutam Konclui.

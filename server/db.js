@@ -13,7 +13,7 @@ const db = new Database(path.join(__dirname, 'ritmika.db'), {
 
 // Initialize Schema
 const initDb = () => {
-  // Units (Stores/Restaurants)
+  // Units (establishments, branches, departments, or operating locations)
   db.exec(`
     CREATE TABLE IF NOT EXISTS units (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

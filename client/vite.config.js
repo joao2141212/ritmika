@@ -12,7 +12,7 @@ export default defineConfig({
     //   manifest: {
     //     name: 'Ritmika',
     //     short_name: 'Ritmika',
-    //     description: 'Operações gastronômicas no ritmo certo',
+    //     description: 'Gestão de estabelecimentos no ritmo certo',
     //     theme_color: '#F97316',
     //     background_color: '#05060B',
     //     display: 'standalone',

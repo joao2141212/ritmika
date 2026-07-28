@@ -39,7 +39,7 @@ const Login = () => {
             >
                 <div className="login-header">
                     <h1>Ritmika</h1>
-                    <p>Operações gastronômicas no ritmo certo</p>
+                    <p>Gestão de estabelecimentos no ritmo certo</p>
                 </div>
 
                 {error && (

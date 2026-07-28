@@ -7,8 +7,17 @@ const corsHeaders = {
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-const allowedRoles = ['admin', 'manager', 'operator', 'viewer'];
-const managerRoles = ['owner', 'admin', 'manager'];
+const parseRoleSet = (envValue: string | undefined, fallback: string[]) => {
+    const roles = String(envValue || '')
+        .split(',')
+        .map((role) => role.trim().toLowerCase())
+        .filter(Boolean);
+    return new Set(roles.length > 0 ? roles : fallback);
+};
+
+const assignableRoles = parseRoleSet(Deno.env.get('RITMIKA_ASSIGNABLE_ROLES'), ['admin', 'manager', 'operator', 'viewer']);
+const managerRoles = parseRoleSet(Deno.env.get('RITMIKA_MANAGER_ROLES'), ['owner', 'admin', 'manager']);
+const rolePattern = /^[a-z][a-z0-9_-]{1,47}$/;
 const errorText = (error: unknown) => error instanceof Error ? error.message : String(error);
 
 const json = (body: Record<string, unknown>, status = 200) => {
@@ -120,7 +129,7 @@ Deno.serve(async (request) => {
         if (!actor) {
             return json({ error: 'A empresa selecionada não pertence ao usuário autenticado.', correlationId }, 403);
         }
-        if (!(actor.is_owner || managerRoles.includes(String(actor.role || '').toLowerCase()))) {
+        if (!(actor.is_owner || managerRoles.has(String(actor.role || '').toLowerCase()))) {
             return json({ error: 'Apenas gestores podem alterar usuários.', correlationId }, 403);
         }
 
@@ -134,7 +143,7 @@ Deno.serve(async (request) => {
         if (!target) return json({ error: 'Perfil não encontrado nesta empresa.', correlationId }, 404);
 
         const nextRole = requestedRole || String(target.role || 'operator').toLowerCase();
-        if (!allowedRoles.includes(nextRole) && !(target.is_owner && nextRole === 'owner')) {
+        if (!rolePattern.test(nextRole) || (!assignableRoles.has(nextRole) && !(target.is_owner && nextRole === 'owner'))) {
             return json({ error: 'Perfil de acesso inválido.', correlationId }, 400);
         }
         if (target.is_owner && nextRole !== String(target.role || '').toLowerCase()) {
