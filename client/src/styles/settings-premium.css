@@ -234,15 +234,18 @@
 
     .settings-remote .settings-tab-list {
         display: flex;
-        flex-direction: row;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
         gap: 8px;
         padding: 10px 12px 12px;
         overflow-x: auto;
+        overflow-y: hidden;
         scroll-snap-type: x mandatory;
         scrollbar-width: thin;
     }
     .settings-remote .settings-tab {
         flex: 0 0 172px;
+        width: 172px !important;
         min-height: 58px;
         scroll-snap-align: start;
     }
