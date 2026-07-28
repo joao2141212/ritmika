@@ -1,6 +1,7 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { logger } from '../lib/logger';
+import { resolveWorkspaceMembership } from '../data/workspaceIdentity';
 
 const AuthContext = createContext();
 
@@ -33,10 +34,19 @@ export const AuthProvider = ({ children }) => {
 
     const loadUserProfile = async (userId) => {
         try {
+            const { data: memberships, error: membershipError } = await supabase
+                .from('ritmika_workspace_members')
+                .select('workspace_id,role,is_owner,managed_units,preferences')
+                .eq('user_id', userId);
+
+            if (membershipError) throw membershipError;
+            const membership = resolveWorkspaceMembership({ userId, memberships });
+
             const { data: profile, error } = await supabase
                 .from('ritmika_profiles')
                 .select('id,workspace_id,source_user_id,auth_user_id,email,name,phone,role,is_owner,managed_units,preferences,metadata')
                 .eq('auth_user_id', userId)
+                .eq('workspace_id', membership.workspace_id)
                 .maybeSingle();
 
             if (error) throw error;
@@ -49,15 +59,21 @@ export const AuthProvider = ({ children }) => {
             const { data: authData } = await supabase.auth.getUser();
             setUser({
                 id: userId,
+                workspace_id: membership.workspace_id,
                 name: authData?.user?.user_metadata?.name || authData?.user?.email || 'Usuário Ritmika',
                 email: authData?.user?.email || '',
-                role: authData?.user?.user_metadata?.role || 'operator',
+                role: membership.role || authData?.user?.user_metadata?.role || 'operator',
+                is_owner: Boolean(membership.is_owner),
+                managed_units: membership.managed_units || [],
+                preferences: membership.preferences || {},
             });
         } catch (error) {
             logger.error({
                 fn: 'AuthContext.loadUserProfile',
                 status: 'error',
                 userId,
+                errorCode: error?.code || 'AUTH_PROFILE_LOAD_FAILED',
+                context: error?.context || {},
                 error: error instanceof Error ? error.message : String(error),
             });
         } finally {

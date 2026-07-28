@@ -38,12 +38,14 @@ fi
 set -a
 source "$ENV_FILE"
 set +a
-: "${SUPABASE_DB_URL:?SUPABASE_DB_URL_missing}"
+source "$REPO_ROOT/supabase/scripts/db/lib/resolve_connection.sh"
+ritmika_resolve_db_url
 
-psql "$SUPABASE_DB_URL" \
+psql "$RITMIKA_RESOLVED_DB_URL" \
     --no-psqlrc \
     --quiet \
     --set=ON_ERROR_STOP=1 \
     --file="$SQL_PATH"
+unset RITMIKA_RESOLVED_DB_URL
 
 printf 'db_write_ok|%s\n' "${SQL_PATH#"$REPO_ROOT/"}"

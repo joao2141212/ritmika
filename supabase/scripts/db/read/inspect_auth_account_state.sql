@@ -4,7 +4,8 @@ select
   ''::text as email_domain,
   ''::text as email_fingerprint,
   ''::text as confirmed_count,
-  ''::text as linked_profile_count;
+  ''::text as linked_profile_count
+from auth.users;
 
 select
   'auth.user_masked' as source,

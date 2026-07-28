@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { logger } from '../lib/logger';
+import { resolveWorkspaceMembership } from './workspaceIdentity';
 
 const FILE = 'client/src/data/remoteChecklistRepository.js';
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -64,15 +65,19 @@ const getWorkspaceContext = async () => {
 
     const membersResult = await client
         .from('ritmika_workspace_members')
-        .select('workspace_id,role,is_owner')
-        .eq('user_id', user.id)
-        .order('is_owner', { ascending: false })
-        .limit(1);
+        .select('workspace_id,role,is_owner,managed_units,preferences')
+        .eq('user_id', user.id);
     const members = unwrap('getWorkspaceContext.members', membersResult, { userId: user.id });
-    const member = members?.[0];
-
-    if (!member?.workspace_id) {
-        throw new Error('Usuário autenticado não possui workspace no Ritmika.');
+    let member;
+    try {
+        member = resolveWorkspaceMembership({ userId: user.id, memberships: members });
+    } catch (error) {
+        reportError('getWorkspaceContext.resolve', error, {
+            userId: user.id,
+            membershipCount: members?.length || 0,
+            errorCode: error?.code || 'WORKSPACE_RESOLUTION_ERROR',
+        });
+        throw error;
     }
 
     return {
@@ -1604,7 +1609,7 @@ export const remoteChecklistRepository = {
         const [profilesResult, responsesResult] = await Promise.all([
             client
                 .from('ritmika_profiles')
-                .select('id,name,email,role,is_owner,managed_units,metadata')
+                .select('id,auth_user_id,name,email,role,is_owner,managed_units,metadata')
                 .eq('workspace_id', context.workspaceId)
                 .order('name', { ascending: true }),
             client
@@ -1757,8 +1762,10 @@ export const remoteChecklistRepository = {
     async inviteUser({ name, email, role = 'operator', managed_units = [] } = {}) {
         const normalizedEmail = String(email || '').trim().toLocaleLowerCase();
         if (!normalizedEmail) throw new Error('Informe o e-mail do usuário.');
+        const context = await getWorkspaceContext();
         const result = await requireSupabase().functions.invoke('invite-user', {
             body: {
+                workspace_id: context.workspaceId,
                 name: String(name || '').trim(),
                 email: normalizedEmail,
                 role,
@@ -1766,7 +1773,10 @@ export const remoteChecklistRepository = {
             },
         });
         if (result.error) {
-            reportError('inviteUser', result.error, { email: normalizedEmail, role });
+            reportError('inviteUser', result.error, {
+                workspaceId: context.workspaceId,
+                role,
+            });
             throw result.error;
         }
         return result.data;
