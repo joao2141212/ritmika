@@ -1658,35 +1658,28 @@ export const remoteChecklistRepository = {
 
     async updateTeamMember(id, updates = {}) {
         const context = await getWorkspaceContext();
-        const currentResult = await requireSupabase()
-            .from('ritmika_profiles')
-            .select('id,role,managed_units,metadata')
-            .eq('workspace_id', context.workspaceId)
-            .eq('id', String(id))
-            .single();
-        const current = unwrap('updateTeamMember.current', currentResult, {
-            workspaceId: context.workspaceId,
-            profileId: String(id),
+        const result = await requireSupabase().functions.invoke('manage-member', {
+            body: {
+                workspace_id: context.workspaceId,
+                profile_id: String(id),
+                ...(updates.role ? { role: updates.role } : {}),
+                ...(Array.isArray(updates.managed_units)
+                    ? { managed_units: updates.managed_units }
+                    : {}),
+                ...(updates.metadata && typeof updates.metadata === 'object'
+                    ? { metadata: updates.metadata }
+                    : {}),
+            },
         });
-        if (!current) throw new Error('Usuário do workspace não encontrado.');
-        const result = await requireSupabase()
-            .from('ritmika_profiles')
-            .update({
-                role: updates.role || current.role,
-                managed_units: Array.isArray(updates.managed_units) ? updates.managed_units : current.managed_units || [],
-                metadata: updates.metadata && typeof updates.metadata === 'object'
-                    ? { ...(current.metadata || {}), ...updates.metadata }
-                    : current.metadata || {},
-                updated_at: new Date().toISOString(),
-            })
-            .eq('workspace_id', context.workspaceId)
-            .eq('id', String(id))
-            .select('id,workspace_id,email,name,phone,role,is_owner,managed_units,preferences,metadata')
-            .single();
-        return unwrap('updateTeamMember', result, {
-            workspaceId: context.workspaceId,
-            profileId: String(id),
-        });
+        if (result.error) {
+            reportError('updateTeamMember', result.error, {
+                workspaceId: context.workspaceId,
+                profileId: String(id),
+                errorCode: 'MANAGE_MEMBER_INVOKE_FAILED',
+            });
+            throw result.error;
+        }
+        return result.data?.profile || null;
     },
 
     async getSettings() {

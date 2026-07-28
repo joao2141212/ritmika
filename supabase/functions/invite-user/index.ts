@@ -91,12 +91,14 @@ Deno.serve(async (request) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const secretKey = Deno.env.get('SUPABASE_SECRET_KEY');
-    if (!supabaseUrl || !secretKey?.startsWith('sb_secret_')) {
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const adminKey = secretKey?.startsWith('sb_secret_') ? secretKey : serviceRoleKey;
+    if (!supabaseUrl || !adminKey) {
         logError(correlationId, 'configuration', new Error('Credenciais do backend não configuradas.'));
         return json({ error: 'Backend de convite não configurado.', correlationId }, 500);
     }
 
-    const admin = createClient(supabaseUrl, secretKey, {
+    const admin = createClient(supabaseUrl, adminKey, {
         auth: { autoRefreshToken: false, persistSession: false },
     });
     const authorization = request.headers.get('Authorization') || '';

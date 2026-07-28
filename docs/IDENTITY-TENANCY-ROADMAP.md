@@ -86,10 +86,11 @@ não contas órfãs. As verificações reais retornaram zero para:
 - [ ] Provar convite e retry em fixture QA, sem tocar dados do cliente.
 - [ ] Criar seletor visual de empresa para um usuário com múltiplos
   memberships e provar troca sem vazamento de tenant.
-- [ ] Remover qualquer escrita de role/profile que não passe pela autoridade
-  `workspace_members`.
-- [ ] Criar operação backend única para atualizar membership + espelho do
-  profile, com autorização e resultado idempotente.
+- [x] Remover da interface a escrita direta de role/profile.
+- [x] Criar operação backend `manage-member` para atualizar membership +
+  espelho do profile, com autorização, telemetria e resultado idempotente.
+- [x] Publicar `manage-member` com JWT obrigatório e provar duas execuções
+  idempotentes consecutivas na fixture QA.
 - [ ] Provar que owner/admin/manager/operator/viewer têm exatamente as mesmas
   capacidades observadas no Konclui. Não inventar matriz por nome do papel.
 - [ ] Cobrir RLS por operação, não apenas existência de membership.
@@ -141,9 +142,8 @@ Critério de aceite para qualquer script:
    falhar pela própria RLS ou divergir do membership.
 5. Convite envolve Auth e banco, portanto não existe transação única entre os
    dois sistemas. A implementação deve permanecer idempotente e reparável.
-6. O checker de telemetria encontrou cinco scripts legados de setup/deploy com
-   I/O e sem evento estruturado: `scripts/deploy_producao.js`,
-   `scripts/deploy_db.js`, `scripts/setup_supabase_direct.js`,
-   `scripts/deploy_supabase.js` e `scripts/setup_supabase.js`. Eles não são o
-   caminho canônico novo e não devem ser executados até serem classificados,
-   isolados e instrumentados.
+6. O checker de telemetria encontrou inicialmente cinco scripts legados de
+   setup/deploy com I/O sem evento estruturado. Eles foram classificados no
+   registro canônico e instrumentados; a varredura fallback atual retorna zero
+   funções cegas. Continuam não canônicos e não devem ser executados como
+   caminho normal de produção.

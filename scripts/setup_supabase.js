@@ -10,6 +10,8 @@ if (!supabaseUrl || !supabaseKey.startsWith('sb_secret_')) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+const logger = require('./lib/logger');
+
 async function setupDatabase() {
     if (!process.env.RITMIKA_BOOTSTRAP_PASSWORD) {
         throw new Error('RITMIKA_BOOTSTRAP_PASSWORD_required_for_legacy_demo_users');
@@ -97,7 +99,14 @@ async function setupDatabase() {
         console.log('   - maria@ritmika.com / senha definida em RITMIKA_BOOTSTRAP_PASSWORD (Funcionária)');
 
     } catch (error) {
-        console.error('❌ Erro durante setup:', error);
+        logger.error({
+            file: 'scripts/setup_supabase.js',
+            functionName: 'setupDatabase',
+            operation: 'legacy-supabase-setup',
+            error,
+            errorCode: error.code || 'LEGACY_SUPABASE_SETUP_FAILED',
+        });
+        throw error;
     }
 }
 

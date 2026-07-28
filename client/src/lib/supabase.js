@@ -3,9 +3,10 @@ import { logger } from './logger'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabasePublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
+    || import.meta.env.VITE_SUPABASE_ANON_KEY
 
 if (!supabaseUrl || !supabasePublishableKey) {
-    throw new Error('Configuração Supabase ausente: defina VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY.')
+    throw new Error('Configuração Supabase ausente: defina VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY (ou VITE_SUPABASE_ANON_KEY durante a transição).')
 }
 
 const nativeFetch = globalThis.fetch.bind(globalThis)

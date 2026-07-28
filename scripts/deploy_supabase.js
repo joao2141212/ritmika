@@ -86,10 +86,13 @@ function createUser(email, password, metadata) {
     });
 }
 
+const logger = require('./lib/logger');
+
 async function deploy() {
     if (!process.env.RITMIKA_BOOTSTRAP_PASSWORD) {
         throw new Error('RITMIKA_BOOTSTRAP_PASSWORD_required_for_legacy_demo_users');
     }
+    try {
     console.log('🚀 Deploying to Supabase...\n');
 
     // 1. Execute Schema
@@ -142,6 +145,16 @@ async function deploy() {
     console.log('\n📝 Test logins:');
     console.log('   pedro@ritmika.com / senha definida em RITMIKA_BOOTSTRAP_PASSWORD');
     console.log('   cliente@demo / senha definida em RITMIKA_BOOTSTRAP_PASSWORD');
+    } catch (error) {
+        logger.error({
+            file: 'scripts/deploy_supabase.js',
+            functionName: 'deploy',
+            operation: 'legacy-supabase-deploy',
+            error,
+            errorCode: error.code || 'LEGACY_SUPABASE_DEPLOY_FAILED',
+        });
+        throw error;
+    }
 }
 
 deploy().catch(console.error);

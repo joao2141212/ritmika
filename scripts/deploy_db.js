@@ -3,6 +3,8 @@ const fs = require('fs');
 
 const connectionString = process.env.SUPABASE_DB_URL || "";
 
+const logger = require('./lib/logger');
+
 async function deploy() {
     if (!connectionString) throw new Error('SUPABASE_DB_URL_required');
     const client = new Client({ connectionString });
@@ -46,8 +48,15 @@ UPDATE public.profiles SET role = 'employee', points = 850, name = 'Maria Santos
         `);
 
     } catch (error) {
-        console.error('❌ Error:', error.message);
-        if (error.detail) console.error('   Detail:', error.detail);
+        logger.error({
+            file: 'scripts/deploy_db.js',
+            functionName: 'deploy',
+            operation: 'legacy-database-deploy',
+            error,
+            errorCode: error.code || 'LEGACY_DATABASE_DEPLOY_FAILED',
+            context: { hasDetail: Boolean(error.detail) },
+        });
+        throw error;
     } finally {
         await client.end();
     }
