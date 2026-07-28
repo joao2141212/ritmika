@@ -1,0 +1,223 @@
+.analytics-overview-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.35fr);
+    gap: 18px;
+    margin-bottom: 20px;
+}
+
+.analytics-card {
+    min-width: 0;
+    padding: 22px;
+    border: 1px solid #dfe9e7;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 14px 36px rgba(25, 65, 69, 0.06);
+}
+
+.analytics-card-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.analytics-card-heading h2 {
+    margin: 3px 0 0;
+    color: #17343c;
+    font-size: 1.08rem;
+}
+
+.analytics-insight-pill {
+    flex: 0 0 auto;
+    padding: 7px 10px;
+    border-radius: 999px;
+    background: #ecf8f5;
+    color: #087d70;
+    font-size: 0.75rem;
+    font-weight: 750;
+}
+
+.analytics-completion-body {
+    display: grid;
+    grid-template-columns: 142px minmax(0, 1fr);
+    align-items: center;
+    gap: 20px;
+}
+
+.analytics-gauge {
+    position: relative;
+    width: 132px;
+    height: 132px;
+}
+
+.analytics-gauge svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.analytics-gauge circle {
+    fill: none;
+    stroke-width: 11;
+}
+
+.analytics-gauge-track {
+    stroke: #edf2f1;
+}
+
+.analytics-gauge-value {
+    stroke: #0d9888;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 500ms ease;
+}
+
+.analytics-gauge > div {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    text-align: center;
+}
+
+.analytics-gauge strong {
+    color: #15343b;
+    font-size: 1.55rem;
+    line-height: 1;
+}
+
+.analytics-gauge span {
+    margin-top: 5px;
+    color: #789096;
+    font-size: 0.72rem;
+}
+
+.analytics-copy {
+    display: grid;
+    gap: 7px;
+}
+
+.analytics-copy strong {
+    color: #28474e;
+    font-size: 0.92rem;
+    line-height: 1.45;
+}
+
+.analytics-copy span {
+    color: #7b9197;
+    font-size: 0.78rem;
+    line-height: 1.5;
+}
+
+.analytics-distribution {
+    display: grid;
+    gap: 19px;
+}
+
+.analytics-distribution-track {
+    display: flex;
+    height: 14px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #eef3f2;
+}
+
+.analytics-distribution-track span {
+    min-width: 2px;
+    transition: width 450ms ease;
+}
+
+.analytics-distribution-track .tone-success,
+.analytics-dot.tone-success { background: #20b99f; }
+.analytics-distribution-track .tone-info,
+.analytics-dot.tone-info { background: #4388dd; }
+.analytics-distribution-track .tone-warning,
+.analytics-dot.tone-warning { background: #e9a13d; }
+.analytics-distribution-track .tone-danger,
+.analytics-dot.tone-danger { background: #e86464; }
+
+.analytics-legend {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 20px;
+}
+
+.analytics-legend > div {
+    display: grid;
+    grid-template-columns: 9px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    color: #60787e;
+    font-size: 0.8rem;
+}
+
+.analytics-legend strong { color: #19373e; }
+.analytics-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+.analytics-trend-chart {
+    min-width: 0;
+    padding: 6px 4px 0;
+}
+
+.analytics-trend-chart svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 230px;
+    overflow: visible;
+}
+
+.analytics-trend-chart line {
+    stroke: #e7efee;
+    stroke-dasharray: 4 6;
+}
+
+.analytics-trend-chart text {
+    fill: #8aa0a5;
+    font-size: 10px;
+}
+
+.analytics-trend-area {
+    fill: rgba(13, 152, 136, 0.09);
+}
+
+.analytics-trend-line {
+    fill: none;
+    stroke: #0d9888;
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.analytics-trend-chart circle {
+    fill: #fff;
+    stroke: #0d9888;
+    stroke-width: 3;
+}
+
+.analytics-trend-axis {
+    display: flex;
+    justify-content: space-between;
+    padding-left: 28px;
+    color: #82999e;
+    font-size: 0.72rem;
+}
+
+.analytics-trend-axis .is-hidden { display: none; }
+
+@media (max-width: 960px) {
+    .analytics-overview-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 560px) {
+    .analytics-card { padding: 18px; border-radius: 17px; }
+    .analytics-card-heading { align-items: flex-start; flex-direction: column; }
+    .analytics-completion-body { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+    .analytics-legend { grid-template-columns: 1fr; }
+    .analytics-trend-chart svg { min-height: 180px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .analytics-gauge-value,
+    .analytics-distribution-track span { transition: none; }
+}

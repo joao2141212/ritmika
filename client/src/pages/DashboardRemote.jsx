@@ -25,6 +25,8 @@ import '../styles/dashboard-remote.css';
 import '../styles/dashboard-filters.css';
 import '../styles/dashboard-parity.css';
 
+import '../styles/dashboard-analytics.css';
+
 const EMPTY_DATA = {
     stats: {
         totalScheduled: 0,
@@ -117,6 +119,104 @@ const StatCard = ({ label, value, helper, tone = 'neutral' }) => (
         <small>{helper}</small>
     </article>
 );
+
+const CompletionGauge = ({ value }) => {
+    const normalized = Math.max(0, Math.min(100, Number(value) || 0));
+    const circumference = 2 * Math.PI * 52;
+    const offset = circumference * (1 - normalized / 100);
+
+    return (
+        <div className="analytics-gauge" aria-label={`${normalized}% de conclusão`}>
+            <svg viewBox="0 0 132 132" role="img" aria-hidden="true">
+                <circle className="analytics-gauge-track" cx="66" cy="66" r="52" />
+                <circle
+                    className="analytics-gauge-value"
+                    cx="66"
+                    cy="66"
+                    r="52"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={offset}
+                />
+            </svg>
+            <div><strong>{normalized}%</strong><span>concluído</span></div>
+        </div>
+    );
+};
+
+const StatusDistribution = ({ stats }) => {
+    const items = [
+        ['Finalizados', stats.completed, 'success'],
+        ['Em andamento', stats.inProgress, 'info'],
+        ['Pendentes', stats.pending, 'warning'],
+        ['Atrasados', stats.overdue, 'danger'],
+    ];
+    const total = items.reduce((sum, [, value]) => sum + (Number(value) || 0), 0);
+
+    return (
+        <div className="analytics-distribution">
+            <div className="analytics-distribution-track" aria-label="Distribuição das execuções por status">
+                {total > 0 && items.map(([label, value, tone]) => (
+                    <span
+                        key={label}
+                        className={`tone-${tone}`}
+                        style={{ width: `${((Number(value) || 0) / total) * 100}%` }}
+                        title={`${label}: ${value}`}
+                    />
+                ))}
+            </div>
+            <div className="analytics-legend">
+                {items.map(([label, value, tone]) => (
+                    <div key={label}>
+                        <span className={`analytics-dot tone-${tone}`} />
+                        <span>{label}</span>
+                        <strong>{Number(value || 0).toLocaleString('pt-BR')}</strong>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const TrendChart = ({ data }) => {
+    const visible = data.slice(-14);
+    if (visible.length === 0) return <div className="remote-state remote-state-empty">Sem evolução registrada no período.</div>;
+
+    const width = 720;
+    const height = 220;
+    const paddingX = 30;
+    const paddingY = 24;
+    const xFor = (index) => paddingX + (index * (width - paddingX * 2)) / Math.max(1, visible.length - 1);
+    const yFor = (score) => height - paddingY - (Math.max(0, Math.min(100, Number(score) || 0)) / 100) * (height - paddingY * 2);
+    const points = visible.map((item, index) => `${xFor(index)},${yFor(item.score)}`).join(' ');
+    const areaPoints = `${paddingX},${height - paddingY} ${points} ${xFor(visible.length - 1)},${height - paddingY}`;
+
+    return (
+        <div className="analytics-trend-chart">
+            <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Evolução do score médio no período">
+                {[0, 25, 50, 75, 100].map((score) => (
+                    <g key={score}>
+                        <line x1={paddingX} x2={width - paddingX} y1={yFor(score)} y2={yFor(score)} />
+                        <text x="0" y={yFor(score) + 4}>{score}%</text>
+                    </g>
+                ))}
+                <polygon className="analytics-trend-area" points={areaPoints} />
+                <polyline className="analytics-trend-line" points={points} />
+                {visible.map((item, index) => (
+                    <circle key={item.date} cx={xFor(index)} cy={yFor(item.score)} r="4">
+                        <title>{new Date(`${item.date}T12:00:00`).toLocaleDateString('pt-BR')}: {item.score}%</title>
+                    </circle>
+                ))}
+            </svg>
+            <div className="analytics-trend-axis" aria-hidden="true">
+                {visible.map((item, index) => (
+                    <span key={item.date} className={index % Math.ceil(visible.length / 5) === 0 ? '' : 'is-hidden'}>
+                        {new Date(`${item.date}T12:00:00`).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+                    </span>
+                ))}
+            </div>
+        </div>
+    );
+};
 
 const DashboardRemote = () => {
     const navigate = useNavigate();
@@ -505,6 +605,36 @@ const DashboardRemote = () => {
                 <StatCard label="Finalizados" value={stats.completed} helper={stats.completionRate + '% de conclusão'} tone="success" />
             </section>}
 
+            {widgetPrefs.summary && <section className="analytics-overview-grid" aria-label="Visão analítica da operação">
+                <article className="analytics-card analytics-completion-card">
+                    <div className="analytics-card-heading">
+                        <div>
+                            <p className="remote-eyebrow">Eficiência operacional</p>
+                            <h2>Taxa de conclusão</h2>
+                        </div>
+                        <span className="analytics-insight-pill">{stats.completed} finalizados</span>
+                    </div>
+                    <div className="analytics-completion-body">
+                        <CompletionGauge value={stats.completionRate} />
+                        <div className="analytics-copy">
+                            <strong>{stats.pending + stats.inProgress + stats.overdue} execuções exigem atenção</strong>
+                            <span>Distribuição calculada a partir dos registros filtrados no período.</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article className="analytics-card analytics-status-card">
+                    <div className="analytics-card-heading">
+                        <div>
+                            <p className="remote-eyebrow">Composição do período</p>
+                            <h2>Execuções por status</h2>
+                        </div>
+                        <span className="analytics-insight-pill">{stats.totalScheduled} agendadas</span>
+                    </div>
+                    <StatusDistribution stats={stats} />
+                </article>
+            </section>}
+
             {widgetPrefs.alerts && <section className="remote-dashboard-panel">
                 <div className="remote-panel-heading">
                     <div>
@@ -596,22 +726,7 @@ const DashboardRemote = () => {
                     </div>
                     <span className="remote-panel-caption">Score médio dos registros</span>
                 </div>
-                {trend.length === 0 ? (
-                    <div className="remote-state remote-state-empty">Sem evolução registrada no período.</div>
-                ) : (
-                    <div className="remote-trend-list">
-                        {trend.slice(-7).map((item) => (
-                            <div className="remote-trend-row" key={item.date}>
-                                <span>{new Date(`${item.date}T12:00:00`).toLocaleDateString('pt-BR')}</span>
-                                <div className="remote-ranking-track" aria-hidden="true">
-                                    <span style={{ width: `${item.score}%` }} />
-                                </div>
-                                <strong>{item.score}%</strong>
-                                <small>{item.completed}/{item.total} concluídos</small>
-                            </div>
-                        ))}
-                    </div>
-                )}
+                <TrendChart data={trend} />
             </section>}
 
             {widgetPrefs.details && <section className="remote-dashboard-panel remote-detail-panel">
