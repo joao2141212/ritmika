@@ -357,7 +357,9 @@ const ConfigurationsRemote = () => {
                             <h2>{activeSection[1]}</h2>
                             <p>{activeSection[2]}</p>
                         </div>
-                        <span className="settings-context-status">Dados sincronizados</span>
+                        <span className={`settings-context-status${optionalError ? ' is-partial' : ''}`}>
+                            {optionalError ? 'Sincronização parcial' : 'Dados sincronizados'}
+                        </span>
                     </header>
                     {optionalError && <div className="settings-optional-warning">{optionalError}</div>}
 

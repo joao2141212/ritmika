@@ -158,6 +158,11 @@
     font-weight: 750;
 }
 
+.settings-context-status.is-partial {
+    background: #fff5df;
+    color: #9a6510;
+}
+
 .settings-content-stage .settings-remote-grid,
 .settings-content-stage .settings-entity-grid,
 .settings-content-stage .settings-remote-panel {
@@ -223,15 +228,26 @@
 }
 
 @media (max-width: 720px) {
+    .settings-navigation-heading {
+        padding: 18px;
+    }
+
     .settings-remote .settings-tab-list {
         display: flex;
+        flex-direction: row;
+        gap: 8px;
+        padding: 10px 12px 12px;
         overflow-x: auto;
         scroll-snap-type: x mandatory;
+        scrollbar-width: thin;
     }
     .settings-remote .settings-tab {
-        flex: 0 0 210px;
+        flex: 0 0 172px;
+        min-height: 58px;
         scroll-snap-align: start;
     }
+    .settings-remote .settings-tab small { display: none; }
+    .settings-security-note { display: none; }
     .settings-section-context,
     .settings-remote-footer { align-items: stretch; flex-direction: column; }
     .settings-context-status { align-self: flex-start; }
