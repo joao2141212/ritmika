@@ -53,9 +53,11 @@ No Supabase Dashboard > Authentication > Users, crie os seguintes usuários:
 
 O arquivo `client/.env` já está configurado com:
 ```
-VITE_SUPABASE_URL=https://bcckaltuxorkybtzskql.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+VITE_SUPABASE_URL=https://<project-ref>.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 ```
+
+Operações administrativas locais usam `SUPABASE_SECRET_KEY=sb_secret_...` somente no `.env` ignorado pelo Git. A secret nunca pertence ao bundle do frontend e nunca é enviada como `Authorization: Bearer`.
 
 ## 4. Testar Aplicação
 
@@ -64,14 +66,14 @@ cd client
 npm run dev
 ```
 
-Faça login com `pedro@ritmika.com` / `123456` ou `cliente@demo` / `123456`.
+Faça login com uma conta real criada no Supabase Auth. O projeto não mantém credenciais demo na documentação.
 
 ## 5. Deploy
 
 ### Netlify
 O `netlify.toml` já está configurado. Apenas adicione as variáveis de ambiente no Netlify Dashboard:
 - `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`
 
 ## Estrutura de Dados
 

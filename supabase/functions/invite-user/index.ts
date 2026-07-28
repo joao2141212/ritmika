@@ -90,13 +90,13 @@ Deno.serve(async (request) => {
     if (request.method !== 'POST') return json({ error: 'Método não permitido.', correlationId }, 405);
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    if (!supabaseUrl || !serviceRoleKey) {
+    const secretKey = Deno.env.get('SUPABASE_SECRET_KEY');
+    if (!supabaseUrl || !secretKey?.startsWith('sb_secret_')) {
         logError(correlationId, 'configuration', new Error('Credenciais do backend não configuradas.'));
         return json({ error: 'Backend de convite não configurado.', correlationId }, 500);
     }
 
-    const admin = createClient(supabaseUrl, serviceRoleKey, {
+    const admin = createClient(supabaseUrl, secretKey, {
         auth: { autoRefreshToken: false, persistSession: false },
     });
     const authorization = request.headers.get('Authorization') || '';

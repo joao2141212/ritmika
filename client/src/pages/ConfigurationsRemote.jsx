@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Archive, Building2, Check, Layers3, LoaderCircle, LogOut, Mail, Pencil, Plus, RefreshCw, Save, Search, Settings as SettingsIcon, Shield, Smartphone, User, UserPlus, UsersRound } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -15,6 +16,7 @@ const EMPTY_UNIT = { id: null, name: '', address: '', timezone: 'America/Sao_Pau
 const EMPTY_SECTOR = { id: null, name: '', system_key: '' };
 const EMPTY_INVITE = { name: '', email: '', role: 'operator', managed_units: [] };
 const ROLE_OPTIONS = ['owner', 'admin', 'manager', 'operator', 'viewer'];
+const CONFIGURATION_TABS = ['profile', 'units', 'sectors', 'users', 'notifications', 'credits', 'billing', 'api'];
 
 const formatUnitAddress = (address) => {
     if (address === null || address === undefined) return '';
@@ -31,7 +33,11 @@ const formatUnitAddress = (address) => {
 
 const ConfigurationsRemote = () => {
     const { user, logout } = useAuth();
-    const [activeTab, setActiveTab] = useState('profile');
+    const [searchParams] = useSearchParams();
+    const [activeTab, setActiveTab] = useState(() => {
+        const requestedTab = searchParams.get('tab');
+        return CONFIGURATION_TABS.includes(requestedTab) ? requestedTab : 'profile';
+    });
     const [profile, setProfile] = useState({ name: '', email: '', phone: '' });
     const [workspace, setWorkspace] = useState({ timezone: 'America/Sao_Paulo', locale: 'pt-BR' });
     const [preferences, setPreferences] = useState(DEFAULT_PREFERENCES);
@@ -67,10 +73,15 @@ const ConfigurationsRemote = () => {
                 || (userScope === 'managers' && ['owner', 'admin', 'manager'].includes(role))
                 || (userScope === 'operators' && ['operator', 'employee', 'viewer'].includes(role));
             const matchesUnit = !userUnitFilter || managedUnits.includes(String(userUnitFilter));
-            const searchable = [member.name, member.email, member.role].filter(Boolean).join(' ').toLocaleLowerCase();
+            const searchable = [member.id, member.auth_user_id, member.name, member.email, member.role].filter(Boolean).join(' ').toLocaleLowerCase();
             return matchesScope && matchesUnit && (!normalizedQuery || searchable.includes(normalizedQuery));
         });
     }, [userQuery, userScope, userUnitFilter, users]);
+
+    useEffect(() => {
+        const requestedUser = searchParams.get('user');
+        if (activeTab === 'users' && requestedUser) setUserQuery(requestedUser);
+    }, [activeTab, searchParams]);
 
     const loadConfiguration = async () => {
         try {

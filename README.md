@@ -12,7 +12,7 @@ npm run dev -- --host 127.0.0.1
 ```
 
 O app usa Supabase e autenticação real por padrão. Configure `VITE_SUPABASE_URL`
-e `VITE_SUPABASE_ANON_KEY` no arquivo local ignorado pelo Git antes de abrir a
+e `VITE_SUPABASE_PUBLISHABLE_KEY` no arquivo local ignorado pelo Git antes de abrir a
 aplicação. Não existe login demo nem fallback de dados sintéticos no runtime.
 
 ## Fluxos remotos implementados

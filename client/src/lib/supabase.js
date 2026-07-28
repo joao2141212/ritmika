@@ -2,10 +2,10 @@ import { createClient } from '@supabase/supabase-js'
 import { logger } from './logger'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const supabasePublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
 
-if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error('Configuração Supabase ausente: defina VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.')
+if (!supabaseUrl || !supabasePublishableKey) {
+    throw new Error('Configuração Supabase ausente: defina VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY.')
 }
 
 const nativeFetch = globalThis.fetch.bind(globalThis)
@@ -74,7 +74,7 @@ const tracedFetch = async (input, init = {}) => {
   }
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+export const supabase = createClient(supabaseUrl, supabasePublishableKey, {
   global: {
     fetch: tracedFetch,
     headers: {

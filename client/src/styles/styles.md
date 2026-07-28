@@ -16,4 +16,5 @@ Estilos por tela ou componente. O produto remoto deve permanecer white mode.
 - execution.css: execução.
 - notifications.css: notificações.
 - team.css e team-remote.css: equipe local e remota.
+- team-hub.css: composição white mode do hub de equipe, cards operacionais, filtros, estados e responsividade.
 - settings.css e settings-remote.css: configurações local e remota.

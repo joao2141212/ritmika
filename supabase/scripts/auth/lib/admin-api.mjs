@@ -1,16 +1,14 @@
 import { createHash, randomUUID } from 'node:crypto';
 
 const baseUrl = String(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '').replace(/\/+$/, '');
-const serviceRoleKey = String(
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-    || process.env.SUPABASE_SECRET_KEY
-    || '',
-);
-const usesOpaqueSecretKey = serviceRoleKey.startsWith('sb_secret_');
+const secretKey = String(process.env.SUPABASE_SECRET_KEY || '');
 
 export const requireAdminEnvironment = () => {
-    if (!baseUrl || !serviceRoleKey) {
-        throw new Error('SUPABASE_URL_or_SERVICE_ROLE_KEY_missing');
+    if (!baseUrl || !secretKey) {
+        throw new Error('SUPABASE_URL_or_SECRET_KEY_missing');
+    }
+    if (!secretKey.startsWith('sb_secret_')) {
+        throw new Error('SUPABASE_SECRET_KEY_must_use_sb_secret_format');
     }
 };
 
@@ -29,8 +27,7 @@ const request = async (path, options = {}) => {
     const response = await fetch(`${baseUrl}${path}`, {
         ...options,
         headers: {
-            apikey: serviceRoleKey,
-            ...(!usesOpaqueSecretKey ? { Authorization: `Bearer ${serviceRoleKey}` } : {}),
+            apikey: secretKey,
             'Content-Type': 'application/json',
             ...(options.headers || {}),
         },
