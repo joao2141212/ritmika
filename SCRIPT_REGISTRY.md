@@ -1,5 +1,55 @@
 # SCRIPT_REGISTRY.md
 
+Mapa operacional raiz do Ritmika. Este arquivo existe porque o CBM nao indexa a
+arvore `supabase/scripts/` com profundidade suficiente para agentes pequenos
+inferirem manutencao de Auth, workspaces, roles e dados sem custo alto.
+
+## Canonico
+
+- Repositorio principal: `/Users/pedroduarte/Documents/ritmika`
+- Banco alvo: Supabase do Ritmika
+- App publicado: `https://ritmikapp.netlify.app/`
+- Referencia externa: Konclui autorizado somente leitura
+
+## Regras
+
+- Scripts do Ritmika nunca mutam Konclui.
+- Scripts de leitura nao imprimem senha, secret key, token ou e-mail completo.
+- Scripts de escrita devem iniciar em dry-run e exigir confirmacao literal para
+  `--apply`.
+- Alvos de cliente real exigem tambem `--allow-customer`.
+- Convites por e-mail ficam na Edge Function autenticada, nao em script local
+  paralelo.
+
+## Mapas canonicos
+
+- `supabase/scripts/scripts.md`: mapa raiz dos scripts operacionais.
+- `supabase/scripts/auth/auth.md`: identidade, Auth, empresas, funcionarios,
+  roles, reset de senha, bloqueio/desbloqueio e acesso por workspace.
+- `supabase/scripts/auth/read/read.md`: comandos somente leitura.
+- `supabase/scripts/auth/write/write.md`: comandos de mutacao com dry-run.
+- `supabase/scripts/auth/lib/lib.md`: cliente administrativo e telemetria.
+- `supabase/functions/functions.md`: Edge Functions publicaveis.
+- `supabase/migrations/migrations.md`: historico e intencao das migracoes.
+
+## Comandos principais
+
+```bash
+bash supabase/scripts/auth/run.sh inventory
+bash supabase/scripts/auth/run.sh account --user-id <uuid>
+bash supabase/scripts/auth/run.sh workspace --workspace-id <uuid>
+bash supabase/scripts/auth/run.sh reset-password --user-id <uuid>
+bash supabase/scripts/auth/run.sh set-access --user-id <uuid> --workspace-id <uuid> --role operator --owner false
+bash supabase/scripts/auth/run.sh account-state --user-id <uuid> --action ban
+```
+
+## Gaps que ainda exigem prova runtime
+
+- Deploy Netlify servindo o commit atual.
+- Edge Functions publicadas na versao atual.
+- Variaveis remotas usando publishable key e secret key modernas.
+- QA autenticado completo no browser controlado.
+- Reconcilicao de dados reais Konclui -> Ritmika por modulo.
 Registro canônico das operações repetíveis do Ritmika. O root operacional é
 `supabase/scripts/`. O CBM pode excluir essa pasta do grafo técnico, portanto
 agentes devem começar por este arquivo e seguir os mapas `.md` indicados.

@@ -65,7 +65,7 @@ const Settings = () => {
     const [preferences, setPreferences] = useState({
         pushNotifications: true,
         emailDigest: false,
-        darkMode: true,
+        darkMode: false,
         soundEffects: true
     });
 
