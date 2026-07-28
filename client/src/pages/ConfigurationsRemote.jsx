@@ -16,7 +16,20 @@ const EMPTY_UNIT = { id: null, name: '', address: '', timezone: 'America/Sao_Pau
 const EMPTY_SECTOR = { id: null, name: '', system_key: '' };
 const EMPTY_INVITE = { name: '', email: '', role: 'operator', managed_units: [] };
 const ROLE_OPTIONS = ['owner', 'admin', 'manager', 'operator', 'viewer'];
+import '../styles/settings-premium.css';
+
 const CONFIGURATION_TABS = ['profile', 'units', 'sectors', 'users', 'notifications', 'credits', 'billing', 'api'];
+
+const SETTINGS_SECTIONS = [
+    ['profile', 'Perfil', 'Identidade, idioma e segurança'],
+    ['units', 'Unidades', 'Locais e estruturas operacionais'],
+    ['sectors', 'Setores', 'Áreas e responsabilidades'],
+    ['users', 'Usuários', 'Acessos, papéis e vínculos'],
+    ['notifications', 'Notificações', 'Canais e regras de alerta'],
+    ['credits', 'Créditos IA', 'Consumo e disponibilidade'],
+    ['billing', 'Financeiro', 'Plano, cobrança e histórico'],
+    ['api', 'API', 'Integrações e webhooks'],
+];
 
 const formatUnitAddress = (address) => {
     if (address === null || address === undefined) return '';
@@ -301,6 +314,8 @@ const ConfigurationsRemote = () => {
         return <div className="settings-remote-state settings-remote-error"><span>{error}</span><button type="button" onClick={loadConfiguration}>Tentar novamente</button></div>;
     }
 
+    const activeSection = SETTINGS_SECTIONS.find(([value]) => value === activeTab) || SETTINGS_SECTIONS[0];
+
     return (
         <div className="settings-remote ritmika-light-mode">
             <header className="settings-remote-header">
@@ -314,23 +329,37 @@ const ConfigurationsRemote = () => {
                 </button>
             </header>
 
-            <nav className="settings-tab-list" aria-label="Seções de configurações">
-                {[
-                    ['profile', 'Perfil'],
-                    ['units', 'Unidades'],
-                    ['sectors', 'Setores'],
-                    ['users', 'Usuários'],
-                    ['notifications', 'Notificações'],
-                    ['credits', 'Créditos IA'],
-                    ['billing', 'Financeiro'],
-                    ['api', 'API'],
-                ].map(([value, label]) => (
-                    <button type="button" key={value} className={'settings-tab ' + (activeTab === value ? 'is-active' : '')} onClick={() => setActiveTab(value)}>
-                        {label}
-                    </button>
-                ))}
-            </nav>
-            {optionalError && <div className="settings-optional-warning">{optionalError}</div>}
+            <div className="settings-command-center">
+                <aside className="settings-navigation-card">
+                    <div className="settings-navigation-heading">
+                        <span>Centro de controle</span>
+                        <strong>Configuração do workspace</strong>
+                        <small>Escolha uma área para revisar e administrar.</small>
+                    </div>
+                    <nav className="settings-tab-list" aria-label="Seções de configurações">
+                        {SETTINGS_SECTIONS.map(([value, label, description], index) => (
+                            <button type="button" key={value} className={'settings-tab ' + (activeTab === value ? 'is-active' : '')} onClick={() => setActiveTab(value)}>
+                                <span className="settings-tab-index">{String(index + 1).padStart(2, '0')}</span>
+                                <span><strong>{label}</strong><small>{description}</small></span>
+                            </button>
+                        ))}
+                    </nav>
+                    <div className="settings-security-note">
+                        <ShieldCheck size={17} />
+                        <span><strong>Ambiente protegido</strong><small>Alterações respeitam perfil e RLS.</small></span>
+                    </div>
+                </aside>
+
+                <main className="settings-content-stage">
+                    <header className="settings-section-context">
+                        <div>
+                            <p className="remote-eyebrow">Área selecionada</p>
+                            <h2>{activeSection[1]}</h2>
+                            <p>{activeSection[2]}</p>
+                        </div>
+                        <span className="settings-context-status">Dados sincronizados</span>
+                    </header>
+                    {optionalError && <div className="settings-optional-warning">{optionalError}</div>}
 
             {activeTab === 'profile' && (
                 <form onSubmit={saveProfile} className="settings-remote-grid">
@@ -469,7 +498,13 @@ const ConfigurationsRemote = () => {
                 </div>
             )}
 
-            <div className="settings-remote-footer"><button type="button" className="settings-logout" onClick={logout}><LogOut size={17} /> Sair da conta</button></div>
+                </main>
+            </div>
+
+            <div className="settings-remote-footer">
+                <div><strong>Sessão e segurança</strong><span>Encerre o acesso neste dispositivo.</span></div>
+                <button type="button" className="settings-logout" onClick={logout}><LogOut size={17} /> Sair da conta</button>
+            </div>
         </div>
     );
 };
