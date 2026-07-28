@@ -3,6 +3,7 @@ import { Bell, Check, LoaderCircle, LogOut, RefreshCw, Settings as SettingsIcon,
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { settingsService } from '../services/checklistProducaoService';
+import { logger } from '../lib/logger';
 import '../styles/settings-remote.css';
 
 const DEFAULT_PREFERENCES = {
@@ -31,6 +32,14 @@ const SettingsRemote = () => {
             });
             setPreferences({ ...DEFAULT_PREFERENCES, ...(data.profile?.preferences || {}) });
         } catch (loadError) {
+            logger.error({
+                file: 'client/src/pages/SettingsRemote.jsx',
+                function: 'SettingsRemote.loadSettings',
+                operation: 'settings.load',
+                errorCode: 'SETTINGS_LOAD_FAILED',
+                userId: user?.id,
+                error: loadError,
+            });
             setError(loadError instanceof Error ? loadError.message : 'Não foi possível carregar as configurações.');
         } finally {
             setLoading(false);
@@ -57,6 +66,14 @@ const SettingsRemote = () => {
             });
             toast.success('Configurações salvas.');
         } catch (saveError) {
+            logger.error({
+                file: 'client/src/pages/SettingsRemote.jsx',
+                function: 'SettingsRemote.saveSettings',
+                operation: 'settings.save',
+                errorCode: 'SETTINGS_SAVE_FAILED',
+                userId: user?.id,
+                error: saveError,
+            });
             toast.error(saveError instanceof Error ? saveError.message : 'Não foi possível salvar as configurações.');
         } finally {
             setSaving(false);
@@ -66,6 +83,13 @@ const SettingsRemote = () => {
     const clearCache = () => {
         if (window.confirm('Isso apagará apenas dados locais não sincronizados. Continuar?')) {
             window.localStorage.clear();
+            logger.info({
+                file: 'client/src/pages/SettingsRemote.jsx',
+                function: 'SettingsRemote.clearCache',
+                operation: 'settings.cache.clear',
+                status: 'success',
+                userId: user?.id,
+            });
             toast.success('Dados locais limpos.');
         }
     };

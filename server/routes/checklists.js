@@ -75,7 +75,16 @@ router.get('/:id', (req, res) => {
 
         res.json({ ...checklist, items });
     } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch checklist' });
+        logger.error({
+            file: 'server/routes/checklists.js',
+            function: 'checklists.getById',
+            operation: 'checklist.get',
+            errorCode: 'CHECKLIST_GET_FAILED',
+            correlationId: req.correlationId,
+            checklistId: req.params.id,
+            error,
+        });
+        res.status(500).json({ error: 'Failed to fetch checklist', correlationId: req.correlationId });
     }
 });
 

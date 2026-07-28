@@ -1,5 +1,6 @@
 import { createElement, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { logger } from '../lib/logger';
 import {
     User,
     Bell,
@@ -68,6 +69,13 @@ const Settings = () => {
     });
 
     const handleSaveProfile = async () => {
+        logger.warn({
+            file: 'client/src/pages/Settings.jsx',
+            function: 'Settings.handleSaveProfile',
+            operation: 'settings.profile.save',
+            status: 'degraded',
+            errorCode: 'LEGACY_SETTINGS_MOCK_PATH',
+        });
         setLoading(true);
         // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -76,6 +84,13 @@ const Settings = () => {
     };
 
     const handleSync = async () => {
+        logger.warn({
+            file: 'client/src/pages/Settings.jsx',
+            function: 'Settings.handleSync',
+            operation: 'settings.sync',
+            status: 'degraded',
+            errorCode: 'LEGACY_SETTINGS_SYNC_MOCK_PATH',
+        });
         const toastId = toast.loading('Sincronizando dados...');
         await new Promise(resolve => setTimeout(resolve, 2000));
         toast.success('Tudo atualizado!', { id: toastId });
@@ -84,6 +99,12 @@ const Settings = () => {
     const handleClearCache = () => {
         if (window.confirm('Isso apagará dados offline não salvos. Continuar?')) {
             localStorage.clear();
+            logger.info({
+                file: 'client/src/pages/Settings.jsx',
+                function: 'Settings.handleClearCache',
+                operation: 'settings.cache.clear',
+                status: 'success',
+            });
             window.location.reload();
         }
     };

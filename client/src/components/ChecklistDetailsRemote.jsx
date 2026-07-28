@@ -4,6 +4,7 @@ import { AlertTriangle, ArrowLeft, Camera, CheckCircle2, ChevronDown, ChevronUp,
 import { jsPDF } from 'jspdf';
 import toast from 'react-hot-toast';
 import { executionService } from '../services/checklistProducaoService';
+import { logger } from '../lib/logger';
 import '../styles/details-remote.css';
 
 const answerLabel = (answer) => {
@@ -31,6 +32,14 @@ const ChecklistDetailsRemote = () => {
                 if (active) setExecution(data);
             })
             .catch((loadError) => {
+                logger.error({
+                    file: 'client/src/components/ChecklistDetailsRemote.jsx',
+                    function: 'ChecklistDetailsRemote.loadExecution',
+                    operation: 'execution.details.load',
+                    errorCode: 'EXECUTION_DETAILS_LOAD_FAILED',
+                    executionId,
+                    error: loadError,
+                });
                 if (active) setError(loadError instanceof Error ? loadError.message : 'Não foi possível carregar a execução.');
             })
             .finally(() => {
@@ -62,27 +71,56 @@ const ChecklistDetailsRemote = () => {
     }), [itemRows]);
 
     const generatePDF = () => {
-        if (!execution) return;
-        const doc = new jsPDF();
-        const title = execution.checklist_title || execution.checklist_snapshot?.title || 'Checklist';
-        doc.setFontSize(16);
-        doc.text('Relatório: ' + title, 20, 20);
-        doc.setFontSize(10);
-        doc.text('Executado por: ' + (execution.user_name || 'Usuário'), 20, 30);
-        doc.text('Data: ' + new Date(execution.started_at || execution.created_at).toLocaleString('pt-BR'), 20, 38);
-        doc.text('Score: ' + (execution.score ?? execution.progress ?? 0) + '%', 20, 46);
-        let y = 62;
-        itemRows.forEach((item) => {
-            const line = '- ' + (item.title || item.text || 'Item') + ': ' + answerLabel(item.answer);
-            doc.text(line.slice(0, 105), 20, y);
-            y += 8;
-            if (y > 280) {
-                doc.addPage();
-                y = 20;
-            }
-        });
-        doc.save('checklist-' + execution.id + '.pdf');
-        toast.success('PDF gerado com os dados da execução.');
+        if (!execution) {
+            logger.warn({
+                file: 'client/src/components/ChecklistDetailsRemote.jsx',
+                function: 'ChecklistDetailsRemote.generatePDF',
+                operation: 'execution.pdf.generate',
+                errorCode: 'EXECUTION_DETAILS_NOT_LOADED',
+                executionId,
+            });
+            return;
+        }
+
+        try {
+            const doc = new jsPDF();
+            const title = execution.checklist_title || execution.checklist_snapshot?.title || 'Checklist';
+            doc.setFontSize(16);
+            doc.text('Relatório: ' + title, 20, 20);
+            doc.setFontSize(10);
+            doc.text('Executado por: ' + (execution.user_name || 'Usuário'), 20, 30);
+            doc.text('Data: ' + new Date(execution.started_at || execution.created_at).toLocaleString('pt-BR'), 20, 38);
+            doc.text('Score: ' + (execution.score ?? execution.progress ?? 0) + '%', 20, 46);
+            let y = 62;
+            itemRows.forEach((item) => {
+                const line = '- ' + (item.title || item.text || 'Item') + ': ' + answerLabel(item.answer);
+                doc.text(line.slice(0, 105), 20, y);
+                y += 8;
+                if (y > 280) {
+                    doc.addPage();
+                    y = 20;
+                }
+            });
+            doc.save('checklist-' + execution.id + '.pdf');
+            logger.info({
+                file: 'client/src/components/ChecklistDetailsRemote.jsx',
+                function: 'ChecklistDetailsRemote.generatePDF',
+                operation: 'execution.pdf.generate',
+                status: 'success',
+                executionId: execution.id,
+            });
+            toast.success('PDF gerado com os dados da execução.');
+        } catch (pdfError) {
+            logger.error({
+                file: 'client/src/components/ChecklistDetailsRemote.jsx',
+                function: 'ChecklistDetailsRemote.generatePDF',
+                operation: 'execution.pdf.generate',
+                errorCode: 'EXECUTION_PDF_GENERATE_FAILED',
+                executionId: execution.id,
+                error: pdfError,
+            });
+            toast.error('Não foi possível gerar o PDF.');
+        }
     };
 
     if (loading) {

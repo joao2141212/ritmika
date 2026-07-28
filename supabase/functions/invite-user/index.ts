@@ -7,8 +7,27 @@ const corsHeaders = {
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
+const errorText = (error: unknown) => error instanceof Error ? error.message : String(error);
+
 const json = (body: Record<string, unknown>, status = 200) => {
     const correlationId = body?.correlationId;
+    if (status >= 400) {
+        console.warn(JSON.stringify({
+            app: 'ritmika',
+            layer: 'edge-function',
+            level: status >= 500 ? 'error' : 'warn',
+            at: new Date().toISOString(),
+            eventId: crypto.randomUUID(),
+            file: 'supabase/functions/invite-user/index.ts',
+            function: 'invite-user.jsonResponse',
+            operation: 'invite-user.response',
+            errorCode: `EDGE_HTTP_${status}`,
+            correlationId,
+            statusCode: status,
+            error: errorText(body?.error || 'Edge Function response error').slice(0, 500),
+            stack: new Error().stack?.slice(0, 2000),
+        }));
+    }
     return new Response(JSON.stringify(body), {
         status,
         headers: {
@@ -18,8 +37,6 @@ const json = (body: Record<string, unknown>, status = 200) => {
         },
     });
 };
-
-const errorText = (error: unknown) => error instanceof Error ? error.message : String(error);
 
 const logError = (correlationId: string, fn: string, error: unknown, context: Record<string, unknown> = {}) => {
     console.error(JSON.stringify({
