@@ -32,7 +32,9 @@ const SidebarItem = ({ to, icon, label, active }) => (
 const Layout = () => {
     const { user, logout } = useAuth();
     const location = useLocation();
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(() => (
+        typeof window === 'undefined' ? true : window.innerWidth > 760
+    ));
 
     return (
         <div className="app-layout">
