@@ -31,3 +31,15 @@ export const toPlainText = (value) => {
         .replace(/&quot;/gi, '"')
         .replace(/&#39;/gi, "'"));
 };
+
+export const normalizeSearchText = (value) => toPlainText(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase('pt-BR')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+export const matchesSearchText = (value, query) => {
+    const normalizedQuery = normalizeSearchText(query);
+    return !normalizedQuery || normalizeSearchText(value).includes(normalizedQuery);
+};

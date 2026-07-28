@@ -176,7 +176,7 @@ const ChecklistWorkspace = () => {
     }, [loadChecklists]);
 
     const filteredChecklists = useMemo(() => {
-        const normalizedQuery = query.trim().toLocaleLowerCase();
+        const normalizedQuery = normalizeSearchText(query);
         return checklists.filter((checklist) => {
             const matchesFilter = filter === 'all'
                 || (filter === 'published' && isPublished(checklist))
@@ -197,18 +197,18 @@ const ChecklistWorkspace = () => {
                 checklist.sector_name,
                 checklist.moment_name,
                 responsible,
-            ].filter(Boolean).join(' ').toLocaleLowerCase();
+            ].filter(Boolean).join(' ');
             const matchesColumnFilters = (!columnFilters.checklist
-                || titleOf(checklist).toLocaleLowerCase().includes(columnFilters.checklist.toLocaleLowerCase()))
+                || matchesSearchText(titleOf(checklist), columnFilters.checklist))
                 && (!columnFilters.responsible
-                    || responsible.toLocaleLowerCase().includes(columnFilters.responsible.toLocaleLowerCase()))
+                    || matchesSearchText(responsible, columnFilters.responsible))
                 && (!columnFilters.sector
-                    || String(checklist.sector_name || '').toLocaleLowerCase().includes(columnFilters.sector.toLocaleLowerCase()))
+                    || matchesSearchText(checklist.sector_name, columnFilters.sector))
                 && (!columnFilters.status || status === columnFilters.status)
                 && (!columnFilters.moment
-                    || String(checklist.moment_name || '').toLocaleLowerCase().includes(columnFilters.moment.toLocaleLowerCase()));
+                    || matchesSearchText(checklist.moment_name, columnFilters.moment));
             return matchesFilter && matchesUnit && matchesSector && matchesMoment && matchesFolder && matchesColumnFilters
-                && (!normalizedQuery || searchable.includes(normalizedQuery));
+                && (!normalizedQuery || normalizeSearchText(searchable).includes(normalizedQuery));
         });
     }, [checklists, columnFilters, filter, folderFilter, momentFilter, query, sectorFilter, unitFilter]);
 
@@ -958,3 +958,4 @@ const ChecklistWorkspace = () => {
 };
 
 export default ChecklistWorkspace;
+import { matchesSearchText, normalizeSearchText } from '../lib/plainText';
