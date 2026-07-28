@@ -105,6 +105,30 @@ const ChecklistWorkspace = () => {
     const [moveFolderId, setMoveFolderId] = useState('');
     const [editingChecklistId, setEditingChecklistId] = useState(null);
 
+    useEffect(() => {
+        if (!columnsOpen && !bulkMenuOpen) return undefined;
+
+        const closeMenus = () => {
+            setColumnsOpen(false);
+            setBulkMenuOpen(false);
+        };
+        const closeOnOutsidePointer = (event) => {
+            if (!(event.target instanceof Element) || !event.target.closest('.checklist-menu-anchor')) {
+                closeMenus();
+            }
+        };
+        const closeOnEscape = (event) => {
+            if (event.key === 'Escape') closeMenus();
+        };
+
+        document.addEventListener('pointerdown', closeOnOutsidePointer);
+        document.addEventListener('keydown', closeOnEscape);
+        return () => {
+            document.removeEventListener('pointerdown', closeOnOutsidePointer);
+            document.removeEventListener('keydown', closeOnEscape);
+        };
+    }, [columnsOpen, bulkMenuOpen]);
+
     const closeEditor = useCallback(() => setEditingChecklistId(null), []);
 
     useEffect(() => {
@@ -559,7 +583,10 @@ const ChecklistWorkspace = () => {
                     <button
                         type="button"
                         className="light-button ghost"
-                        onClick={() => setColumnsOpen((current) => !current)}
+                        onClick={() => {
+                            setColumnsOpen((current) => !current);
+                            setBulkMenuOpen(false);
+                        }}
                         aria-expanded={columnsOpen}
                     >
                         <Columns3 size={15} /> Colunas
@@ -588,7 +615,10 @@ const ChecklistWorkspace = () => {
                     <button
                         type="button"
                         className="light-button ghost"
-                        onClick={() => setBulkMenuOpen((current) => !current)}
+                        onClick={() => {
+                            setBulkMenuOpen((current) => !current);
+                            setColumnsOpen(false);
+                        }}
                         aria-expanded={bulkMenuOpen}
                     >
                         <MoreHorizontal size={15} /> Ações em massa
