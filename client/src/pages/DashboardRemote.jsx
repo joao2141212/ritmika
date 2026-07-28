@@ -125,6 +125,7 @@ const DashboardRemote = () => {
     const [activeTab, setActiveTab] = useState('todo');
     const [periodDays, setPeriodDays] = useState(30);
     const [dashboardFilters, setDashboardFilters] = useState({ unitId: '', sectorId: '', profileId: '', momentId: '', from: '', to: '' });
+    const [filtersOpen, setFiltersOpen] = useState(false);
     const [widgetPrefs, setWidgetPrefs] = useState(DEFAULT_WIDGETS);
     const [customizationOpen, setCustomizationOpen] = useState(false);
     const [savingWidgets, setSavingWidgets] = useState(false);
@@ -192,6 +193,31 @@ const DashboardRemote = () => {
     const visibleDetails = details.slice(detailPage * detailPageSize, (detailPage + 1) * detailPageSize);
     const visibleDetailIds = visibleDetails.map((item) => item.id);
     const allVisibleDetailsSelected = visibleDetailIds.length > 0 && visibleDetailIds.every((id) => selectedDetailIds.includes(id));
+    const activeFilterCount = Object.values(dashboardFilters).filter(Boolean).length;
+    const activeFilterChips = [
+        dashboardFilters.unitId && {
+            key: 'unitId',
+            label: 'Unidade',
+            value: availableFilters.units.find((item) => String(item.id) === String(dashboardFilters.unitId))?.name || 'Selecionada',
+        },
+        dashboardFilters.sectorId && {
+            key: 'sectorId',
+            label: 'Setor',
+            value: availableFilters.sectors.find((item) => String(item.id) === String(dashboardFilters.sectorId))?.name || 'Selecionado',
+        },
+        dashboardFilters.profileId && {
+            key: 'profileId',
+            label: 'Usuário',
+            value: availableFilters.users.find((item) => String(item.id) === String(dashboardFilters.profileId))?.name || 'Selecionado',
+        },
+        dashboardFilters.momentId && {
+            key: 'momentId',
+            label: 'Momento',
+            value: availableFilters.moments.find((item) => String(item.id) === String(dashboardFilters.momentId))?.name || 'Selecionado',
+        },
+        dashboardFilters.from && { key: 'from', label: 'De', value: new Date(`${dashboardFilters.from}T00:00:00`).toLocaleDateString('pt-BR') },
+        dashboardFilters.to && { key: 'to', label: 'Até', value: new Date(`${dashboardFilters.to}T00:00:00`).toLocaleDateString('pt-BR') },
+    ].filter(Boolean);
 
     const updateDashboardFilter = (name, value) => {
         setDashboardFilters((current) => ({ ...current, [name]: value }));
@@ -318,12 +344,38 @@ const DashboardRemote = () => {
     return (
         <div className="dashboard-remote ritmika-light-mode">
             <header className="remote-dashboard-header">
-                <div>
+                <div className="remote-dashboard-heading">
                     <p className="remote-eyebrow">Painel do workspace</p>
                     <h1>Olá, {user?.name || 'gestor'}</h1>
                     <p className="remote-dashboard-subtitle">
                         A operação real do Ritmika, sincronizada com os dados do workspace.
                     </p>
+                </div>
+                <div className="remote-header-actions">
+                    <button type="button" className="remote-refresh-button remote-customize-button" onClick={() => setCustomizationOpen(true)}>
+                        <SlidersHorizontal size={16} /> Personalizar
+                    </button>
+                    <button
+                        type="button"
+                        className="remote-icon-button"
+                        aria-label="Abrir notificações"
+                        onClick={() => navigate('/notifications')}
+                    >
+                        <Bell size={20} />
+                        {stats.unreadNotifications > 0 && <span>{stats.unreadNotifications}</span>}
+                    </button>
+                    <button type="button" className="remote-refresh-button" onClick={loadDashboard} disabled={loading}>
+                        <RefreshCw size={16} className={loading ? 'is-spinning' : ''} />
+                        Atualizar
+                    </button>
+                    <button type="button" className="remote-refresh-button" onClick={exportDashboard} disabled={loading}>
+                        Exportar
+                    </button>
+                </div>
+            </header>
+
+            <section className="remote-filter-shell" aria-label="Filtros do dashboard">
+                <div className="remote-filter-toolbar">
                     <label className="remote-period-control">
                         <span>Período</span>
                         <select
@@ -337,7 +389,49 @@ const DashboardRemote = () => {
                             <option value="all">Todo o histórico</option>
                         </select>
                     </label>
-                    <div className="remote-dashboard-filters" aria-label="Filtros do dashboard">
+                    <label className="remote-primary-filter">
+                        <span>Unidade</span>
+                        <select value={dashboardFilters.unitId} onChange={(event) => updateDashboardFilter('unitId', event.target.value)}>
+                            <option value="">Todas</option>
+                            {availableFilters.units.map((unit) => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
+                        </select>
+                    </label>
+                    <label className="remote-primary-filter">
+                        <span>Setor</span>
+                        <select value={dashboardFilters.sectorId} onChange={(event) => updateDashboardFilter('sectorId', event.target.value)}>
+                            <option value="">Todos</option>
+                            {availableFilters.sectors.map((sector) => <option key={sector.id} value={sector.id}>{sector.name}</option>)}
+                        </select>
+                    </label>
+                    <button
+                        type="button"
+                        className={`remote-filter-trigger${filtersOpen ? ' is-open' : ''}`}
+                        onClick={() => setFiltersOpen((current) => !current)}
+                        aria-expanded={filtersOpen}
+                        aria-controls="dashboard-advanced-filters"
+                    >
+                        <SlidersHorizontal size={17} />
+                        Mais filtros
+                        {activeFilterCount > 0 && <span>{activeFilterCount}</span>}
+                    </button>
+                    {activeFilterCount > 0 && (
+                        <button type="button" className="remote-filter-clear" onClick={clearDashboardFilters}>
+                            Limpar
+                        </button>
+                    )}
+                </div>
+
+                {filtersOpen && (
+                    <div className="remote-dashboard-filters" id="dashboard-advanced-filters">
+                        <div className="remote-filter-panel-heading">
+                            <div>
+                                <strong>Filtros avançados</strong>
+                                <span>Refine a operação exibida no painel.</span>
+                            </div>
+                            <button type="button" aria-label="Fechar filtros" onClick={() => setFiltersOpen(false)}>
+                                <X size={18} />
+                            </button>
+                        </div>
                         <label>
                             <span>Unidade</span>
                             <select value={dashboardFilters.unitId} onChange={(event) => updateDashboardFilter('unitId', event.target.value)}>
@@ -374,33 +468,33 @@ const DashboardRemote = () => {
                             <span>Até</span>
                             <input type="date" value={dashboardFilters.to} onChange={(event) => updateDashboardFilter('to', event.target.value)} />
                         </label>
-                        <button type="button" className="remote-link-button" onClick={clearDashboardFilters} disabled={!Object.values(dashboardFilters).some(Boolean)}>
-                            Limpar filtros
-                        </button>
+                        <div className="remote-filter-panel-actions">
+                            <button type="button" className="remote-filter-clear" onClick={clearDashboardFilters} disabled={!activeFilterCount}>
+                                Limpar filtros
+                            </button>
+                            <button type="button" className="remote-filter-done" onClick={() => setFiltersOpen(false)}>
+                                Ver resultados
+                            </button>
+                        </div>
                     </div>
-                </div>
-                <div className="remote-header-actions">
-                    <button type="button" className="remote-refresh-button" onClick={() => setCustomizationOpen(true)}>
-                        <SlidersHorizontal size={16} /> Personalizar dashboard
-                    </button>
-                    <button
-                        type="button"
-                        className="remote-icon-button"
-                        aria-label="Abrir notificações"
-                        onClick={() => navigate('/notifications')}
-                    >
-                        <Bell size={20} />
-                        {stats.unreadNotifications > 0 && <span>{stats.unreadNotifications}</span>}
-                    </button>
-                    <button type="button" className="remote-refresh-button" onClick={loadDashboard} disabled={loading}>
-                        <RefreshCw size={16} className={loading ? 'is-spinning' : ''} />
-                        Atualizar
-                    </button>
-                    <button type="button" className="remote-refresh-button" onClick={exportDashboard} disabled={loading}>
-                        Exportar
-                    </button>
-                </div>
-            </header>
+                )}
+
+                {activeFilterChips.length > 0 && (
+                    <div className="remote-active-filters" aria-label="Filtros ativos">
+                        {activeFilterChips.map((filter) => (
+                            <button
+                                type="button"
+                                key={filter.key}
+                                onClick={() => updateDashboardFilter(filter.key, '')}
+                                aria-label={`Remover filtro ${filter.label}: ${filter.value}`}
+                            >
+                                <span>{filter.label}: <strong>{filter.value}</strong></span>
+                                <X size={14} />
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </section>
 
             {widgetPrefs.summary && <section className="remote-summary-grid" aria-label="Resumo operacional">
                 <StatCard label="Agendados" value={stats.totalScheduled} helper="Execuções importadas" tone="primary" />
