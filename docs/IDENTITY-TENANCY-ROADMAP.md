@@ -82,7 +82,8 @@ não contas órfãs. As verificações reais retornaram zero para:
 
 ### P0 antes de declarar paridade de administração
 
-- [ ] Publicar a Edge Function `invite-user` e provar convite em fixture QA.
+- [x] Publicar a Edge Function `invite-user` com JWT obrigatório.
+- [ ] Provar convite e retry em fixture QA, sem tocar dados do cliente.
 - [ ] Criar seletor visual de empresa para um usuário com múltiplos
   memberships e provar troca sem vazamento de tenant.
 - [ ] Remover qualquer escrita de role/profile que não passe pela autoridade
