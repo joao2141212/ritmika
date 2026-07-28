@@ -22,6 +22,18 @@ Para cada achado:
 Um build verde, HTTP 200 ou aparência plausível não encerra um achado de
 produção. O item só é fechado com a prova correspondente ao risco.
 
+## Evidência de produção
+
+| Data | Evidência | Resultado |
+| --- | --- | --- |
+| 2026-07-28 | Commit 2dc75b5 enviado para main e bundle index-DCIJuwv3.js servido por https://ritmikapp.netlify.app | Deploy Git conectado confirmado no domínio publicado |
+| 2026-07-28 | DOM da tela de login: formulário, campos Email e Senha com labels associados e botão Entrar habilitado | Login público renderizado sem erro de runtime observado |
+| 2026-07-28 | Abertura de /checklists sem sessão | Redirecionamento para /login confirmado, sem acesso indevido |
+
+Lacuna ativa: a sessão controlada não possui credencial QA autenticada. Fluxos
+com dados, escrita e responsividade de Checklists, Notificações, Cursos,
+Unidades e Setores não devem ser marcados como testados até usar uma conta QA.
+
 ## Achados abertos
 
 | ID | Área | Evidência | Prioridade | Próxima ação e aceite |
