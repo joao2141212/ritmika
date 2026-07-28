@@ -197,7 +197,11 @@
 }
 
 .sidebar.closed {
-    width: 80px;
+    width: 96px;
+}
+
+.sidebar.closed .sidebar-header {
+    padding-inline: 8px;
 }
 
 .sidebar.closed .sidebar-item {
