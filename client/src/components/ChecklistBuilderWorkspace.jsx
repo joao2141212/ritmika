@@ -83,9 +83,10 @@ const itemsFromChecklist = (checklist) => {
     return [emptyItem()];
 };
 
-const ChecklistBuilderWorkspace = () => {
+const ChecklistBuilderWorkspace = ({ checklistId, embedded = false, onClose, onSaved }) => {
     const navigate = useNavigate();
-    const { id } = useParams();
+    const { id: routeId } = useParams();
+    const id = checklistId || routeId;
     const editing = Boolean(id);
     const [loading, setLoading] = useState(editing);
     const [saving, setSaving] = useState(false);
@@ -298,7 +299,9 @@ const ChecklistBuilderWorkspace = () => {
                 await checklistProducaoService.create(payload);
             }
             toast.success(statusOverride === 'ativo' ? 'Checklist publicado.' : 'Rascunho salvo.');
-            navigate('/checklists');
+            if (onSaved) await onSaved();
+            if (embedded) onClose?.();
+            else navigate('/checklists');
         } catch (saveError) {
             logger.error({
                 fn: 'ChecklistBuilderWorkspace.handleSave',
@@ -321,7 +324,7 @@ const ChecklistBuilderWorkspace = () => {
     if (error) {
         return (
             <section className="ritmika-light-mode">
-                <div className="error-state"><p>{error}</p><button type="button" className="light-button secondary" onClick={() => navigate('/checklists')}>Voltar</button></div>
+                <div className="error-state"><p>{error}</p><button type="button" className="light-button secondary" onClick={() => embedded ? onClose?.() : navigate('/checklists')}>Voltar</button></div>
             </section>
         );
     }
@@ -330,7 +333,7 @@ const ChecklistBuilderWorkspace = () => {
         <section className="ritmika-light-mode">
             <header className="builder-topbar">
                 <div>
-                    <button type="button" className="light-button secondary" onClick={() => navigate('/checklists')}>
+                    <button type="button" className="light-button secondary" onClick={() => embedded ? onClose?.() : navigate('/checklists')}>
                         <ArrowLeft size={16} /> Checklists
                     </button>
                     <p className="builder-eyebrow">{editing ? 'Editar modelo' : 'Novo modelo'}</p>

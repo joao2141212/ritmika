@@ -21,6 +21,66 @@
     box-sizing: border-box;
 }
 
+.checklist-editor-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: rgba(20, 33, 43, 0.46);
+    backdrop-filter: blur(4px);
+}
+
+.checklist-editor-dialog {
+    position: relative;
+    width: min(1440px, 100%);
+    max-height: calc(100dvh - 48px);
+    overflow: auto;
+    border: 1px solid #d5e2e5;
+    border-radius: 24px;
+    background: #f5f8f9;
+    box-shadow: 0 32px 90px rgba(20, 33, 43, 0.28);
+}
+
+.checklist-editor-dialog > .ritmika-light-mode {
+    min-height: auto;
+    padding-top: 64px;
+}
+
+.checklist-editor-close {
+    position: sticky;
+    top: 16px;
+    z-index: 4;
+    float: right;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    margin: 16px 16px -58px 0;
+    border: 1px solid #d5e2e5;
+    border-radius: 12px;
+    background: #fff;
+    color: #314955;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(24, 48, 64, 0.1);
+}
+
+.checklist-editor-close:hover,
+.checklist-editor-close:focus-visible {
+    border-color: #8dcfc3;
+    color: #087d70;
+    outline: none;
+}
+
+.checklist-editor-loading {
+    min-height: 360px;
+    display: grid;
+    place-items: center;
+    color: #617481;
+    font-weight: 700;
+}
+
 .checklist-topbar,
 .builder-topbar,
 .execution-topbar {
@@ -757,6 +817,22 @@
 }
 
 @media (max-width: 680px) {
+    .checklist-editor-backdrop {
+        padding: 0;
+    }
+
+    .checklist-editor-dialog {
+        width: 100%;
+        height: 100dvh;
+        max-height: none;
+        border: 0;
+        border-radius: 0;
+    }
+
+    .checklist-editor-dialog > .ritmika-light-mode {
+        padding: 72px 16px 32px;
+    }
+
     .ritmika-light-mode {
         padding: 18px 14px 30px;
     }

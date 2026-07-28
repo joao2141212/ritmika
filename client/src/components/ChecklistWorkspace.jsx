@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     CalendarDays,
@@ -24,12 +24,15 @@ import {
     Square,
     Table2,
     UsersRound,
+    X,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { checklistProducaoService } from '../services/checklistProducaoService';
 import { logger } from '../lib/logger';
 import '../styles/checklist-workspace.css';
 import '../styles/checklist-parity.css';
+
+const ChecklistBuilderWorkspace = lazy(() => import('./ChecklistBuilderWorkspace'));
 
 const isPublished = (checklist) => ['ativo', 'active'].includes(checklist?.status);
 
@@ -100,6 +103,23 @@ const ChecklistWorkspace = () => {
     const [folderBusy, setFolderBusy] = useState(false);
     const [moveFolderOpen, setMoveFolderOpen] = useState(false);
     const [moveFolderId, setMoveFolderId] = useState('');
+    const [editingChecklistId, setEditingChecklistId] = useState(null);
+
+    const closeEditor = useCallback(() => setEditingChecklistId(null), []);
+
+    useEffect(() => {
+        if (!editingChecklistId) return undefined;
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        const closeOnEscape = (event) => {
+            if (event.key === 'Escape') closeEditor();
+        };
+        window.addEventListener('keydown', closeOnEscape);
+        return () => {
+            document.body.style.overflow = previousOverflow;
+            window.removeEventListener('keydown', closeOnEscape);
+        };
+    }, [closeEditor, editingChecklistId]);
 
     const loadChecklists = useCallback(async () => {
         try {
@@ -740,7 +760,7 @@ const ChecklistWorkspace = () => {
                                             </td>
                                             {columns.checklist && (
                                                 <td>
-                                                    <button type="button" className="checklist-title-link" onClick={() => navigate(`/checklists/${encodeURIComponent(checklist.id)}/edit`)}>
+                                                    <button type="button" className="checklist-title-link" onClick={() => setEditingChecklistId(checklist.id)}>
                                                         {titleOf(checklist)}
                                                     </button>
                                                     <small>{itemsOf(checklist).length} itens</small>
@@ -764,7 +784,7 @@ const ChecklistWorkspace = () => {
                                             {columns.execution && <td>{scheduleOf(checklist)}</td>}
                                             {columns.time && <td>{checklist.schedule_time || schedule.schedule_time || '—'}</td>}
                                             <td className="checklist-table-actions">
-                                                <button type="button" className="icon-button" onClick={() => navigate(`/checklists/${encodeURIComponent(checklist.id)}/edit`)} aria-label={`Editar ${titleOf(checklist)}`} title="Editar">
+                                                <button type="button" className="icon-button" onClick={() => setEditingChecklistId(checklist.id)} aria-label={`Editar ${titleOf(checklist)}`} title="Editar">
                                                     <Pencil size={15} />
                                                 </button>
                                                 <button type="button" className="icon-button" onClick={() => togglePublication(checklist)} disabled={busyId === checklist.id} aria-label={published ? `Desativar ${titleOf(checklist)}` : `Ativar ${titleOf(checklist)}`} title={published ? 'Desativar' : 'Ativar'}>
@@ -847,7 +867,7 @@ const ChecklistWorkspace = () => {
                                     <button
                                         type="button"
                                         className="light-button secondary"
-                                        onClick={() => navigate(`/checklists/${encodeURIComponent(checklist.id)}/edit`)}
+                                        onClick={() => setEditingChecklistId(checklist.id)}
                                     >
                                         <Pencil size={15} /> Editar
                                     </button>
@@ -864,6 +884,24 @@ const ChecklistWorkspace = () => {
                             </article>
                         );
                     })}
+                </div>
+            )}
+
+            {editingChecklistId && (
+                <div className="checklist-editor-backdrop">
+                    <section className="checklist-editor-dialog" role="dialog" aria-modal="true" aria-label="Editar checklist">
+                        <button type="button" className="checklist-editor-close" onClick={closeEditor} aria-label="Fechar editor" autoFocus>
+                            <X size={20} />
+                        </button>
+                        <Suspense fallback={<div className="checklist-editor-loading" role="status">Abrindo editor…</div>}>
+                            <ChecklistBuilderWorkspace
+                                checklistId={editingChecklistId}
+                                embedded
+                                onClose={closeEditor}
+                                onSaved={loadChecklists}
+                            />
+                        </Suspense>
+                    </section>
                 </div>
             )}
 
