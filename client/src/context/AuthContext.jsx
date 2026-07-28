@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { logger } from '../lib/logger';
 import { resolveWorkspaceMembership } from '../data/workspaceIdentity';
@@ -8,31 +8,31 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [workspaceSelection, setWorkspaceSelection] = useState(null);
 
-    useEffect(() => {
-        // Check active session
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (session?.user) {
-                loadUserProfile(session.user.id);
-            } else {
-                setLoading(false);
-            }
+    const prepareWorkspaceSelection = useCallback(async (userId, memberships) => {
+        const workspaceIds = memberships.map((membership) => membership.workspace_id);
+        const { data: workspaces, error } = await supabase
+            .from('ritmika_workspaces')
+            .select('id,name,source_system')
+            .in('id', workspaceIds);
+        if (error) throw error;
+        const workspaceById = new Map((workspaces || []).map((workspace) => [workspace.id, workspace]));
+        setWorkspaceSelection({
+            userId,
+            memberships,
+            options: memberships.map((membership) => ({
+                ...membership,
+                workspace: workspaceById.get(membership.workspace_id) || {
+                    id: membership.workspace_id,
+                    name: 'Empresa sem nome',
+                    source_system: '',
+                },
+            })),
         });
-
-        // Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            if (session?.user) {
-                loadUserProfile(session.user.id);
-            } else {
-                setUser(null);
-                setLoading(false);
-            }
-        });
-
-        return () => subscription.unsubscribe();
     }, []);
 
-    const loadUserProfile = async (userId) => {
+    const loadUserProfile = useCallback(async (userId) => {
         try {
             const { data: memberships, error: membershipError } = await supabase
                 .from('ritmika_workspace_members')
@@ -40,7 +40,17 @@ export const AuthProvider = ({ children }) => {
                 .eq('user_id', userId);
 
             if (membershipError) throw membershipError;
-            const membership = resolveWorkspaceMembership({ userId, memberships });
+            let membership;
+            try {
+                membership = resolveWorkspaceMembership({ userId, memberships });
+            } catch (workspaceError) {
+                if (['WORKSPACE_SELECTION_REQUIRED', 'WORKSPACE_ACCESS_DENIED'].includes(workspaceError?.code)) {
+                    await prepareWorkspaceSelection(userId, memberships || []);
+                    setUser(null);
+                    return { success: false, requiresWorkspaceSelection: true };
+                }
+                throw workspaceError;
+            }
 
             const { data: profile, error } = await supabase
                 .from('ritmika_profiles')
@@ -53,7 +63,8 @@ export const AuthProvider = ({ children }) => {
 
             if (profile) {
                 setUser(profile);
-                return;
+                setWorkspaceSelection(null);
+                return { success: true };
             }
 
             const { data: authData } = await supabase.auth.getUser();
@@ -67,6 +78,8 @@ export const AuthProvider = ({ children }) => {
                 managed_units: membership.managed_units || [],
                 preferences: membership.preferences || {},
             });
+            setWorkspaceSelection(null);
+            return { success: true };
         } catch (error) {
             logger.error({
                 fn: 'AuthContext.loadUserProfile',
@@ -76,8 +89,57 @@ export const AuthProvider = ({ children }) => {
                 context: error?.context || {},
                 error: error instanceof Error ? error.message : String(error),
             });
+            return { success: false, error: error instanceof Error ? error.message : String(error) };
         } finally {
             setLoading(false);
+        }
+    }, [prepareWorkspaceSelection]);
+
+    useEffect(() => {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session?.user) {
+                loadUserProfile(session.user.id);
+            } else {
+                setLoading(false);
+            }
+        });
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            if (session?.user) {
+                loadUserProfile(session.user.id);
+            } else {
+                setUser(null);
+                setWorkspaceSelection(null);
+                setLoading(false);
+            }
+        });
+
+        return () => subscription.unsubscribe();
+    }, [loadUserProfile]);
+
+    const selectWorkspace = async (workspaceId) => {
+        if (!workspaceSelection?.userId) {
+            return { success: false, error: 'Não há uma seleção de empresa pendente.' };
+        }
+        try {
+            resolveWorkspaceMembership({
+                userId: workspaceSelection.userId,
+                memberships: workspaceSelection.memberships,
+                preferredWorkspaceId: workspaceId,
+            });
+            setWorkspaceSelection(null);
+            setLoading(true);
+            return await loadUserProfile(workspaceSelection.userId);
+        } catch (error) {
+            logger.error({
+                fn: 'AuthContext.selectWorkspace',
+                status: 'error',
+                userId: workspaceSelection.userId,
+                workspaceId,
+                errorCode: error?.code || 'WORKSPACE_SELECTION_FAILED',
+                error: error instanceof Error ? error.message : String(error),
+            });
+            return { success: false, error: error instanceof Error ? error.message : String(error) };
         }
     };
 
@@ -92,8 +154,7 @@ export const AuthProvider = ({ children }) => {
                 return { success: false, error: error.message };
             }
 
-            await loadUserProfile(data.user.id);
-            return { success: true };
+            return await loadUserProfile(data.user.id);
         } catch (error) {
             return { success: false, error: error.message };
         }
@@ -102,6 +163,7 @@ export const AuthProvider = ({ children }) => {
     const logout = async () => {
         await supabase.auth.signOut();
         setUser(null);
+        setWorkspaceSelection(null);
     };
 
     const signup = async (email, password, name, role = 'employee') => {
@@ -128,7 +190,15 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, signup, loading }}>
+        <AuthContext.Provider value={{
+            user,
+            login,
+            logout,
+            signup,
+            loading,
+            workspaceSelection,
+            selectWorkspace,
+        }}>
             {children}
         </AuthContext.Provider>
     );

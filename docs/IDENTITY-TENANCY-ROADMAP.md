@@ -84,8 +84,9 @@ não contas órfãs. As verificações reais retornaram zero para:
 
 - [x] Publicar a Edge Function `invite-user` com JWT obrigatório.
 - [ ] Provar convite e retry em fixture QA, sem tocar dados do cliente.
-- [ ] Criar seletor visual de empresa para um usuário com múltiplos
-  memberships e provar troca sem vazamento de tenant.
+- [x] Criar seletor visual de empresa para um usuário com múltiplos
+  memberships, com estados ocupado/erro/logout.
+- [ ] Provar troca entre duas empresas QA sem vazamento de tenant.
 - [x] Remover da interface a escrita direta de role/profile.
 - [x] Criar operação backend `manage-member` para atualizar membership +
   espelho do profile, com autorização, telemetria e resultado idempotente.

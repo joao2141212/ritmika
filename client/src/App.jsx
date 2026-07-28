@@ -14,6 +14,7 @@ const Configurations = lazy(() => import('./pages/ConfigurationsRemote'));
 const ChecklistContagem = lazy(() => import('./pages/ChecklistContagem'));
 const ChecklistHistorico = lazy(() => import('./pages/ChecklistHistorico'));
 const Team = lazy(() => import('./pages/TeamRemote'));
+const WorkspaceSelection = lazy(() => import('./pages/WorkspaceSelection'));
 const Notifications = lazy(() => import('./pages/Notifications'));
 const AIAnalyses = lazy(() => import('./pages/AIAnalysesRemote'));
 const Courses = lazy(() => import('./pages/CoursesRemote'));
@@ -34,10 +35,18 @@ const AppBoot = () => (
 );
 
 const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { user, loading, workspaceSelection } = useAuth();
 
   if (loading) {
     return <AppBoot />;
+  }
+
+  if (workspaceSelection) {
+    return (
+      <Suspense fallback={<AppBoot />}>
+        <WorkspaceSelection />
+      </Suspense>
+    );
   }
 
   if (!user) {
