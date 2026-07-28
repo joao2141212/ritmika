@@ -128,6 +128,7 @@
 
 .remote-dashboard-filters {
     position: absolute;
+    box-sizing: border-box;
     top: calc(100% + 8px);
     right: 0;
     display: grid;
@@ -243,6 +244,18 @@
 }
 
 @media (max-width: 600px) {
+    .dashboard-remote.filters-open::before {
+        position: fixed;
+        z-index: 60;
+        inset: 0;
+        background: rgba(19, 39, 49, 0.34);
+        content: "";
+    }
+
+    .dashboard-remote.filters-open .dashboard-floating-actions {
+        display: none;
+    }
+
     .remote-dashboard-header {
         align-items: flex-start;
         gap: 14px;

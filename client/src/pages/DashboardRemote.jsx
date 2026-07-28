@@ -342,7 +342,7 @@ const DashboardRemote = () => {
     };
 
     return (
-        <div className="dashboard-remote ritmika-light-mode">
+        <div className={`dashboard-remote ritmika-light-mode${filtersOpen ? ' filters-open' : ''}`}>
             <header className="remote-dashboard-header">
                 <div className="remote-dashboard-heading">
                     <p className="remote-eyebrow">Painel do workspace</p>
