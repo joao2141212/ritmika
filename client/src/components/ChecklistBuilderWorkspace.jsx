@@ -17,6 +17,7 @@ import {
 import { toast } from 'react-hot-toast';
 import { checklistProducaoService } from '../services/checklistProducaoService';
 import { logger } from '../lib/logger';
+import { toPlainText } from '../lib/plainText';
 import '../styles/checklist-workspace.css';
 
 const typeOptions = [
@@ -58,7 +59,7 @@ const itemFromSource = (item, index) => ({
     ...item,
     id: item.id || makeId(`item-${index + 1}`),
     title: item.title || item.text || item.name || item.nome || `Item ${index + 1}`,
-    description: item.description || item.descricao || '',
+    description: toPlainText(item.description || item.descricao || ''),
     type: item.type || item.tipo_resposta || 'check',
     weight: Number(item.weight ?? item.peso ?? 1),
     required: item.required ?? item.is_required ?? item.obrigatorio !== false,
@@ -149,7 +150,7 @@ const ChecklistBuilderWorkspace = ({ checklistId, embedded = false, onClose, onS
                 setForm((current) => ({
                     ...current,
                     title: checklist.title || checklist.nome || '',
-                    description: checklist.description || checklist.descricao || '',
+                    description: toPlainText(checklist.description || checklist.descricao || ''),
                     status: ['ativo', 'active'].includes(checklist.status) ? 'ativo' : 'inativo',
                     unit: checklist.unit_name || checklist.unit || current.unit,
                     unitId: checklist.unit_id ? String(checklist.unit_id) : current.unitId,
@@ -229,6 +230,8 @@ const ChecklistBuilderWorkspace = ({ checklistId, embedded = false, onClose, onS
             title: item.title.trim(),
             text: item.title.trim(),
             name: item.title.trim(),
+            description: toPlainText(item.description),
+            descricao: toPlainText(item.description),
             order: index,
             is_required: Boolean(item.required),
             required: Boolean(item.required),
@@ -246,8 +249,8 @@ const ChecklistBuilderWorkspace = ({ checklistId, embedded = false, onClose, onS
         return {
             title: form.title.trim(),
             nome: form.title.trim(),
-            description: form.description.trim(),
-            descricao: form.description.trim(),
+            description: toPlainText(form.description),
+            descricao: toPlainText(form.description),
             status,
             unit: form.unit,
             unit_id: form.unitId || null,

@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { logger } from '../lib/logger';
+import { toPlainText } from '../lib/plainText';
 import { resolveWorkspaceMembership } from './workspaceIdentity';
 
 const FILE = 'client/src/data/remoteChecklistRepository.js';
@@ -122,7 +123,7 @@ const normalizeItem = (item, index, checklistId) => {
         name: raw.name || title,
         title,
         text: raw.text || title,
-        description: raw.description || raw.descricao || '',
+        description: toPlainText(raw.description || raw.descricao || ''),
         type,
         order: raw.order ?? raw.ordem ?? index,
         required: Boolean(required),
@@ -169,8 +170,8 @@ const mapChecklist = (row, references) => {
         status,
         nome: row.title || 'Checklist sem título',
         title: row.title || 'Checklist sem título',
-        descricao: row.description || '',
-        description: row.description || '',
+        descricao: toPlainText(row.description || ''),
+        description: toPlainText(row.description || ''),
         tipo: row.checklist_kind || 'operacional',
         frequencia: frequency,
         turno_ativado: Boolean(metadata.turno_ativado || schedule.turno_ativado),
