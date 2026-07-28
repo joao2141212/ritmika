@@ -122,3 +122,13 @@ Uma operação só está concluída quando o comando termina com código zero, a
 consulta de verificação confirma o estado esperado e nenhuma saída contém
 segredo. HTTP aceito, build isolado ou presença de arquivo não certificam o
 estado final por si só.
+## Supabase Auth: inspeção e credenciais
+
+- `supabase/scripts/auth/read/inspect-auth-user.mjs`
+  - Classe: leitura; login opcional com sessão efêmera.
+  - Consolida descoberta do usuário, e-mail Auth, compatibilidade da secret key e verificação de credencial.
+  - Evita repetir consultas SQL, chamadas REST/Admin e testes manuais de senha.
+  - Executar somente pelo runner: `bash supabase/scripts/auth/read/run.sh supabase/scripts/auth/read/inspect-auth-user.mjs ...`.
+- `supabase/scripts/auth/run.sh reset-password`
+  - Classe: mutação protegida por dry-run, `--apply` e confirmação do alvo.
+  - A senha nova entra por `RITMIKA_NEW_PASSWORD`; não deve aparecer em argumentos, logs ou documentação.
