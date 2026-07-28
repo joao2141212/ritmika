@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('../db');
+const { logger } = require('../logger');
 const router = express.Router();
 
 // Create Checklist
@@ -24,8 +25,15 @@ router.post('/', (req, res) => {
 
         res.status(201).json({ message: 'Checklist created', id: checklistId });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Failed to create checklist' });
+        logger.error({
+            file: 'server/routes/checklists.js',
+            function: 'checklists.create',
+            operation: 'checklist.create',
+            errorCode: 'CHECKLIST_CREATE_FAILED',
+            correlationId: req.correlationId,
+            error,
+        });
+        res.status(500).json({ error: 'Failed to create checklist', correlationId: req.correlationId });
     }
 });
 
@@ -35,7 +43,15 @@ router.get('/', (req, res) => {
         const checklists = db.prepare('SELECT * FROM checklists ORDER BY created_at DESC').all();
         res.json(checklists);
     } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch checklists' });
+        logger.error({
+            file: 'server/routes/checklists.js',
+            function: 'checklists.list',
+            operation: 'checklist.list',
+            errorCode: 'CHECKLIST_LIST_FAILED',
+            correlationId: req.correlationId,
+            error,
+        });
+        res.status(500).json({ error: 'Failed to fetch checklists', correlationId: req.correlationId });
     }
 });
 
@@ -43,7 +59,17 @@ router.get('/', (req, res) => {
 router.get('/:id', (req, res) => {
     try {
         const checklist = db.prepare('SELECT * FROM checklists WHERE id = ?').get(req.params.id);
-        if (!checklist) return res.status(404).json({ error: 'Checklist not found' });
+        if (!checklist) {
+            logger.warn({
+                file: 'server/routes/checklists.js',
+                function: 'checklists.getById',
+                operation: 'checklist.get',
+                errorCode: 'CHECKLIST_NOT_FOUND',
+                correlationId: req.correlationId,
+                checklistId: req.params.id,
+            });
+            return res.status(404).json({ error: 'Checklist not found', correlationId: req.correlationId });
+        }
 
         const items = db.prepare('SELECT * FROM checklist_items WHERE checklist_id = ? ORDER BY order_index').all(req.params.id);
 
@@ -96,8 +122,15 @@ router.post('/:id/submit', (req, res) => {
 
         res.status(201).json({ message: 'Submission successful', id: submissionId, pointsEarned });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Failed to submit checklist' });
+        logger.error({
+            file: 'server/routes/checklists.js',
+            function: 'checklists.submit',
+            operation: 'checklist.submit',
+            errorCode: 'CHECKLIST_SUBMIT_FAILED',
+            correlationId: req.correlationId,
+            error,
+        });
+        res.status(500).json({ error: 'Failed to submit checklist', correlationId: req.correlationId });
     }
 });
 

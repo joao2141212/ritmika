@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Plus, Play, Edit, Search, Clock, ListChecks } from 'lucide-react';
 import { checklistProducaoService } from '../services/checklistProducaoService';
+import { logger } from '../lib/logger';
 import '../styles/checklists.css';
 
 const Checklists = () => {
@@ -17,7 +18,13 @@ const Checklists = () => {
                 const data = await checklistProducaoService.getAll();
                 setChecklists(data || []);
             } catch (error) {
-                console.error('Erro ao carregar checklists:', error);
+                logger.error({
+                    file: 'client/src/pages/Checklists.jsx',
+                    function: 'Checklists.loadChecklists',
+                    operation: 'checklists.list',
+                    errorCode: 'CHECKLISTS_LIST_FAILED',
+                    error,
+                });
                 setChecklists([]);
             } finally {
                 setLoading(false);

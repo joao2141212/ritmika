@@ -1,24 +1,29 @@
 import { supabase } from '../lib/supabase';
 import { logger } from '../lib/logger';
 
+const FILE = 'client/src/data/remoteChecklistRepository.js';
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 const isUuid = (value) => UUID_PATTERN.test(String(value || ''));
 
-const errorText = (error) => (error instanceof Error ? error.message : String(error));
-
 const reportError = (fn, error, context = {}) => {
     logger.error({
-        fn: 'remoteChecklistRepository.' + fn,
-        status: 'error',
         ...context,
-        error: errorText(error),
+        file: FILE,
+        function: 'remoteChecklistRepository.' + fn,
+        operation: fn,
+        layer: 'client-data',
+        status: 'error',
+        errorCode: context.errorCode || error?.code || 'SUPABASE_OPERATION_ERROR',
+        error,
     });
 };
 
 const requireSupabase = () => {
     if (!supabase) {
-        throw new Error('Supabase remoto não está configurado.');
+        const error = new Error('Supabase remoto não está configurado.');
+        reportError('requireSupabase', error, { errorCode: 'SUPABASE_CONFIG_MISSING' });
+        throw error;
     }
     return supabase;
 };

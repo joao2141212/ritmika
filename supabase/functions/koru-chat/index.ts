@@ -2,19 +2,36 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-ritmika-correlation-id, x-ritmika-client',
+  'Access-Control-Expose-Headers': 'x-ritmika-correlation-id',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-const json = (body: Record<string, unknown>, status = 200) => new Response(
-    JSON.stringify(body),
-    { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-);
+const json = (body: Record<string, unknown>, status = 200) => {
+    const correlationId = body?.correlationId;
+    return new Response(JSON.stringify(body), {
+        status,
+        headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json',
+            ...(correlationId ? { 'x-ritmika-correlation-id': String(correlationId) } : {}),
+        },
+    });
+};
 
 const errorText = (error: unknown) => error instanceof Error ? error.message : String(error);
 
 const logError = (correlationId: string, fn: string, error: unknown, context: Record<string, unknown> = {}) => {
     console.error(JSON.stringify({
+        app: 'ritmika',
+        layer: 'edge-function',
+        level: 'error',
+        at: new Date().toISOString(),
+        eventId: crypto.randomUUID(),
+        file: 'supabase/functions/koru-chat/index.ts',
+        function: `koru-chat.${fn}`,
+        operation: `koru-chat.${fn}`,
+        errorCode: context.errorCode || 'EDGE_FUNCTION_ERROR',
         fn: `koru-chat.${fn}`,
         status: 'error',
         correlationId,
@@ -24,8 +41,12 @@ const logError = (correlationId: string, fn: string, error: unknown, context: Re
 };
 
 Deno.serve(async (request) => {
-    const correlationId = crypto.randomUUID();
-    if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+  const correlationId = request.headers.get('x-ritmika-correlation-id') || crypto.randomUUID();
+    if (request.method === 'OPTIONS') {
+        return new Response('ok', {
+            headers: { ...corsHeaders, 'x-ritmika-correlation-id': correlationId },
+        });
+    }
     if (request.method !== 'POST') return json({ error: 'Método não permitido.', correlationId }, 405);
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');

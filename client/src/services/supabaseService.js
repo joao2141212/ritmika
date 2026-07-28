@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { logger } from '../lib/logger';
 
 // Checklists
 export const checklistService = {
@@ -82,7 +83,18 @@ export const submissionService = {
             points: pointsEarned
         });
 
-        if (pointsError) console.error('Error updating points:', pointsError);
+    if (pointsError) {
+        logger.error({
+            file: 'client/src/services/supabaseService.js',
+            function: 'submissionService.submit',
+            operation: 'submission.award_points',
+            layer: 'client-data',
+            status: 'error',
+            errorCode: 'POINTS_UPDATE_FAILED',
+            userId,
+            error: pointsError,
+        });
+    }
 
         return { ...submission, pointsEarned };
     },

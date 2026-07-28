@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Calendar, User, Clock } from 'lucide-react';
 import { checklistProducaoService, contagemService, getDiaSemana, formatDate } from '../services/checklistProducaoService';
 import { useAuth } from '../context/AuthContext';
+import { logger } from '../lib/logger';
 import toast from 'react-hot-toast';
 import '../styles/contagem.css';
 
@@ -48,7 +49,14 @@ const ChecklistContagem = () => {
             });
             setContagens(initialContagens);
         } catch (error) {
-            console.error('Erro ao carregar checklist:', error);
+            logger.error({
+                file: 'client/src/pages/ChecklistContagem.jsx',
+                function: 'ChecklistContagem.loadChecklist',
+                operation: 'checklist_count.load',
+                errorCode: 'CHECKLIST_COUNT_LOAD_FAILED',
+                checklistId: id,
+                error,
+            });
             toast.error('Erro ao carregar checklist');
         } finally {
             setLoading(false);

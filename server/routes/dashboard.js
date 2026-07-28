@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('../db');
+const { logger } = require('../logger');
 const router = express.Router();
 
 // Middleware to check auth (simplified for now, assumes valid token check in main server or here)
@@ -33,7 +34,14 @@ router.get('/stats', (req, res) => {
             recentActivity
         });
     } catch (error) {
-        console.error(error);
+        logger.error({
+            file: 'server/routes/dashboard.js',
+            function: 'dashboard.get',
+            operation: 'dashboard.load',
+            errorCode: 'DASHBOARD_LOAD_FAILED',
+            correlationId: req.correlationId,
+            error,
+        });
         res.status(500).json({ error: 'Failed to fetch dashboard stats' });
     }
 });

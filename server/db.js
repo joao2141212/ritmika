@@ -1,7 +1,15 @@
 const Database = require('better-sqlite3');
+const { logger } = require('./logger');
 const path = require('path');
 
-const db = new Database(path.join(__dirname, 'ritmika.db'), { verbose: console.log });
+const db = new Database(path.join(__dirname, 'ritmika.db'), {
+  verbose: (sql) => logger.debug({
+    file: 'server/db.js',
+    function: 'sqlite.verbose',
+    operation: 'sqlite.query',
+    queryLength: String(sql).length,
+  }),
+});
 
 // Initialize Schema
 const initDb = () => {
@@ -122,5 +130,12 @@ const initDb = () => {
 };
 
 initDb();
+logger.info({
+  file: 'server/db.js',
+  function: 'initializeDatabase',
+  operation: 'sqlite.initialize',
+  status: 'success',
+  databasePath: path.join(__dirname, 'ritmika.db'),
+});
 
 module.exports = db;
