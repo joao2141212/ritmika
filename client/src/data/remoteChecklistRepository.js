@@ -2255,8 +2255,13 @@ export const remoteChecklistRepository = {
         if (updates.status) nextMetadata.status = updates.status;
         if (updates.progress !== undefined) nextMetadata.progress = updates.progress;
 
+        const responseData = updates.answers ?? current.response_data ?? {};
+        const answeredCount = Object.values(responseData).filter((value) => (
+            value !== undefined && value !== null && value !== ''
+        )).length;
         const patch = {
-            response_data: updates.answers ?? current.response_data ?? {},
+            response_data: responseData,
+            qtd_items_answered: answeredCount,
             metadata: nextMetadata,
             updated_at: new Date().toISOString(),
         };
@@ -2274,6 +2279,7 @@ export const remoteChecklistRepository = {
         }));
         await recordExecutionEvent(context.workspaceId, execution.id, current.profile_id, 'saved', {
             progress: nextMetadata.progress || 0,
+            answeredCount,
         });
         return execution;
     },
