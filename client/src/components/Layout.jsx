@@ -14,10 +14,12 @@ import {
     LogOut,
     Menu,
     Newspaper,
+    ShieldCheck,
     X,
     Zap
 } from 'lucide-react';
 import '../styles/layout.css';
+import { usePlatformAdmin } from '../hooks/usePlatformAdmin';
 
 const SidebarItem = ({ to, icon, label, active }) => (
     <Link to={to} className={`sidebar-item ${active ? 'active' : ''}`}>
@@ -31,6 +33,7 @@ const SidebarItem = ({ to, icon, label, active }) => (
 
 const Layout = () => {
     const { user, logout } = useAuth();
+    const { isPlatformAdmin } = usePlatformAdmin();
     const location = useLocation();
     const [isSidebarOpen, setIsSidebarOpen] = useState(() => (
         typeof window === 'undefined' ? true : window.innerWidth > 760
@@ -74,6 +77,7 @@ const Layout = () => {
                     <SidebarItem to="/courses" icon={BookOpen} label="Cursos" active={location.pathname.startsWith('/courses')} />
                     <SidebarItem to="/help" icon={HelpCircle} label="Ajuda" active={location.pathname === '/help'} />
                     <SidebarItem to="/ideas" icon={Lightbulb} label="Ideias" active={location.pathname === '/ideas'} />
+                    {isPlatformAdmin && <SidebarItem to="/platform/ideas" icon={ShieldCheck} label="Central master" active={location.pathname === '/platform/ideas'} />}
                     <SidebarItem to="/news" icon={Newspaper} label="Novidades" active={location.pathname === '/news'} />
                 </nav>
 

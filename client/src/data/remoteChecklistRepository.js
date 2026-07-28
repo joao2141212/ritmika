@@ -1853,6 +1853,31 @@ export const remoteChecklistRepository = {
         return unwrap('updateLessonProgress', result, { workspaceId: context.workspaceId, lessonId: String(lessonId) });
     },
 
+    async isPlatformAdmin() {
+        const result = await requireSupabase().rpc('ritmika_is_platform_admin');
+        return Boolean(unwrap('isPlatformAdmin', result));
+    },
+
+    async getPlatformIdeas({ status = '', priority = '', workspaceId = '', search = '' } = {}) {
+        const result = await requireSupabase().rpc('ritmika_admin_list_ideas', {
+            p_status: status || null,
+            p_priority: priority || null,
+            p_workspace_id: workspaceId || null,
+            p_search: search || null,
+        });
+        return unwrap('getPlatformIdeas', result, { status, priority, workspaceId }) || [];
+    },
+
+    async updatePlatformIdea(ideaId, { status, priority, adminNote = '' }) {
+        const result = await requireSupabase().rpc('ritmika_admin_update_idea', {
+            p_idea_id: ideaId,
+            p_status: status,
+            p_priority: priority,
+            p_admin_note: adminNote,
+        });
+        return unwrap('updatePlatformIdea', result, { ideaId, status, priority });
+    },
+
     async getIdeas({ status = '', search = '' } = {}) {
         const context = await getWorkspaceContext();
         const profile = await getProfileForUser(context.workspaceId, context.userId);

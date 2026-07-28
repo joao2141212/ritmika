@@ -251,6 +251,18 @@ export const parityService = {
         return remoteChecklistRepository.updateLessonProgress(lessonId, updates);
     },
 
+    async isPlatformAdmin() {
+        return remoteChecklistRepository.isPlatformAdmin();
+    },
+
+    async getPlatformIdeas(filters) {
+        return remoteChecklistRepository.getPlatformIdeas(filters);
+    },
+
+    async updatePlatformIdea(ideaId, updates) {
+        return remoteChecklistRepository.updatePlatformIdea(ideaId, updates);
+    },
+
     async getIdeas(filters) {
         return remoteChecklistRepository.getIdeas(filters);
     },
