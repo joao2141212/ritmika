@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, Building2, Check, Inbox, LoaderCircle, RefreshCw, Search, ShieldCheck, ThumbsUp } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { checklistProducaoService as parityService } from '../services/checklistProducaoService';
+import { parityService } from '../services/checklistProducaoService';
 import { usePlatformAdmin } from '../hooks/usePlatformAdmin';
 import { normalizeSearchText } from '../lib/plainText';
 import { logger } from '../lib/logger';

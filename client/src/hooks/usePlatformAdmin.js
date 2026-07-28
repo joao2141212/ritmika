@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { checklistProducaoService as parityService } from '../services/checklistProducaoService';
+import { parityService } from '../services/checklistProducaoService';
 import { logger } from '../lib/logger';
 
 export const usePlatformAdmin = () => {
