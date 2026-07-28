@@ -243,6 +243,31 @@
 }
 
 @media (max-width: 600px) {
+    .remote-dashboard-header {
+        align-items: flex-start;
+        gap: 14px;
+        margin-bottom: 18px;
+    }
+
+    .remote-header-actions {
+        width: auto;
+        gap: 7px;
+    }
+
+    .remote-header-actions .remote-refresh-button,
+    .remote-header-actions .remote-icon-button {
+        width: 40px;
+        min-width: 40px;
+        height: 40px;
+        min-height: 40px;
+        padding: 0;
+        justify-content: center;
+    }
+
+    .remote-header-actions .remote-refresh-button span:not(.is-spinning) {
+        display: none;
+    }
+
     .remote-filter-shell {
         margin: -4px 0 18px;
         padding: 10px;

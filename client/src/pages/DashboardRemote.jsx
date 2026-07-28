@@ -352,8 +352,8 @@ const DashboardRemote = () => {
                     </p>
                 </div>
                 <div className="remote-header-actions">
-                    <button type="button" className="remote-refresh-button remote-customize-button" onClick={() => setCustomizationOpen(true)}>
-                        <SlidersHorizontal size={16} /> Personalizar
+                    <button type="button" className="remote-refresh-button remote-customize-button" aria-label="Personalizar dashboard" onClick={() => setCustomizationOpen(true)}>
+                        <SlidersHorizontal size={16} /> <span>Personalizar</span>
                     </button>
                     <button
                         type="button"
@@ -366,10 +366,11 @@ const DashboardRemote = () => {
                     </button>
                     <button type="button" className="remote-refresh-button" onClick={loadDashboard} disabled={loading}>
                         <RefreshCw size={16} className={loading ? 'is-spinning' : ''} />
-                        Atualizar
+                        <span>Atualizar</span>
                     </button>
-                    <button type="button" className="remote-refresh-button" onClick={exportDashboard} disabled={loading}>
-                        Exportar
+                    <button type="button" className="remote-refresh-button" aria-label="Exportar dashboard" onClick={exportDashboard} disabled={loading}>
+                        <Download size={16} />
+                        <span>Exportar</span>
                     </button>
                 </div>
             </header>
