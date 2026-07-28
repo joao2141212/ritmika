@@ -474,3 +474,26 @@ O Ritmika só será marcado como paridade real quando:
 - O ciclo de execução remoto já cobre salvar, concluir, retry/reabrir, eventos e notificações idempotentes.
 - A leitura `supabase/scripts/db/read/verify_security_state.sql` confirmou 16/16 tabelas Ritmika com RLS, 21 policies em 16 tabelas, nenhuma tabela RLS sem policy e bucket de evidências privado.
 - Ainda sem certificação: smoke autenticado no bundle publicado, paridade visual/DOM das telas protegidas do Koncluí e prova diferencial completa de filtros/rankings/gráficos em sessão autenticada.
+
+## Registro de execução 2026-07-28
+
+- O commit `d6a4e81` foi publicado em `origin/main`; o bundle novo chegou ao
+  `ritmikapp.netlify.app` e substituiu o deploy antigo.
+- O card de checklist tinha `height: 200px` e `overflow: hidden` no bundle
+  publicado, cortando os botões. A regra foi corrigida para altura automática
+  e overflow visível em `client/src/styles/checklist-workspace.css`.
+- Smoke QA publicado: o modo cartões exibiu os três botões completos; o clique
+  real em `Executar` abriu a execução do checklist sem erro.
+- Matriz autenticada publicada: dashboard, checklists, equipe, notificações,
+  configurações, cursos, ajuda, ideias, novidades e análises IA abriram com os
+  dados do workspace QA e zero erros de console.
+- As oito abas de Configurações abriram, incluindo Unidades com endereço JSONB,
+  sem crash React, loading preso ou erro de console.
+- A execução QA foi salva e concluída na produção: UI em `2/2`, `100%` e
+  `Execução concluída`; REST autenticado retornou `200` para login, perfil e
+  respostas, com `is_finished=true` e `completed_at` presente.
+- `evidence/` permanece fora do commit por ser artefato gerado de captura,
+  não dependência de runtime nem do deploy.
+- Permanecem fora deste fechamento: comparação visual diferencial completa com
+  o Koncluí, validação mobile dedicada, lifecycle completo de mídias e prova
+  de deploy das Edge Functions.
