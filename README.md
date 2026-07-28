@@ -31,6 +31,10 @@ Git antes de abrir a aplicação.
 O inventário do fork e os limites de evidência estão em
 `APP_FORK_MANIFEST.md` e `FORK_NOTES.md`.
 
+O catálogo de manutenção de banco, empresas, usuários, roles e senhas está em
+`SCRIPT_REGISTRY.md`. Ele é a entrada canônica mesmo quando o indexador exclui
+`supabase/scripts/` do grafo técnico.
+
 ## UI Distillation Compiler
 
 O pacote reutilizável de captura comportamental fica em

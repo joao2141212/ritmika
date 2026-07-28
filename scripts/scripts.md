@@ -1,17 +1,24 @@
 # scripts.md
 
-Automação histórica de setup, schema, seed e deploy. Antes de executar um script, conferir o efeito externo e preferir os scripts canônicos de supabase/scripts/db para operações atuais do banco.
+Mapa canônico da pasta legada `scripts/`. Estes arquivos são bootstrap antigo e
+não são a entrada de manutenção do Ritmika atual. Use `../SCRIPT_REGISTRY.md` e
+`../supabase/scripts/` para operações reais.
 
-## Arquivos
+## SQL legado
 
-- README.md: inventário e instruções da automação.
-- deploy_db.js: orquestração de deploy de banco.
-- deploy_producao.js: orquestração do deploy de produção.
-- deploy_supabase.js: deploy da configuração Supabase.
-- setup_supabase.js: setup Supabase pela integração principal.
-- setup_supabase_direct.js: setup Supabase por conexão direta.
-- supabase_functions.sql: funções SQL históricas.
-- supabase_schema.sql: schema base histórico.
-- supabase_schema_producao.sql: schema de produção histórico.
-- supabase_seed.sql: seed base histórico.
-- supabase_seed_producao.sql: seed de produção histórico.
+- `supabase_schema.sql`: schema histórico; foi saneado para não obter role de metadata editável e restringe a trigger privilegiada.
+- `supabase_schema_producao.sql`: variante histórica de produção.
+- `supabase_functions.sql`: funções auxiliares do modelo histórico.
+- `supabase_seed.sql`: dados demonstrativos históricos; não usar como fixture de cliente.
+- `supabase_seed_producao.sql`: seed histórico de produção; não usar como fixture de cliente.
+
+## Executores legados
+
+- `deploy_db.js` e `deploy_producao.js`: exigem `SUPABASE_DB_URL`; não contêm connection string.
+- `deploy_supabase.js`: exige `SUPABASE_URL`, `SUPABASE_SECRET_KEY` moderna e `RITMIKA_BOOTSTRAP_PASSWORD`.
+- `setup_supabase.js` e `setup_supabase_direct.js`: exigem as mesmas variáveis e mantêm role somente em `app_metadata`.
+
+Nenhum executor contém credencial, senha demo ou projeto Supabase fixo. As
+chaves `sb_secret_` são enviadas somente em `apikey`, nunca como Bearer/JWT.
+
+`README.md` mantém as instruções históricas e aponta de volta para este mapa.

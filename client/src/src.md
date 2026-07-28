@@ -4,10 +4,10 @@ Código fonte do frontend Ritmika.
 
 ## Arquivos
 
-- App.jsx: composição de rotas e providers da aplicação.
+- App.jsx: composição de rotas e providers; carrega cada tela sob demanda e usa um estado inicial acessível em white mode enquanto Auth ou a rota resolvem.
 - App.css: estilos globais associados à composição principal.
 - main.jsx: ponto de entrada React.
-- index.css: tokens e base global de estilos.
+- index.css: tokens, base global, estado inicial de Auth e `skip-link` acessível.
 
 ## Subpastas
 

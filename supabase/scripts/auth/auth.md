@@ -13,6 +13,7 @@ Mapa canônico das operações administrativas de identidade do Ritmika.
 ```bash
 bash supabase/scripts/auth/run.sh inventory
 bash supabase/scripts/auth/run.sh account --user-id <uuid>
+bash supabase/scripts/auth/run.sh workspace --workspace-id <uuid>
 bash supabase/scripts/auth/run.sh reset-password --user-id <uuid>
 bash supabase/scripts/auth/run.sh set-access --user-id <uuid> --workspace-id <uuid> --role operator --owner false
 bash supabase/scripts/auth/run.sh account-state --user-id <uuid> --action ban

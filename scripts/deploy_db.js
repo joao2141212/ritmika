@@ -1,9 +1,10 @@
 const { Client } = require('pg');
 const fs = require('fs');
 
-const connectionString = 'postgresql://postgres.bcckaltuxorkybtzskql:Jp9744030249863@aws-1-us-east-2.pooler.supabase.com:6543/postgres';
+const connectionString = process.env.SUPABASE_DB_URL || "";
 
 async function deploy() {
+    if (!connectionString) throw new Error('SUPABASE_DB_URL_required');
     const client = new Client({ connectionString });
     
     try {
@@ -32,10 +33,10 @@ async function deploy() {
         console.log('✅ Database setup complete!');
         console.log('\n⚠️  Agora crie os usuários manualmente no Supabase Dashboard:');
         console.log('   Authentication > Users > Add user');
-        console.log('\n   pedro@ritmika.com / 123456');
-        console.log('   cliente@demo / 123456');
-        console.log('   joao@ritmika.com / 123456');
-        console.log('   maria@ritmika.com / 123456');
+        console.log('\n   pedro@ritmika.com / senha definida em RITMIKA_BOOTSTRAP_PASSWORD');
+        console.log('   cliente@demo / senha definida em RITMIKA_BOOTSTRAP_PASSWORD');
+        console.log('   joao@ritmika.com / senha definida em RITMIKA_BOOTSTRAP_PASSWORD');
+        console.log('   maria@ritmika.com / senha definida em RITMIKA_BOOTSTRAP_PASSWORD');
         console.log('\n   Depois execute no SQL Editor:');
         console.log(`
 UPDATE public.profiles SET role = 'admin', points = 1250, name = 'Pedro Duarte' WHERE email = 'pedro@ritmika.com';

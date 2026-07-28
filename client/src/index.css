@@ -258,6 +258,93 @@ a:focus-visible {
   background: #f8fafb;
 }
 
+.app-boot {
+  min-height: 100dvh;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 18px;
+  padding: 32px;
+  background: radial-gradient(circle at 50% 36%, #ffffff 0, #f7f9fc 42%, #eef4f5 100%);
+  color: #14212b;
+  text-align: center;
+}
+
+.app-boot-mark {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  border-radius: 16px;
+  background: #0c8c7d;
+  box-shadow: 0 14px 30px rgba(12, 140, 125, 0.2);
+  color: #ffffff;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.app-boot-copy {
+  display: grid;
+  gap: 5px;
+}
+
+.app-boot-copy strong {
+  font-size: 1.08rem;
+  letter-spacing: -0.02em;
+}
+
+.app-boot-copy span {
+  color: #647581;
+  font-size: 0.9rem;
+}
+
+.app-boot-progress {
+  width: min(240px, 64vw);
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #dce8e8;
+}
+
+.app-boot-progress span {
+  display: block;
+  width: 42%;
+  height: 100%;
+  border-radius: inherit;
+  background: #0c8c7d;
+  animation: app-boot-slide 1.15s ease-in-out infinite alternate;
+}
+
+.skip-link {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 100;
+  padding: 10px 14px;
+  border-radius: 9px;
+  background: #14212b;
+  color: #ffffff;
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-160%);
+  transition: transform 160ms ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+  outline: 3px solid rgba(12, 140, 125, 0.3);
+  outline-offset: 3px;
+}
+
+@keyframes app-boot-slide {
+  from { transform: translateX(0); }
+  to { transform: translateX(138%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-boot-progress span { animation: none; width: 68%; }
+}
+
 .contagem-container .form-field input,
 .contagem-container .form-field select,
 .contagem-container .input-group input,

@@ -1,19 +1,23 @@
 const https = require('https');
 const fs = require('fs');
 
-const SUPABASE_URL = 'https://bcckaltuxorkybtzskql.supabase.co';
-const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjY2thbHR1eG9ya3lidHpza3FsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczMjQ4NDAxNywiZXhwIjoyMDQ4MDYwMDE3fQ.4GZ_TSGctt4RkA5LRwrmtg_5JT6YRHh';
+const SUPABASE_URL = process.env.SUPABASE_URL || "";
+const SERVICE_KEY = process.env.SUPABASE_SECRET_KEY || "";
+
+if (!SUPABASE_URL || !SERVICE_KEY.startsWith('sb_secret_')) {
+    throw new Error('SUPABASE_URL_and_modern_SUPABASE_SECRET_KEY_required');
+}
 
 function makeRequest(method, path, data = null) {
     return new Promise((resolve, reject) => {
         const options = {
-            hostname: 'bcckaltuxorkybtzskql.supabase.co',
+            hostname: new URL(SUPABASE_URL).hostname,
             path: path,
             method: method,
             headers: {
                 'Content-Type': 'application/json',
                 'apikey': SERVICE_KEY,
-                'Authorization': `Bearer ${SERVICE_KEY}`
+                'X-Client-Info': 'ritmika-legacy-bootstrap'
             }
         };
 
@@ -40,14 +44,17 @@ function makeRequest(method, path, data = null) {
 }
 
 async function setup() {
+    if (!process.env.RITMIKA_BOOTSTRAP_PASSWORD) {
+        throw new Error('RITMIKA_BOOTSTRAP_PASSWORD_required_for_legacy_demo_users');
+    }
     console.log('🚀 Setup Supabase Ritmika\n');
 
     // Create users
     const users = [
-        { email: 'pedro@ritmika.com', password: '123456', name: 'Pedro Duarte', role: 'admin' },
-        { email: 'cliente@demo', password: '123456', name: 'Cliente Demo', role: 'cliente' },
-        { email: 'joao@ritmika.com', password: '123456', name: 'João Silva', role: 'employee' },
-        { email: 'maria@ritmika.com', password: '123456', name: 'Maria Santos', role: 'employee' }
+        { email: 'pedro@ritmika.com', password: process.env.RITMIKA_BOOTSTRAP_PASSWORD, name: 'Pedro Duarte', role: 'admin' },
+        { email: 'cliente@demo', password: process.env.RITMIKA_BOOTSTRAP_PASSWORD, name: 'Cliente Demo', role: 'cliente' },
+        { email: 'joao@ritmika.com', password: process.env.RITMIKA_BOOTSTRAP_PASSWORD, name: 'João Silva', role: 'employee' },
+        { email: 'maria@ritmika.com', password: process.env.RITMIKA_BOOTSTRAP_PASSWORD, name: 'Maria Santos', role: 'employee' }
     ];
 
     console.log('👥 Criando usuários...\n');
@@ -58,12 +65,14 @@ async function setup() {
                 password: user.password,
                 email_confirm: true,
                 user_metadata: {
-                    name: user.name,
+                    name: user.name
+                },
+                app_metadata: {
                     role: user.role
                 }
             });
 
-            if (result.status === 200 || result.status === 201) {
+            if (result.status >= 200 && result.status < 300) {
                 console.log(`✅ ${user.email} criado`);
             } else {
                 console.log(`⚠️  ${user.email}: ${result.data.msg || result.data.message || 'erro'}`);
@@ -119,8 +128,8 @@ async function setup() {
 
     console.log('\n✅ Setup concluído!\n');
     console.log('📝 Logins:');
-    console.log('   pedro@ritmika.com / 123456');
-    console.log('   cliente@demo / 123456');
+    console.log('   pedro@ritmika.com / senha definida em RITMIKA_BOOTSTRAP_PASSWORD');
+    console.log('   cliente@demo / senha definida em RITMIKA_BOOTSTRAP_PASSWORD');
 }
 
 setup();

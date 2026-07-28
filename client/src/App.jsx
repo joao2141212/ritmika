@@ -1,32 +1,43 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import Layout from './components/Layout';
-import Login from './pages/Login';
 
-import Dashboard from './pages/DashboardRemote';
-import ChecklistWorkspace from './components/ChecklistWorkspace';
-import ChecklistBuilderWorkspace from './components/ChecklistBuilderWorkspace';
-import ChecklistExecutionWorkspace from './components/ChecklistExecutionWorkspace';
-import ChecklistDetails from './components/ChecklistDetailsRemote';
-import Settings from './pages/SettingsRemote';
-import Configurations from './pages/ConfigurationsRemote';
+const Layout = lazy(() => import('./components/Layout'));
+const Login = lazy(() => import('./pages/Login'));
+const Dashboard = lazy(() => import('./pages/DashboardRemote'));
+const ChecklistWorkspace = lazy(() => import('./components/ChecklistWorkspace'));
+const ChecklistBuilderWorkspace = lazy(() => import('./components/ChecklistBuilderWorkspace'));
+const ChecklistExecutionWorkspace = lazy(() => import('./components/ChecklistExecutionWorkspace'));
+const ChecklistDetails = lazy(() => import('./components/ChecklistDetailsRemote'));
+const Settings = lazy(() => import('./pages/SettingsRemote'));
+const Configurations = lazy(() => import('./pages/ConfigurationsRemote'));
+const ChecklistContagem = lazy(() => import('./pages/ChecklistContagem'));
+const ChecklistHistorico = lazy(() => import('./pages/ChecklistHistorico'));
+const Team = lazy(() => import('./pages/TeamRemote'));
+const Notifications = lazy(() => import('./pages/Notifications'));
+const AIAnalyses = lazy(() => import('./pages/AIAnalysesRemote'));
+const Courses = lazy(() => import('./pages/CoursesRemote'));
+const CourseModules = lazy(() => import('./pages/CourseModulesRemote'));
+const Help = lazy(() => import('./pages/HelpRemote'));
+const Ideas = lazy(() => import('./pages/IdeasRemote'));
+const News = lazy(() => import('./pages/NewsRemote'));
 
-import ChecklistContagem from './pages/ChecklistContagem';
-import ChecklistHistorico from './pages/ChecklistHistorico';
-import Team from './pages/TeamRemote';
-import Notifications from './pages/Notifications';
-import AIAnalyses from './pages/AIAnalysesRemote';
-import Courses from './pages/CoursesRemote';
-import CourseModules from './pages/CourseModulesRemote';
-import Help from './pages/HelpRemote';
-import Ideas from './pages/IdeasRemote';
-import News from './pages/NewsRemote';
+const AppBoot = () => (
+  <main className="app-boot" role="status" aria-live="polite">
+    <div className="app-boot-mark" aria-hidden="true">R</div>
+    <div className="app-boot-copy">
+      <strong>Preparando seu espaço</strong>
+      <span>Carregando dados e permissões do Ritmika</span>
+    </div>
+    <div className="app-boot-progress" aria-hidden="true"><span /></div>
+  </main>
+);
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <div style={{ padding: '20px', textAlign: 'center' }}>Carregando Ritmika...</div>;
+    return <AppBoot />;
   }
 
   if (!user) {
@@ -51,6 +62,7 @@ function App() {
             border: '1px solid #dbe4ea'
           }
         }} />
+        <Suspense fallback={<AppBoot />}>
         <Routes>
           <Route path="/login" element={<Login />} />
 
@@ -80,6 +92,7 @@ function App() {
             <Route path="news" element={<News />} />
           </Route>
         </Routes>
+        </Suspense>
       </Router>
     </AuthProvider>
   );

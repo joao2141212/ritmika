@@ -1,5 +1,8 @@
 # Scripts de Setup - Ritmika
 
+> Legado: consulte `scripts.md` antes de executar. A manutenção atual começa em
+> `../SCRIPT_REGISTRY.md` e `../supabase/scripts/`.
+
 Esta pasta contém scripts e arquivos SQL para configuração do Supabase.
 
 ## Arquivos SQL

@@ -1,9 +1,14 @@
 const https = require('https');
 const fs = require('fs');
 
-const PROJECT_REF = 'bcckaltuxorkybtzskql';
-const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJjY2thbHR1eG9ya3lidHpza3FsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczMjQ4NDAxNywiZXhwIjoyMDQ4MDYwMDE3fQ.4GZ_TSGctt4RkA5LRwrmtg_5JT6YRHh';
-const DB_PASSWORD = 'Jp9744030249863';
+const SUPABASE_URL = process.env.SUPABASE_URL || '';
+const PROJECT_REF = SUPABASE_URL ? new URL(SUPABASE_URL).hostname.split('.')[0] : '';
+const SERVICE_KEY = process.env.SUPABASE_SECRET_KEY || "";
+const DB_PASSWORD = process.env.SUPABASE_DB_PASSWORD || "";
+
+if (!SUPABASE_URL || !SERVICE_KEY.startsWith('sb_secret_')) {
+    throw new Error('SUPABASE_URL_and_modern_SUPABASE_SECRET_KEY_required');
+}
 
 function execSQL(sql) {
     return new Promise((resolve, reject) => {
@@ -16,7 +21,6 @@ function execSQL(sql) {
             headers: {
                 'Content-Type': 'application/json',
                 'apikey': SERVICE_KEY,
-                'Authorization': `Bearer ${SERVICE_KEY}`,
                 'Content-Length': data.length
             }
         };
@@ -45,7 +49,7 @@ function createUser(email, password, metadata) {
             email,
             password,
             email_confirm: true,
-            user_metadata: metadata
+            app_metadata: metadata
         });
         
         const options = {
@@ -55,7 +59,6 @@ function createUser(email, password, metadata) {
             headers: {
                 'Content-Type': 'application/json',
                 'apikey': SERVICE_KEY,
-                'Authorization': `Bearer ${SERVICE_KEY}`,
                 'Content-Length': data.length
             }
         };
@@ -84,6 +87,9 @@ function createUser(email, password, metadata) {
 }
 
 async function deploy() {
+    if (!process.env.RITMIKA_BOOTSTRAP_PASSWORD) {
+        throw new Error('RITMIKA_BOOTSTRAP_PASSWORD_required_for_legacy_demo_users');
+    }
     console.log('🚀 Deploying to Supabase...\n');
 
     // 1. Execute Schema
@@ -101,10 +107,10 @@ async function deploy() {
     // 3. Create Users
     console.log('\n👥 Creating users...');
     const users = [
-        { email: 'pedro@ritmika.com', password: '123456', metadata: { name: 'Pedro Duarte', role: 'admin' } },
-        { email: 'cliente@demo', password: '123456', metadata: { name: 'Cliente Demo', role: 'cliente' } },
-        { email: 'joao@ritmika.com', password: '123456', metadata: { name: 'João Silva', role: 'employee' } },
-        { email: 'maria@ritmika.com', password: '123456', metadata: { name: 'Maria Santos', role: 'employee' } }
+        { email: 'pedro@ritmika.com', password: process.env.RITMIKA_BOOTSTRAP_PASSWORD, metadata: { name: 'Pedro Duarte', role: 'admin' } },
+        { email: 'cliente@demo', password: process.env.RITMIKA_BOOTSTRAP_PASSWORD, metadata: { name: 'Cliente Demo', role: 'cliente' } },
+        { email: 'joao@ritmika.com', password: process.env.RITMIKA_BOOTSTRAP_PASSWORD, metadata: { name: 'João Silva', role: 'employee' } },
+        { email: 'maria@ritmika.com', password: process.env.RITMIKA_BOOTSTRAP_PASSWORD, metadata: { name: 'Maria Santos', role: 'employee' } }
     ];
 
     for (const user of users) {
@@ -134,8 +140,8 @@ async function deploy() {
 
     console.log('\n✅ Deployment complete!');
     console.log('\n📝 Test logins:');
-    console.log('   pedro@ritmika.com / 123456');
-    console.log('   cliente@demo / 123456');
+    console.log('   pedro@ritmika.com / senha definida em RITMIKA_BOOTSTRAP_PASSWORD');
+    console.log('   cliente@demo / senha definida em RITMIKA_BOOTSTRAP_PASSWORD');
 }
 
 deploy().catch(console.error);

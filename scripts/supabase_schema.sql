@@ -168,11 +168,15 @@ BEGIN
         NEW.id,
         COALESCE(NEW.raw_user_meta_data->>'name', 'Novo Usuário'),
         NEW.email,
-        COALESCE(NEW.raw_user_meta_data->>'role', 'employee')
+        'employee'
     );
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = '';
+
+-- Trigger functions must not become public RPC endpoints. Authorization roles
+-- are assigned through the trusted administrative flow, never user metadata.
+REVOKE EXECUTE ON FUNCTION public.handle_new_user() FROM PUBLIC, anon, authenticated;
 
 -- Trigger for new user creation
 CREATE TRIGGER on_auth_user_created

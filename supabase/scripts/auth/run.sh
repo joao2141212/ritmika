@@ -12,6 +12,9 @@ case "$COMMAND" in
     account)
         exec bash "$SCRIPT_DIR/read/run.sh" "$SCRIPT_DIR/read/account.mjs" "$@"
         ;;
+    workspace)
+        exec bash "$SCRIPT_DIR/read/run.sh" "$SCRIPT_DIR/read/workspace.mjs" "$@"
+        ;;
     environment)
         exec bash "$SCRIPT_DIR/read/run.sh" "$SCRIPT_DIR/read/environment.mjs" "$@"
         ;;
@@ -25,7 +28,7 @@ case "$COMMAND" in
         exec bash "$SCRIPT_DIR/write/run.sh" "$SCRIPT_DIR/write/set-account-state.mjs" "$@"
         ;;
     *)
-        echo "usage: auth/run.sh {environment|inventory|account|reset-password|set-access|account-state} [args]" >&2
+        echo "usage: auth/run.sh {environment|inventory|account|workspace|reset-password|set-access|account-state} [args]" >&2
         exit 2
         ;;
 esac

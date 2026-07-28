@@ -1,9 +1,10 @@
 const { Client } = require('pg');
 const fs = require('fs');
 
-const connectionString = 'postgresql://postgres.bcckaltuxorkybtzskql:Jp9744030249863@aws-1-us-east-2.pooler.supabase.com:6543/postgres';
+const connectionString = process.env.SUPABASE_DB_URL || "";
 
 async function deploy() {
+    if (!connectionString) throw new Error('SUPABASE_DB_URL_required');
     const client = new Client({ connectionString });
     
     try {

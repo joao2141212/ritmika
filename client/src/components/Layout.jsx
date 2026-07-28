@@ -38,6 +38,7 @@ const Layout = () => {
 
     return (
         <div className="app-layout">
+            <a className="skip-link" href="#main-content">Pular para o conteúdo</a>
             <aside className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
                 <div className="sidebar-header">
                     <div className="logo-container">
@@ -78,7 +79,7 @@ const Layout = () => {
                 </div>
             </aside>
 
-            <main className="main-content">
+            <main id="main-content" className="main-content" tabIndex="-1">
                 <Outlet />
             </main>
         </div>
