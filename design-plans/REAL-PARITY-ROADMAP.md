@@ -497,3 +497,24 @@ O Ritmika só será marcado como paridade real quando:
 - Permanecem fora deste fechamento: comparação visual diferencial completa com
   o Koncluí, validação mobile dedicada, lifecycle completo de mídias e prova
   de deploy das Edge Functions.
+
+## Registro complementar de execução 2026-07-28
+
+- O commit `192aa93` corrigiu o layout mobile: em até 760px a sidebar inicia
+  recolhida, ocupa 64px e o conteúdo deixa de ser comprimido.
+- Produção foi revalidada em `390x844`: 10 rotas, sidebar fechada, conteúdo
+  responsivo, zero overflow horizontal e zero erros de console. O card de
+  checklist ficou sem clipping; a execução mobile foi aberta, salva e
+  concluída por teclado com `2/2` e `100%`.
+- Produção foi revalidada no tablet calibrado para `1024x900`: 10 rotas, zero
+  overflow horizontal e zero erros de console; o card manteve todas as ações
+  dentro da caixa.
+- A aba Configurações mobile carregou após cerca de 7 segundos de restauração
+  da sessão QA; depois disso exibiu Perfil e permaneceu sem overflow ou erro.
+- As Edge Functions locais existem em `supabase/functions/invite-user` e
+  `supabase/functions/koru-chat`, mas ambas retornaram `404` no Supabase
+  publicado. `supabase functions list` exige `SUPABASE_ACCESS_TOKEN`, que não
+  está no ambiente, no `.env` do projeto ou nos caminhos locais do CLI.
+- O mirror privado de mídias continua com a prova anterior de `627/627`
+  cópias e URL assinada; a prova de upload/preview/download pela interface
+  ainda não foi certificada.
