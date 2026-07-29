@@ -26,6 +26,7 @@ import '../styles/dashboard-filters.css';
 import '../styles/dashboard-parity.css';
 
 import '../styles/dashboard-analytics.css';
+import '../styles/dashboard-reference-polish.css';
 
 const EMPTY_DATA = {
     stats: {

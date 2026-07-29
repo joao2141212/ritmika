@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { logger } from '../../lib/logger';
 import '../../components/employee/employee.css';
+import '../../components/employee/operation-polish.css';
 
 const ACTIVE_STATUSES = new Set(['active', 'ativo', 'published']);
 const FINISHED_STATUSES = new Set(['completed', 'complete', 'finished', 'finalizado']);
@@ -97,6 +98,15 @@ export default function EmployeeHome() {
     );
   }, [query.data]);
 
+  const completionRate = metrics.total > 0 ? Math.round((metrics.finished / metrics.total) * 100) : 0;
+  const priorityAssignment = useMemo(() => {
+    const assignments = query.data || [];
+    return assignments.find((assignment) => assignmentState(assignment.latestResponse) === 'in_progress')
+      || assignments.find((assignment) => assignmentState(assignment.latestResponse) === 'pending')
+      || assignments[0]
+      || null;
+  }, [query.data]);
+
   return (
     <section className="employee-dashboard" aria-labelledby="employee-title">
       <div className="employee-hero">
@@ -116,6 +126,34 @@ export default function EmployeeHome() {
         <article><CircleDashed /><span><strong>{metrics.pending}</strong><small>A iniciar</small></span></article>
         <article><Clock3 /><span><strong>{metrics.in_progress}</strong><small>Em andamento</small></span></article>
         <article><CheckCircle2 /><span><strong>{metrics.finished}</strong><small>Concluídas</small></span></article>
+      </div>
+
+      <div className="employee-insight-grid">
+        <article className="employee-progress-card">
+          <div>
+            <p className="employee-eyebrow">Progresso da rotina</p>
+            <h2>{completionRate}% concluído</h2>
+            <p>{metrics.finished} de {metrics.total} atividades finalizadas.</p>
+          </div>
+          <div className="employee-progress-ring" style={{ '--employee-progress-value': `${completionRate * 3.6}deg` }} aria-label={`${completionRate}% concluído`}>
+            <strong>{completionRate}%</strong>
+            <span>concluído</span>
+          </div>
+        </article>
+
+        <article className="employee-priority-card">
+          <div>
+            <p className="employee-eyebrow">Próximo passo</p>
+            <h2>{priorityAssignment?.title || 'Rotina em dia'}</h2>
+            <p>{priorityAssignment ? 'Continue pela atividade mais importante agora.' : 'Não há nenhuma atividade pendente.'}</p>
+          </div>
+          {priorityAssignment && (
+            <button type="button" onClick={() => navigate(`/app/checklists/${priorityAssignment.id}/execute${priorityAssignment.latestResponse?.id ? `?executionId=${encodeURIComponent(priorityAssignment.latestResponse.id)}` : ''}`)}>
+              {assignmentState(priorityAssignment.latestResponse) === 'finished' ? 'Revisar execução' : 'Abrir atividade'}
+              <ArrowRight size={18} aria-hidden="true" />
+            </button>
+          )}
+        </article>
       </div>
 
       <div className="employee-list-header">

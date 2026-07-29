@@ -1,0 +1,85 @@
+.dashboard-remote {
+  --reference-ink: #18272c;
+  --reference-mint: #159b8a;
+  --reference-warm: #f1c968;
+  background:
+    radial-gradient(circle at 84% 0%, rgba(241, 201, 104, .17), transparent 26rem),
+    radial-gradient(circle at 20% 12%, rgba(21, 155, 138, .09), transparent 30rem),
+    #f5f8f8;
+}
+
+.remote-dashboard-header { margin-bottom: 24px; }
+.remote-dashboard-header h1 { font-size: clamp(38px, 4vw, 58px); line-height: 1; }
+
+.remote-summary-grid { gap: 14px; }
+.remote-stat-card,
+.remote-dashboard-panel {
+  border-color: rgba(202, 220, 219, .82);
+  border-radius: 24px;
+  box-shadow: 0 18px 50px rgba(24, 48, 64, .07);
+}
+
+.remote-stat-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 142px;
+  padding: 22px;
+  border-top: 0 !important;
+}
+
+.remote-stat-card::after {
+  position: absolute;
+  right: -26px;
+  bottom: -42px;
+  width: 116px;
+  height: 116px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  content: '';
+  opacity: .08;
+}
+
+.remote-stat-card:first-child { color: #fff; background: linear-gradient(145deg, #0c7468, #16a08e); }
+.remote-stat-card:first-child > span,
+.remote-stat-card:first-child strong,
+.remote-stat-card:first-child small { color: #fff; }
+.remote-stat-card:nth-child(2) { background: #fff8e6; }
+.remote-stat-card:nth-child(3) { background: #eef5ff; }
+.remote-stat-card:nth-child(4) { background: #fff0ef; }
+.remote-stat-card:nth-child(5) { background: #edf9f4; }
+.remote-stat-card strong { margin-top: 16px; font-size: 38px; }
+
+.remote-dashboard-panel { padding: 26px; }
+.remote-task-list { gap: 14px; }
+.remote-task-card {
+  min-height: 132px;
+  padding: 20px;
+  border-color: #dce8e7;
+  border-radius: 18px;
+  box-shadow: 0 10px 26px rgba(24, 48, 64, .045);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.remote-task-card:hover { transform: translateY(-2px); border-color: #9fd0c8; box-shadow: 0 18px 34px rgba(24, 48, 64, .09); }
+
+.remote-tabs { padding: 5px; border-radius: 15px; background: #eef3f2; }
+.remote-tabs button { min-height: 36px; border-radius: 11px; }
+.remote-tabs button.active { box-shadow: 0 5px 15px rgba(24, 48, 64, .08); }
+
+.remote-icon-button,
+.remote-refresh-button,
+.remote-link-button { border-radius: 14px; box-shadow: 0 8px 20px rgba(24, 48, 64, .045); }
+
+@media (max-width: 900px) {
+  .remote-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .remote-stat-card:first-child { grid-column: span 2; }
+  .remote-task-list { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 560px) {
+  .dashboard-remote { padding: 22px 14px 96px; }
+  .remote-dashboard-header h1 { font-size: 40px; }
+  .remote-summary-grid { grid-template-columns: 1fr 1fr; }
+  .remote-stat-card { min-height: 124px; padding: 17px; border-radius: 20px; }
+  .remote-stat-card strong { font-size: 30px; }
+  .remote-dashboard-panel { padding: 18px; border-radius: 22px; }
+}
