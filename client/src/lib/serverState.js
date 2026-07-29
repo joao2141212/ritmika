@@ -2,6 +2,13 @@ import { QueryClient } from '@tanstack/react-query';
 import { logger } from './logger.js';
 
 const READ_METHOD = /^(get|list|find|search|count)/;
+const namespaceRevisions = new Map();
+
+const getRevision = (namespace) => namespaceRevisions.get(namespace) || 0;
+
+const advanceNamespace = (namespace) => {
+    namespaceRevisions.set(namespace, (namespaceRevisions.get(namespace) || 0) + 1);
+};
 
 export const serverState = new QueryClient({
     defaultOptions: {
@@ -29,7 +36,7 @@ export const createCachedRepository = (repository, namespace = 'ritmika') => new
 
         if (READ_METHOD.test(property)) {
             return (...args) => serverState.ensureQueryData({
-                queryKey: [namespace, property, ...stableArgs(args)],
+                queryKey: [namespace, getRevision(namespace), property, ...stableArgs(args)],
                 queryFn: () => member.apply(target, args),
                 revalidateIfStale: true,
             });
@@ -37,13 +44,10 @@ export const createCachedRepository = (repository, namespace = 'ritmika') => new
 
         return async (...args) => {
             const result = await member.apply(target, args);
-            // Mark related reads as stale without cancelling requests that are
-            // still serving another route. Removing the namespace here caused
-            // TanStack Query CancelledError failures during normal navigation.
-            await serverState.invalidateQueries({
-                queryKey: [namespace],
-                refetchType: 'none',
-            });
+            // Advance the key generation instead of removing active queries.
+            // The next read is fresh while requests serving another route are
+            // allowed to finish without a TanStack Query CancelledError.
+            advanceNamespace(namespace);
             return result;
         };
     },
@@ -63,6 +67,7 @@ export const invalidateServerState = (source, context = {}) => {
 };
 
 export const clearServerState = (source) => {
+    namespaceRevisions.clear();
     logger.info({
         file: 'client/src/lib/serverState.js',
         function: 'clearServerState',

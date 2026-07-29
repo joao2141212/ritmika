@@ -173,10 +173,23 @@ const sweepViewport = async (browser, {
     const overflowAudit = await page.evaluate(() => {
       const viewportWidth = document.documentElement.clientWidth;
       const documentWidth = document.documentElement.scrollWidth;
-      const offenders = [...document.querySelectorAll('body *')]
+      const measuredOffenders = [...document.querySelectorAll('body *')]
         .map((element) => {
           const rect = element.getBoundingClientRect();
           const style = window.getComputedStyle(element);
+          let scrollAncestor = element.parentElement;
+          let horizontalScroller = null;
+          while (scrollAncestor && scrollAncestor !== document.body) {
+            const ancestorStyle = window.getComputedStyle(scrollAncestor);
+            if (
+              ['auto', 'scroll'].includes(ancestorStyle.overflowX)
+              && scrollAncestor.scrollWidth > scrollAncestor.clientWidth + 2
+            ) {
+              horizontalScroller = scrollAncestor;
+              break;
+            }
+            scrollAncestor = scrollAncestor.parentElement;
+          }
           return {
             tag: element.tagName.toLowerCase(),
             className: String(element.className || '').slice(0, 180),
@@ -185,27 +198,40 @@ const sweepViewport = async (browser, {
             right: Math.round(rect.right),
             width: Math.round(rect.width),
             display: style.display,
+            visibility: style.visibility,
+            opacity: Number.parseFloat(style.opacity || '1'),
             position: style.position,
+            allowedHorizontalScroll: Boolean(horizontalScroller),
+            scrollContainer: horizontalScroller
+              ? String(horizontalScroller.className || horizontalScroller.tagName).slice(0, 180)
+              : null,
           };
         })
         .filter((entry) => (
           entry.display !== 'none'
+          && entry.visibility !== 'hidden'
+          && entry.opacity > 0
           && entry.width > 0
           && (entry.left < -2 || entry.right > viewportWidth + 2)
         ))
         .sort((left, right) => (
           Math.max(right.right - viewportWidth, Math.abs(Math.min(0, right.left)))
           - Math.max(left.right - viewportWidth, Math.abs(Math.min(0, left.left)))
-        ))
+        ));
+      const uncontainedOffenders = measuredOffenders
+        .filter((entry) => !entry.allowedHorizontalScroll)
         .slice(0, 8);
       return {
         horizontalOverflow: documentWidth > viewportWidth + 2,
+        visualClipping: uncontainedOffenders.length > 0,
         viewportWidth,
         documentWidth,
-        offenders,
+        offenders: measuredOffenders.slice(0, 8),
+        uncontainedOffenders,
       };
     }).catch(() => null);
     const horizontalOverflow = overflowAudit?.horizontalOverflow ?? null;
+    const visualClipping = overflowAudit?.visualClipping ?? null;
     const visibleButtons = await page.locator('button:visible').evaluateAll((buttons) => (
       buttons.slice(0, 8).map((button) => (
         button.innerText.trim() || button.getAttribute('aria-label') || button.title || 'icon-button'
@@ -232,6 +258,7 @@ const sweepViewport = async (browser, {
       status: typeof response?.status === 'function' ? response.status() : null,
       title,
       horizontalOverflow,
+      visualClipping,
       overflowAudit,
       visibleFailure,
       visibleButtons,
@@ -303,6 +330,7 @@ const run = async () => {
     const failures = [...desktop, ...mobile, ...operatorDesktop, ...operatorMobile]
       .filter((result) => (
         result.horizontalOverflow === true
+        || result.visualClipping === true
         || result.visibleFailure === true
         || result.pageErrors.length > 0
         || result.consoleErrors.length > 0
@@ -315,6 +343,7 @@ const run = async () => {
         title,
         textStart,
         horizontalOverflow,
+        visualClipping,
         overflowAudit,
         visibleFailure,
         pageErrors,
@@ -327,6 +356,7 @@ const run = async () => {
         title,
         textStart,
         horizontalOverflow,
+        visualClipping,
         overflowAudit,
         visibleFailure,
         pageErrors,

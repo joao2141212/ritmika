@@ -24,6 +24,7 @@ const checks = [
   ['title scales fluidly on phone widths', /\.remote-dashboard-header h1\s*\{[^}]*font-size:\s*clamp\(/s],
   ['filter toolbar uses a bounded mobile grid', /\.remote-filter-toolbar\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s+auto/s],
   ['compact phones use one summary column', /\.dashboard-remote \.remote-summary-grid\s*\{[^}]*grid-template-columns:\s*1fr/s, compact],
+  ['dashboard descendants use border-box sizing', /\.dashboard-remote \*,[\s\S]*?box-sizing:\s*border-box/s, css],
 ];
 
 const failed = checks

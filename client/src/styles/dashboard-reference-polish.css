@@ -8,6 +8,13 @@
     #f5f8f8;
 }
 
+.dashboard-remote,
+.dashboard-remote *,
+.dashboard-remote *::before,
+.dashboard-remote *::after {
+  box-sizing: border-box;
+}
+
 .remote-dashboard-header { margin-bottom: 24px; }
 .remote-dashboard-header h1 { font-size: clamp(38px, 4vw, 58px); line-height: 1; }
 
@@ -224,6 +231,14 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     width: 100%;
+  }
+
+  .remote-filter-shell,
+  .remote-dashboard-header,
+  .remote-summary-grid,
+  .remote-dashboard-panel {
+    min-width: 0;
+    max-width: 100%;
   }
 
   .remote-filter-toolbar .remote-period-control,
