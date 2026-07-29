@@ -1,10 +1,11 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowRight, CheckCircle2, CircleDashed, ClipboardCheck, Clock3, RefreshCw } from 'lucide-react';
+import { ArrowRight, CheckCircle2, CircleDashed, ClipboardCheck, Clock3, RefreshCw, Search } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { logger } from '../../lib/logger';
+import { matchesSearchText } from '../../lib/plainText';
 import '../../components/employee/employee.css';
 import '../../components/employee/operation-polish.css';
 
@@ -76,6 +77,8 @@ function assignmentState(response) {
 export default function EmployeeHome() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [activityFilter, setActivityFilter] = useState('all');
+  const [activityQuery, setActivityQuery] = useState('');
   const query = useQuery({
     queryKey: ['employee-assignments', user?.workspace_id, user?.id],
     queryFn: () => loadEmployeeAssignments(user),
@@ -106,6 +109,14 @@ export default function EmployeeHome() {
       || assignments[0]
       || null;
   }, [query.data]);
+  const visibleAssignments = useMemo(() => (query.data || []).filter((assignment) => {
+    const state = assignmentState(assignment.latestResponse);
+    const matchesState = activityFilter === 'all' || activityFilter === state;
+    return matchesState && matchesSearchText(
+      `${assignment.title || ''} ${assignment.description || ''}`,
+      activityQuery,
+    );
+  }), [activityFilter, activityQuery, query.data]);
 
   return (
     <section className="employee-dashboard" aria-labelledby="employee-title">
@@ -163,6 +174,39 @@ export default function EmployeeHome() {
         </div>
       </div>
 
+      {metrics.total > 0 && (
+        <div className="employee-activity-manager" aria-label="Localizar e filtrar atividades">
+          <label className="employee-activity-search">
+            <Search size={18} aria-hidden="true" />
+            <span className="sr-only">Buscar atividade</span>
+            <input
+              type="search"
+              value={activityQuery}
+              onChange={(event) => setActivityQuery(event.target.value)}
+              placeholder="Buscar atividade"
+            />
+          </label>
+          <div className="employee-activity-filters" role="group" aria-label="Filtrar atividades por situação">
+            {[
+              ['all', 'Todas', metrics.total],
+              ['pending', 'A iniciar', metrics.pending],
+              ['in_progress', 'Em andamento', metrics.in_progress],
+              ['finished', 'Concluídas', metrics.finished],
+            ].map(([value, label, count]) => (
+              <button
+                type="button"
+                className={activityFilter === value ? 'is-active' : ''}
+                onClick={() => setActivityFilter(value)}
+                aria-pressed={activityFilter === value}
+                key={value}
+              >
+                {label}<span>{count}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {query.isLoading && (
         <div className="employee-task-grid" aria-label="Carregando atividades">
           {[1, 2, 3].map((item) => <div className="employee-task-skeleton" key={item} />)}
@@ -186,9 +230,18 @@ export default function EmployeeHome() {
         </div>
       )}
 
-      {!query.isLoading && !query.isError && metrics.total > 0 && (
+      {!query.isLoading && !query.isError && metrics.total > 0 && visibleAssignments.length === 0 && (
+        <div className="employee-state">
+          <Search size={30} aria-hidden="true" />
+          <strong>Nenhuma atividade encontrada</strong>
+          <p>Ajuste a busca ou escolha outra situação.</p>
+          <button type="button" onClick={() => { setActivityFilter('all'); setActivityQuery(''); }}>Limpar filtros</button>
+        </div>
+      )}
+
+      {!query.isLoading && !query.isError && visibleAssignments.length > 0 && (
         <div className="employee-task-grid">
-          {(query.data || []).map((assignment) => {
+          {visibleAssignments.map((assignment) => {
             const state = assignmentState(assignment.latestResponse);
             const itemCount = Array.isArray(assignment.items) ? assignment.items.length : 0;
             const answered = Number(assignment.latestResponse?.qtd_items_answered || 0);

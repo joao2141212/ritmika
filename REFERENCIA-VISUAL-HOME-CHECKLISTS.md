@@ -7,6 +7,7 @@
 - `docs/ui-references/shared-card-language-reference.png`
 - `docs/ui-references/modular-dashboard-reference.png`
 - `docs/ui-references/mobile-schedule-reference.png`
+- `docs/ui-references/bento-activity-manager-reference.png`
 
 Essas imagens são referências de composição e interação. Dados, pessoas, valores,
 gráficos e textos nelas não são fixtures nem conteúdo a ser copiado.
@@ -139,3 +140,12 @@ Direção de identidade:
 - Nenhuma tela será considerada pronta apenas por semelhança visual: estados de
   carregamento, vazio, erro, sincronização, responsividade e ações reais precisam
   ser comprovados.
+
+## Aplicação comprovável da referência bento
+
+- Portal Gestor: fila convertida em activity manager com busca real, pulso de
+  atrasadas/agora/próximas e card prioritário assimétrico.
+- App Operacional: busca tolerante a acentos e espaços, filtros rápidos por
+  situação e contagens derivadas das atribuições reais.
+- Nenhum dado visual da referência foi copiado; os cartões continuam ligados ao
+  Supabase e ao workspace autenticado.

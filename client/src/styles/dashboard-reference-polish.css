@@ -65,6 +65,82 @@
 .remote-tabs button { min-height: 36px; border-radius: 11px; }
 .remote-tabs button.active { box-shadow: 0 5px 15px rgba(24, 48, 64, .08); }
 
+.remote-activity-manager {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 100% 0, rgba(234, 179, 78, .13), transparent 26%),
+    #fff;
+}
+
+.remote-activity-toolbar {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  margin: 18px 0;
+}
+
+.remote-activity-search {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-height: 50px;
+  padding: 0 16px;
+  border: 1px solid #dbe6e4;
+  border-radius: 16px;
+  color: #71848b;
+  background: #fdfefe;
+}
+
+.remote-activity-search:focus-within {
+  border-color: #69b9aa;
+  box-shadow: 0 0 0 4px rgba(47, 146, 129, .1);
+}
+
+.remote-activity-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  color: #18323a;
+  background: transparent;
+  font: inherit;
+}
+
+.remote-activity-pulse {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(78px, 1fr));
+  gap: 8px;
+}
+
+.remote-activity-pulse span {
+  display: grid;
+  min-height: 58px;
+  padding: 8px 14px;
+  align-content: center;
+  border-radius: 15px;
+  color: #6b7f86;
+  background: #f1f5f4;
+  font-size: 11px;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.remote-activity-pulse span:first-child { color: #a74444; background: #fff0ef; }
+.remote-activity-pulse span:nth-child(2) { color: #315f91; background: #eef5ff; }
+.remote-activity-pulse span:last-child { color: #387565; background: #edf9f4; }
+.remote-activity-pulse strong { color: currentColor; font-size: 21px; line-height: 1; }
+
+.remote-activity-manager .remote-task-list .remote-task-card:first-child {
+  grid-column: span 2;
+  min-height: 150px;
+  background:
+    radial-gradient(circle at 100% 0, rgba(80, 174, 158, .14), transparent 40%),
+    #fff;
+}
+
 .remote-icon-button,
 .remote-refresh-button,
 .remote-link-button { border-radius: 14px; box-shadow: 0 8px 20px rgba(24, 48, 64, .045); }
@@ -73,6 +149,8 @@
   .remote-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .remote-stat-card:first-child { grid-column: span 2; }
   .remote-task-list { grid-template-columns: 1fr; }
+  .remote-activity-manager .remote-task-list .remote-task-card:first-child { grid-column: auto; }
+  .remote-activity-toolbar { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 560px) {
@@ -82,4 +160,7 @@
   .remote-stat-card { min-height: 124px; padding: 17px; border-radius: 20px; }
   .remote-stat-card strong { font-size: 30px; }
   .remote-dashboard-panel { padding: 18px; border-radius: 22px; }
+  .remote-activity-pulse { display: flex; overflow-x: auto; scrollbar-width: none; }
+  .remote-activity-pulse::-webkit-scrollbar { display: none; }
+  .remote-activity-pulse span { min-width: 94px; }
 }

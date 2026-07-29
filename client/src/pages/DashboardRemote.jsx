@@ -13,6 +13,7 @@ import {
     LoaderCircle,
     MessageCircle,
     RefreshCw,
+    Search,
     Send,
     SlidersHorizontal,
     X,
@@ -21,6 +22,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { dashboardService, settingsService } from '../services/checklistProducaoService';
 import { logger } from '../lib/logger';
+import { matchesSearchText } from '../lib/plainText';
 import '../styles/dashboard-remote.css';
 import '../styles/dashboard-filters.css';
 import '../styles/dashboard-parity.css';
@@ -224,6 +226,7 @@ const DashboardRemote = () => {
     const { user } = useAuth();
     const [data, setData] = useState(EMPTY_DATA);
     const [activeTab, setActiveTab] = useState('todo');
+    const [taskQuery, setTaskQuery] = useState('');
     const [periodDays, setPeriodDays] = useState(30);
     const [dashboardFilters, setDashboardFilters] = useState({ unitId: '', sectorId: '', profileId: '', momentId: '', from: '', to: '' });
     const [filtersOpen, setFiltersOpen] = useState(false);
@@ -290,6 +293,10 @@ const DashboardRemote = () => {
     const trend = data.trend || EMPTY_DATA.trend;
     const availableFilters = data.filters || EMPTY_DATA.filters;
     const taskList = activeTab === 'upcoming' ? tasks.upcoming : tasks.late.concat(tasks.now);
+    const visibleTaskList = taskList.filter((task) => matchesSearchText(
+        `${task.title || ''} ${task.checklist_name || ''} ${task.user_name || ''}`,
+        taskQuery,
+    ));
     const details = data.details || EMPTY_DATA.details;
     const detailPageCount = Math.max(1, Math.ceil(details.length / detailPageSize));
     const visibleDetails = details.slice(detailPage * detailPageSize, (detailPage + 1) * detailPageSize);
@@ -637,7 +644,7 @@ const DashboardRemote = () => {
                 </article>
             </section>}
 
-            {widgetPrefs.alerts && <section className="remote-dashboard-panel">
+            {widgetPrefs.alerts && <section className="remote-dashboard-panel remote-activity-manager">
                 <div className="remote-panel-heading">
                     <div>
                         <p className="remote-eyebrow">Fila de trabalho</p>
@@ -656,6 +663,24 @@ const DashboardRemote = () => {
                     </div>
                 </div>
 
+                <div className="remote-activity-toolbar">
+                    <label className="remote-activity-search">
+                        <Search size={18} aria-hidden="true" />
+                        <span className="sr-only">Buscar na fila de trabalho</span>
+                        <input
+                            type="search"
+                            value={taskQuery}
+                            onChange={(event) => setTaskQuery(event.target.value)}
+                            placeholder="Buscar atividade, checklist ou responsável"
+                        />
+                    </label>
+                    <div className="remote-activity-pulse" aria-label="Resumo da fila">
+                        <span><strong>{tasks.late.length}</strong>Atrasadas</span>
+                        <span><strong>{tasks.now.length}</strong>Agora</span>
+                        <span><strong>{tasks.upcoming.length}</strong>Próximas</span>
+                    </div>
+                </div>
+
                 {loading ? (
                     <div className="remote-state">
                         <LoaderCircle size={22} className="is-spinning" />
@@ -667,14 +692,15 @@ const DashboardRemote = () => {
                         <span>{error}</span>
                         <button type="button" className="remote-link-button" onClick={loadDashboard}>Tentar novamente</button>
                     </div>
-                ) : taskList.length === 0 ? (
+                ) : visibleTaskList.length === 0 ? (
                     <div className="remote-state remote-state-empty">
-                        <CheckCircle2 size={24} />
-                        <span>{activeTab === 'upcoming' ? 'Nenhuma atividade futura encontrada.' : 'Nenhuma atividade pendente encontrada.'}</span>
+                        {taskQuery ? <Search size={24} /> : <CheckCircle2 size={24} />}
+                        <span>{taskQuery ? 'Nenhuma atividade corresponde à busca.' : activeTab === 'upcoming' ? 'Nenhuma atividade futura encontrada.' : 'Nenhuma atividade pendente encontrada.'}</span>
+                        {taskQuery && <button type="button" className="remote-link-button" onClick={() => setTaskQuery('')}>Limpar busca</button>}
                     </div>
                 ) : (
                     <div className="remote-task-list">
-                        {taskList.map((task) => (
+                        {visibleTaskList.map((task) => (
                             <TaskCard
                                 key={task.response_id + '-' + task.id}
                                 task={task}
