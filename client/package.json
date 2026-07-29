@@ -10,6 +10,7 @@
     "test:access-routing": "node scripts/check-access-routing.mjs",
     "test:mobile-management": "node scripts/check-management-mobile-css.mjs",
     "test:mobile-team": "node scripts/check-team-mobile-overflow.mjs",
+    "test:mobile-operation": "node scripts/check-operation-mobile-shell.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
