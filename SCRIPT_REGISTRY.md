@@ -10,6 +10,7 @@ inferirem manutencao de Auth, workspaces, roles e dados sem custo alto.
 - Banco alvo: Supabase do Ritmika
 - App publicado: `https://ritmikapp.netlify.app/`
 - Referencia externa: Konclui autorizado somente leitura
+- Rotas e superficies: `ROUTES-AND-SURFACES.md`
 
 ## Modelo de produto
 
@@ -44,6 +45,8 @@ inferirem manutencao de Auth, workspaces, roles e dados sem custo alto.
 
 ## Mapas canonicos
 
+- `ROUTES-AND-SURFACES.md`: URLs, rotas, publico, autorizacao e estado real do
+  Portal do Gestor, Master e App do Funcionario.
 - `supabase/scripts/scripts.md`: mapa raiz dos scripts operacionais.
 - `supabase/scripts/auth/auth.md`: identidade, Auth, empresas, funcionarios,
   roles, reset de senha, bloqueio/desbloqueio e acesso por workspace.

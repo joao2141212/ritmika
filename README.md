@@ -35,6 +35,10 @@ O catálogo de manutenção de banco, empresas, usuários, roles e senhas está 
 `SCRIPT_REGISTRY.md`. Ele é a entrada canônica mesmo quando o indexador exclui
 `supabase/scripts/` do grafo técnico.
 
+O inventário canônico de produtos, URLs, rotas, públicos e estado de publicação
+está em `ROUTES-AND-SURFACES.md`. Consulte esse arquivo antes de alterar domínio,
+roteamento, login, área master, PWA ou App do Funcionário.
+
 ## UI Distillation Compiler
 
 O pacote reutilizável de captura comportamental fica em

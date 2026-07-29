@@ -1,5 +1,9 @@
 # Roadmap canônico: app do funcionário
 
+> O estado publicado e as URLs canônicas de todas as superfícies ficam em
+> `ROUTES-AND-SURFACES.md`. Este arquivo descreve a implementação do App do
+> Funcionário e não prova, sozinho, que a URL planejada está publicada.
+
 ## Decisão fixa
 
 - Painel gestor em produção: `https://ritmikapp.netlify.app/`
