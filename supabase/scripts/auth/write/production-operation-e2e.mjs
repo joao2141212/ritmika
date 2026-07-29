@@ -547,7 +547,7 @@ const run = async () => {
     result.execution_id = executionId;
     result.steps.push({ step: 'execution_started', ok: true, execution_id: executionId });
 
-    await answerCapabilityItems(page);
+    await answerFirstItem(page);
     await page.getByRole('button', { name: /Concluir execução/i }).click();
     await page.getByText(/Anexe as evidências obrigatórias/i).waitFor({ timeout: 15000 });
     result.steps.push({ step: 'required_evidence_blocks_completion', ok: true });
@@ -605,6 +605,57 @@ const run = async () => {
       progress: persistedProgress,
       answered: persisted.qtd_items_answered,
       total: persisted.qtd_items,
+    });
+
+    await page.goto(`${appUrl}/app`, { waitUntil: 'networkidle', timeout: 60000 });
+    const capabilityCard = page.getByText(capabilityFixture.title, { exact: false })
+      .first()
+      .locator('xpath=ancestor::article[1]');
+    await capabilityCard.waitFor({ timeout: 15000 });
+    await capabilityCard.getByRole('button', {
+      name: /Abrir atividade|Revisar execução|Ver execução|Começar|Continuar/i,
+    }).first().click();
+    await page.getByRole('button', { name: /Salvar progresso|Executar novamente/i })
+      .first()
+      .waitFor({ timeout: 30000 });
+
+    if (await page.getByRole('button', { name: /Executar novamente/i }).isVisible().catch(() => false)) {
+      await page.getByRole('button', { name: /Executar novamente/i }).click();
+      await page.getByRole('button', { name: /Salvar progresso/i }).waitFor({ timeout: 30000 });
+    }
+    await page.waitForFunction(() => new URL(window.location.href).searchParams.has('executionId'), null, {
+      timeout: 15000,
+    });
+    const capabilityExecutionId = new URL(page.url()).searchParams.get('executionId');
+    if (!capabilityExecutionId) throw new Error('QA_CAPABILITY_EXECUTION_ID_NOT_PERSISTED');
+
+    await answerCapabilityItems(page);
+    await page.getByRole('button', { name: /Salvar progresso/i }).click();
+    await page.getByText(/Progresso salvo/i).waitFor({ timeout: 15000 });
+    await page.reload({ waitUntil: 'networkidle' });
+    if (!page.url().includes(`executionId=${capabilityExecutionId}`)) {
+      throw new Error('QA_CAPABILITY_EXECUTION_ID_LOST_AFTER_RELOAD');
+    }
+    await page.getByText(/100%/i).first().waitFor({ timeout: 15000 });
+    await page.getByRole('button', { name: /Concluir execução/i }).click();
+    await page.getByRole('heading', { name: /^Execução concluída$/i }).waitFor({ timeout: 15000 });
+
+    const [persistedCapability] = await request(
+      `/rest/v1/ritmika_responses?select=id,is_finished,qtd_items,qtd_items_answered,metadata,updated_at`
+        + `&workspace_id=eq.${identity.workspaceId}&id=eq.${capabilityExecutionId}`,
+    );
+    if (!persistedCapability?.id || persistedCapability.is_finished !== true) {
+      throw new Error('QA_CAPABILITY_COMPLETION_NOT_PERSISTED');
+    }
+    if (Number(persistedCapability.qtd_items_answered || 0) < 3) {
+      throw new Error('QA_CAPABILITY_ANSWERS_NOT_PERSISTED');
+    }
+    result.steps.push({
+      step: 'capability_fixture_completed',
+      ok: true,
+      execution_id: capabilityExecutionId,
+      answered: persistedCapability.qtd_items_answered,
+      total: persistedCapability.qtd_items,
     });
 
     await page.goto(`${appUrl}/app`, { waitUntil: 'networkidle', timeout: 60000 });
