@@ -7,18 +7,22 @@ import {
     CheckCircle2,
     Clock3,
     MapPin,
+    Minus,
     Paperclip,
     RotateCcw,
     Save,
     Send,
     Signature,
+    Sparkles,
     Upload,
+    X,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { checklistProducaoService, evidenceService, executionService } from '../services/checklistProducaoService';
 import { logger } from '../lib/logger';
 import RouteSkeleton from './RouteSkeleton';
 import '../styles/checklist-workspace.css';
+import '../styles/execution-delight.css';
 
 const titleOf = (checklist) => checklist?.title || checklist?.nome || 'Checklist sem título';
 
@@ -369,8 +373,14 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
         if (type === 'check') {
             return (
                 <div className="answer-segment" role="group" aria-label="Resultado da atividade">
-                    <button type="button" data-answer="not-done" aria-pressed={value === false} className={value === false ? 'selected not-done' : 'not-done'} onClick={() => setAnswer(item.id, false)}>Não feito</button>
-                    <button type="button" data-answer="done" aria-pressed={value === true} className={value === true ? 'selected done' : 'done'} onClick={() => setAnswer(item.id, true)}>Feito</button>
+                    <button type="button" data-answer="not-done" aria-pressed={value === false} className={value === false ? 'selected not-done' : 'not-done'} onClick={() => setAnswer(item.id, false)}>
+                        <span className="answer-choice-icon"><X size={23} /></span>
+                        <span className="answer-choice-copy"><strong>Não feito</strong><small>Precisa de atenção</small></span>
+                    </button>
+                    <button type="button" data-answer="done" aria-pressed={value === true} className={value === true ? 'selected done' : 'done'} onClick={() => setAnswer(item.id, true)}>
+                        <span className="answer-choice-icon"><Check size={23} /></span>
+                        <span className="answer-choice-copy"><strong>Feito</strong><small>Está tudo certo</small></span>
+                    </button>
                     {item.allow_not_applicable && (
                         <button
                             type="button"
@@ -379,7 +389,8 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
                             className={value === NOT_APPLICABLE ? 'selected not-applicable' : 'not-applicable'}
                             onClick={() => setAnswer(item.id, NOT_APPLICABLE)}
                         >
-                            Não se aplica
+                            <span className="answer-choice-icon"><Minus size={22} /></span>
+                            <span className="answer-choice-copy"><strong>Não se aplica</strong><small>Fora do contexto atual</small></span>
                         </button>
                     )}
                 </div>
@@ -431,9 +442,9 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
                 <div className="execution-column">
                     {completed ? (
                         <section className="completion-state">
-                            <CheckCircle2 size={34} color="#0e9f8d" />
+                            <div className="completion-hero-icon"><Sparkles size={22} /><CheckCircle2 size={42} /></div>
                             <h2>Execução concluída</h2>
-                            <p>O resultado foi persistido no histórico do workspace Ritmika.</p>
+                            <p>Ótimo trabalho. Todas as informações foram salvas no histórico.</p>
                             <div className="execution-meta"><span>Pontuação</span><strong>{execution?.score ?? 100}%</strong><span>Atividade concluída</span></div>
                             <div className="builder-actions"><button type="button" className="light-button secondary" onClick={() => navigate(backPath)}>Voltar à lista</button><button type="button" className="light-button primary" onClick={retry}><RotateCcw size={16} /> Executar novamente</button></div>
                         </section>
@@ -443,6 +454,9 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
                                 <div><strong>{progress}%</strong><span> concluído</span></div>
                                 <span>{answeredCount}/{answerableItems.length} respondidos</span>
                                 <div className="execution-progress" role="progressbar" aria-label="Progresso da execução" aria-valuemin="0" aria-valuemax="100" aria-valuenow={progress}><span style={{ width: `${progress}%` }} /></div>
+                                <p className="execution-progress-message">
+                                    {progress === 0 ? 'Vamos começar. Uma etapa de cada vez.' : progress === 100 ? 'Tudo preenchido. Revise e conclua.' : `Bom ritmo. Faltam ${answerableItems.length - answeredCount} ${answerableItems.length - answeredCount === 1 ? 'etapa' : 'etapas'}.`}
+                                </p>
                             </div>
                             <nav className="execution-step-trail" aria-label="Itens da execução">
                                 {answerableItems.map((item, index) => {
@@ -468,6 +482,7 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
                                 <article
                                     className={`execution-current-item ${missingItems.includes(activeItem.id) || missingEvidenceItems.includes(activeItem.id) ? 'missing' : ''}`}
                                     data-testid="execution-current-item"
+                                    data-answer-state={isAnswered(answers[activeItem.id]) ? 'answered' : 'pending'}
                                 >
                                     <div className="execution-current-head">
                                         <div>
@@ -475,7 +490,7 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
                                             <h2>{activeItem.title || 'Atividade sem título'}{activeItem.required ? <span className="required-mark"> *</span> : null}</h2>
                                         </div>
                                         <span className={`execution-answer-status ${isAnswered(answers[activeItem.id]) ? 'answered' : ''}`}>
-                                            {isAnswered(answers[activeItem.id]) ? 'Respondido' : activeItem.required ? 'Obrigatório' : 'Opcional'}
+                                            {isAnswered(answers[activeItem.id]) ? <><Check size={14} /> Respondido</> : activeItem.required ? 'Obrigatório' : 'Opcional'}
                                         </span>
                                     </div>
                                     {activeItem.description && <p className="execution-item-description">{activeItem.description}</p>}
@@ -519,7 +534,7 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
                         <div className="execution-kpi"><span>Respondidos</span><strong>{answeredCount}</strong></div>
                         {completed && <div className="execution-kpi"><span>Pontuação</span><strong>{execution?.score ?? 100}%</strong></div>}
                     </section>
-                    <section className="execution-panel"><h2>Como funciona</h2><p>Suas respostas podem ser salvas durante o preenchimento. A conclusão só é liberada quando os itens obrigatórios estiverem respondidos.</p></section>
+                    <section className="execution-panel execution-tip-panel"><h2>Dica rápida</h2><p>Marque o resultado real. Se algo estiver errado, escolha “Não feito” e anexe uma evidência quando solicitado.</p></section>
                 </aside>
             </div>
         </section>
