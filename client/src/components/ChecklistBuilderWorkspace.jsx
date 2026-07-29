@@ -177,7 +177,7 @@ const ChecklistBuilderWorkspace = ({ checklistId, embedded = false, onClose, onS
                     weekdays: Array.isArray(schedule.weekdays)
                         ? schedule.weekdays
                         : checklist.schedule_day_of_week == null ? current.weekdays : [checklist.schedule_day_of_week],
-                    adhocMode: checklist.adhoc_mode || current.adhocMode,
+                    adhocMode: checklist.adhoc_mode || schedule.adhoc_mode || current.adhocMode,
                 }));
                 setItems(itemsFromChecklist(checklist));
             } catch (loadError) {
@@ -286,6 +286,7 @@ const ChecklistBuilderWorkspace = ({ checklistId, embedded = false, onClose, onS
                 endDate: form.endDate || null,
                 interval: Number(form.interval) || 1,
                 weekdays: form.weekdays,
+                adhoc_mode: form.adhocMode,
             },
             items: normalizedItems,
         };

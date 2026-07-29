@@ -189,6 +189,7 @@ const mapChecklist = (row, references) => {
         schedule_end_date: schedule.schedule_end_date || null,
         schedule_interval: Number(schedule.schedule_interval || 1),
         schedule_day_of_week: schedule.schedule_day_of_week ?? null,
+        adhoc_mode: schedule.adhoc_mode || 'disabled',
         items,
         produtos_checklist: items.map((item, index) => toProduct(item, index, String(row.id))),
     };

@@ -12,6 +12,8 @@ import '../../components/employee/operation-polish.css';
 const ACTIVE_STATUSES = new Set(['active', 'ativo', 'published']);
 const FINISHED_STATUSES = new Set(['completed', 'complete', 'finished', 'finalizado']);
 
+import { resolveOperatorAssignment } from '../../domain/checklistAvailability';
+
 async function loadEmployeeAssignments(user) {
   const correlationId = logger.createCorrelationId();
   try {
@@ -33,7 +35,7 @@ async function loadEmployeeAssignments(user) {
     if (checklistIds.length > 0) {
       const { data, error } = await supabase
         .from('ritmika_responses')
-        .select('id,checklist_id,is_finished,response_meta,qtd_items,qtd_items_answered,started_at,completed_at,updated_at')
+        .select('id,checklist_id,is_finished,response_meta,metadata,qtd_items,qtd_items_answered,started_at,completed_at,updated_at')
         .eq('workspace_id', user.workspace_id)
         .eq('profile_id', user.id)
         .in('checklist_id', checklistIds)
@@ -49,10 +51,12 @@ async function loadEmployeeAssignments(user) {
       }
     });
 
-    return activeChecklists.map((checklist) => ({
-      ...checklist,
-      latestResponse: latestResponseByChecklist.get(checklist.id) || null,
-    }));
+    return activeChecklists
+      .map((checklist) => resolveOperatorAssignment(
+        checklist,
+        latestResponseByChecklist.get(checklist.id) || null,
+      ))
+      .filter(Boolean);
   } catch (error) {
     logger.error({
       fn: 'EmployeeHome.loadEmployeeAssignments',

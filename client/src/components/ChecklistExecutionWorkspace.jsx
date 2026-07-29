@@ -60,6 +60,8 @@ const groupEvidence = (rows = []) => rows.reduce((groups, evidence) => {
     return groups;
 }, {});
 
+import { evaluateChecklistAvailability } from '../domain/checklistAvailability';
+
 const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -85,10 +87,16 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
                 setLoading(true);
                 const data = await checklistProducaoService.getById(id);
                 if (!data) throw new Error('Checklist não encontrado');
+                const availability = evaluateChecklistAvailability(data);
+                if (!requestedExecutionId && !availability.available) {
+                    throw new Error('Esta atividade não está disponível neste horário ou canal.');
+                }
                 const started = requestedExecutionId
                     ? await executionService.getById(requestedExecutionId)
                     : await checklistProducaoService.startExecution(id, {
-                        execution_type: 'manual',
+                        execution_type: availability.executionType,
+                        execution_channel: 'app',
+                        occurrence_key: availability.occurrenceKey,
                     });
                 if (!started) throw new Error('Execução não encontrada');
                 if (!requestedExecutionId) {
