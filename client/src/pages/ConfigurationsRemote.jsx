@@ -73,6 +73,8 @@ const ConfigurationsRemote = () => {
     const [unitFormOpen, setUnitFormOpen] = useState(false);
     const [sectorFormOpen, setSectorFormOpen] = useState(false);
     const [userDrafts, setUserDrafts] = useState({});
+    const [passwordDrafts, setPasswordDrafts] = useState({});
+    const [passwordSavingId, setPasswordSavingId] = useState('');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [entitySaving, setEntitySaving] = useState(false);
@@ -265,6 +267,29 @@ const ConfigurationsRemote = () => {
             toast.error(saveError instanceof Error ? saveError.message : 'Não foi possível atualizar o usuário.');
         } finally {
             setEntitySaving(false);
+        }
+    };
+
+    const resetUserPassword = async (member) => {
+        const targetUserId = member.auth_user_id || member.user_id;
+        const password = String(passwordDrafts[String(member.id)] || '');
+        if (!targetUserId) {
+            toast.error('Este perfil ainda não possui acesso autenticado.');
+            return;
+        }
+        if (password.length < 12) {
+            toast.error('A senha provisória precisa ter pelo menos 12 caracteres.');
+            return;
+        }
+        try {
+            setPasswordSavingId(String(member.id));
+            await settingsService.resetUserPassword(targetUserId, password);
+            setPasswordDrafts((current) => ({ ...current, [String(member.id)]: '' }));
+            toast.success('Senha provisória redefinida. O usuário deverá substituí-la.');
+        } catch (resetError) {
+            toast.error(resetError instanceof Error ? resetError.message : 'Não foi possível redefinir a senha.');
+        } finally {
+            setPasswordSavingId('');
         }
     };
 
@@ -508,7 +533,7 @@ const ConfigurationsRemote = () => {
                             </select>
                         </label>
                     </div>
-                    {visibleUsers.length === 0 ? <div className="settings-empty-note">Nenhum usuário corresponde aos filtros atuais.</div> : <div className="settings-user-list">{visibleUsers.map((member) => { const draft = userDrafts[String(member.id)] || { role: member.role || 'operator' }; const currentUnits = Array.isArray(draft.managed_units) ? draft.managed_units : []; return <article className="settings-user-row" key={member.id}><div><strong>{member.name || member.email}</strong><small>{member.email || 'Sem e-mail'} · {member.execution_count || 0} execuções</small></div><select value={draft.role} onChange={(event) => updateUserDraft(member, 'role', event.target.value)} aria-label={`Papel de ${member.name || member.email}`}>{[...new Set([...ROLE_OPTIONS, draft.role])].map((role) => <option key={role} value={role}>{role}</option>)}</select><select multiple value={currentUnits.map(String)} onChange={(event) => updateUserDraft(member, 'managed_units', Array.from(event.target.selectedOptions, (option) => option.value))} aria-label={`Unidades de ${member.name || member.email}`}>{units.map((unit) => <option key={unit.id} value={unit.id}>{unit.name}</option>)}</select><button type="button" className="settings-save" onClick={() => saveUser(member)} disabled={entitySaving}><Save size={15} /> Salvar</button></article>; })}</div>}
+                    {visibleUsers.length === 0 ? <div className="settings-empty-note">Nenhum usuário corresponde aos filtros atuais.</div> : <div className="settings-user-list">{visibleUsers.map((member) => { const draft = userDrafts[String(member.id)] || { role: member.role || 'operator' }; const currentUnits = Array.isArray(draft.managed_units) ? draft.managed_units : []; return <article className="settings-user-row" key={member.id}><div><strong>{member.name || member.email}</strong><small>{member.email || 'Sem e-mail'} · {member.execution_count || 0} execuções</small></div><select value={draft.role} onChange={(event) => updateUserDraft(member, 'role', event.target.value)} aria-label={`Papel de ${member.name || member.email}`}>{[...new Set([...ROLE_OPTIONS, draft.role])].map((role) => <option key={role} value={role}>{role}</option>)}</select><select multiple value={currentUnits.map(String)} onChange={(event) => updateUserDraft(member, 'managed_units', Array.from(event.target.selectedOptions, (option) => option.value))} aria-label={`Unidades de ${member.name || member.email}`}>{units.map((unit) => <option key={unit.id} value={unit.id}>{unit.name}</option>)}</select><button type="button" className="settings-save" onClick={() => saveUser(member)} disabled={entitySaving}><Save size={15} /> Salvar</button><div className="settings-user-password"><input type="password" autoComplete="new-password" minLength={12} value={passwordDrafts[String(member.id)] || ''} onChange={(event) => setPasswordDrafts((current) => ({ ...current, [String(member.id)]: event.target.value }))} placeholder="Senha provisória" aria-label={`Nova senha de ${member.name || member.email}`} /><button type="button" className="settings-system-row" onClick={() => resetUserPassword(member)} disabled={passwordSavingId === String(member.id)}>{passwordSavingId === String(member.id) ? 'Redefinindo…' : 'Redefinir senha'}</button></div></article>; })}</div>}
                 </section>
             )}
 

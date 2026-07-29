@@ -234,7 +234,11 @@ export const settingsService = {
 
     async updateUser(id, updates) {
         return remoteChecklistRepository.updateTeamMember(id, updates);
-    }
+    },
+
+    async resetUserPassword(id, password) {
+        return remoteChecklistRepository.resetTeamMemberPassword(id, password);
+    },
 };
 
 export const parityService = {

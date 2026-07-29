@@ -1794,6 +1794,29 @@ export const remoteChecklistRepository = {
         return result.data;
     },
 
+    async resetTeamMemberPassword(userId, password) {
+        const context = await getWorkspaceContext();
+        const normalizedUserId = String(userId || '');
+        const normalizedPassword = String(password || '');
+        if (!normalizedUserId) throw new Error('Usuário inválido.');
+        if (normalizedPassword.length < 12) throw new Error('A senha precisa ter pelo menos 12 caracteres.');
+        const result = await requireSupabase().functions.invoke('reset-member-password', {
+            body: {
+                workspace_id: context.workspaceId,
+                user_id: normalizedUserId,
+                password: normalizedPassword,
+            },
+        });
+        if (result.error) {
+            reportError('resetTeamMemberPassword', result.error, {
+                workspaceId: context.workspaceId,
+                targetUserId: normalizedUserId,
+            });
+            throw result.error;
+        }
+        return result.data;
+    },
+
     async getAiAnalyses({ status = '', search = '' } = {}) {
         const context = await getWorkspaceContext();
         let query = requireSupabase()

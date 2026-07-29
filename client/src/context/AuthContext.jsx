@@ -170,6 +170,43 @@ export const AuthProvider = ({ children }) => {
         setWorkspaceSelection(null);
     };
 
+    const changePassword = async (password) => {
+        const normalizedPassword = String(password || '');
+        if (normalizedPassword.length < 12) {
+            return { success: false, error: 'A nova senha precisa ter pelo menos 12 caracteres.' };
+        }
+        try {
+            const { error } = await supabase.auth.updateUser({
+                password: normalizedPassword,
+                data: {
+                    must_change_password: false,
+                    password_changed_at: new Date().toISOString(),
+                },
+            });
+            if (error) {
+                console.error({
+                    fn: 'AuthContext.changePassword',
+                    status: 'error',
+                    error: error.message,
+                    userId: user?.id || null,
+                });
+                return { success: false, error: error.message };
+            }
+            return { success: true };
+        } catch (error) {
+            console.error({
+                fn: 'AuthContext.changePassword',
+                status: 'error',
+                error: error instanceof Error ? error.message : String(error),
+                userId: user?.id || null,
+            });
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Não foi possível alterar a senha.',
+            };
+        }
+    };
+
     const signup = async (email, password, name, role = 'employee') => {
         try {
             const { data, error } = await supabase.auth.signUp({
@@ -198,6 +235,7 @@ export const AuthProvider = ({ children }) => {
             user,
             login,
             logout,
+            changePassword,
             signup,
             loading,
             workspaceSelection,
