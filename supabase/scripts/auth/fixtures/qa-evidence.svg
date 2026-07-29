@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180" viewBox="0 0 320 180">
+  <rect width="320" height="180" rx="20" fill="#0f8f7d"/>
+  <path d="M77 101l34 34 132-91" fill="none" stroke="#fff" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="160" y="165" fill="#fff" font-family="Arial, sans-serif" font-size="18" text-anchor="middle">Ritmika QA</text>
+</svg>

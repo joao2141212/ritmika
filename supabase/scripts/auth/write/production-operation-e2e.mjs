@@ -1,4 +1,5 @@
 import { mkdir, writeFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 
 const baseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -12,23 +13,27 @@ const appUrl = process.env.RITMIKA_APP_URL || 'https://ritmikapp.netlify.app';
 const chromePath = process.env.CHROME_EXECUTABLE_PATH
   || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const evidenceDir = process.env.RITMIKA_EVIDENCE_DIR || 'evidence';
+const evidenceFixturePath = fileURLToPath(new URL('../fixtures/qa-evidence.svg', import.meta.url));
 const apply = process.argv.includes('--apply');
 
 const safeError = (error) => ({
   name: error?.name || 'Error',
   message: String(error?.message || error),
+  stack: String(error?.stack || '').split('\n').slice(0, 5),
 });
 
 const request = async (path, {
   method = 'GET',
   body,
   key = secretKey,
+  prefer = '',
 } = {}) => {
   const response = await fetch(`${baseUrl}${path}`, {
     method,
     headers: {
       apikey: key,
       'Content-Type': 'application/json',
+      ...(prefer ? { Prefer: prefer } : {}),
     },
     ...(body ? { body: JSON.stringify(body) } : {}),
   });
@@ -45,26 +50,48 @@ const request = async (path, {
   return payload;
 };
 
+const requestWithSession = async (path, accessToken) => {
+  const response = await fetch(`${baseUrl}${path}`, {
+    headers: {
+      apikey: publishableKey,
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const error = new Error(`session_http_${response.status}`);
+    error.safePayload = {
+      path,
+      status: response.status,
+      error: payload?.message || payload?.error || 'unknown',
+    };
+    throw error;
+  }
+  return payload;
+};
+
 const requireEnvironment = () => {
   if (!baseUrl || !secretKey?.startsWith('sb_secret_') || !publishableKey) {
     throw new Error('SUPABASE_URL_SECRET_OR_PUBLISHABLE_KEY_MISSING');
   }
 };
 
-const createOperatorSession = async () => {
-  const [workspace] = await request(
-    '/rest/v1/ritmika_workspaces?select=id,source_system&source_system=eq.ritmika_qa',
-  );
-  if (!workspace?.id) throw new Error('QA_WORKSPACE_NOT_FOUND');
-
+const createSessionForMembership = async ({ workspaceId, membershipFilter, missingCode }) => {
   const [membership] = await request(
     `/rest/v1/ritmika_workspace_members?select=user_id,role,is_owner`
-      + `&workspace_id=eq.${workspace.id}&role=eq.operator&is_owner=eq.false&limit=1`,
+      + `&workspace_id=eq.${workspaceId}&${membershipFilter}&limit=1`,
   );
-  if (!membership?.user_id) throw new Error('QA_OPERATOR_NOT_FOUND');
+  if (!membership?.user_id) throw new Error(missingCode);
 
   const authUser = await request(`/auth/v1/admin/users/${membership.user_id}`);
-  if (!authUser?.email) throw new Error('QA_OPERATOR_AUTH_EMAIL_NOT_FOUND');
+  if (!authUser?.email) throw new Error(`${missingCode}_AUTH_EMAIL_NOT_FOUND`);
+
+  const [profile] = await request(
+    `/rest/v1/ritmika_profiles?select=*&workspace_id=eq.${workspaceId}`
+      + `&auth_user_id=eq.${membership.user_id}&limit=1`,
+  );
+  if (!profile?.id) throw new Error(`${missingCode}_PROFILE_NOT_FOUND`);
 
   const generated = await request('/auth/v1/admin/generate_link', {
     method: 'POST',
@@ -85,8 +112,10 @@ const createOperatorSession = async () => {
   }
 
   return {
-    workspaceId: workspace.id,
+    workspaceId,
     authUserId: membership.user_id,
+    membership,
+    profile,
     session: {
       access_token: verified.access_token,
       refresh_token: verified.refresh_token,
@@ -96,6 +125,114 @@ const createOperatorSession = async () => {
       user: verified.user,
     },
   };
+};
+
+const createQaSessions = async () => {
+  const [workspace] = await request(
+    '/rest/v1/ritmika_workspaces?select=id,source_system&source_system=eq.ritmika_qa',
+  );
+  if (!workspace?.id) throw new Error('QA_WORKSPACE_NOT_FOUND');
+
+  const operator = await createSessionForMembership({
+    workspaceId: workspace.id,
+    membershipFilter: 'role=eq.operator&is_owner=eq.false',
+    missingCode: 'QA_OPERATOR_NOT_FOUND',
+  });
+  const manager = await createSessionForMembership({
+    workspaceId: workspace.id,
+    membershipFilter: 'is_owner=eq.true',
+    missingCode: 'QA_MANAGER_NOT_FOUND',
+  });
+
+  return { workspaceId: workspace.id, operator, manager };
+};
+
+const installSession = async (context, storageKey, identity) => {
+  await context.addInitScript(({ key, value, userId, workspaceId }) => {
+    window.localStorage.setItem(key, JSON.stringify(value));
+    window.localStorage.setItem(`ritmika.activeWorkspaceId.${userId}`, workspaceId);
+  }, {
+    key: storageKey,
+    value: identity.session,
+    userId: identity.authUserId,
+    workspaceId: identity.workspaceId,
+  });
+};
+
+const ensureCapabilityFixture = async ({ workspaceId, authUserId }) => {
+  const [profile] = await request(
+    `/rest/v1/ritmika_profiles?select=id&workspace_id=eq.${workspaceId}`
+      + `&auth_user_id=eq.${authUserId}&limit=1`,
+  );
+  if (!profile?.id) throw new Error('QA_OPERATOR_PROFILE_NOT_FOUND');
+
+  const sourceId = 'qa-operation-capabilities-v1';
+  const fixture = {
+    workspace_id: workspaceId,
+    source_id: sourceId,
+    title: 'QA · Capacidades operacionais',
+    description: 'Fixture QA para validar resposta, comentário, data e evidência fotográfica.',
+    status: 'active',
+    checklist_kind: 'operational',
+    responsible_profile_id: profile.id,
+    schedule: {},
+    variables: {},
+    metadata: { qa_fixture: true, capability_contract: 'operation-v1' },
+    items: [
+      {
+        id: 'qa-capability-check',
+        type: 'check',
+        title: 'Confirmar execução da rotina',
+        description: 'Marque como feito e anexe a evidência obrigatória.',
+        order: 0,
+        required: true,
+        is_required: true,
+        evidences: [{ name: 'Foto da validação', type: 'image', is_required: true }],
+      },
+      {
+        id: 'qa-capability-comment',
+        type: 'text',
+        title: 'Comentário da execução',
+        description: 'Registre o contexto operacional.',
+        order: 1,
+        required: true,
+        is_required: true,
+        evidences: [],
+      },
+      {
+        id: 'qa-capability-datetime',
+        type: 'datetime',
+        title: 'Momento da verificação',
+        description: 'Informe a data e hora observadas.',
+        order: 2,
+        required: true,
+        is_required: true,
+        evidences: [],
+      },
+    ],
+  };
+
+  const [existing] = await request(
+    `/rest/v1/ritmika_checklists?select=id,title&workspace_id=eq.${workspaceId}`
+      + `&source_id=eq.${sourceId}&limit=1`,
+  );
+  const persisted = existing?.id
+    ? await request(
+      `/rest/v1/ritmika_checklists?id=eq.${existing.id}&workspace_id=eq.${workspaceId}&select=id,title`,
+      {
+        method: 'PATCH',
+        body: fixture,
+        prefer: 'return=representation',
+      },
+    )
+    : await request('/rest/v1/ritmika_checklists?select=id,title', {
+      method: 'POST',
+      body: fixture,
+      prefer: 'return=representation',
+    });
+  const [checklist] = persisted;
+  if (!checklist?.id) throw new Error('QA_CAPABILITY_FIXTURE_NOT_PERSISTED');
+  return checklist;
 };
 
 const clickFirstVisible = async (locators) => {
@@ -149,10 +286,33 @@ const answerFirstItem = async (page) => {
   throw error;
 };
 
+const answerCapabilityItems = async (page) => {
+  const doneButtons = page.getByRole('button', { name: /^Feito$/i });
+  for (let index = 0; index < await doneButtons.count(); index += 1) {
+    await doneButtons.nth(index).click();
+  }
+
+  const textareas = page.locator('textarea:visible');
+  for (let index = 0; index < await textareas.count(); index += 1) {
+    await textareas.nth(index).fill('Comentário operacional validado em produção.');
+  }
+
+  const datetimeFields = page.locator('input[type="datetime-local"]:visible');
+  if (await datetimeFields.count() < 1) throw new Error('QA_DATETIME_CONTROL_NOT_FOUND');
+  await datetimeFields.first().fill('2026-07-29T12:00');
+
+  const fileFields = page.locator('input[type="file"]');
+  if (await fileFields.count() < 1) throw new Error('QA_EVIDENCE_UPLOAD_CONTROL_NOT_FOUND');
+  await fileFields.first().setInputFiles(evidenceFixturePath);
+  await page.getByText(/Evidência anexada/i).waitFor({ timeout: 30000 });
+};
+
 const run = async () => {
   requireEnvironment();
   await mkdir(evidenceDir, { recursive: true });
-  const identity = await createOperatorSession();
+  const identities = await createQaSessions();
+  const identity = identities.operator;
+  const capabilityFixture = apply ? await ensureCapabilityFixture(identity) : null;
   const projectRef = new URL(baseUrl).hostname.split('.')[0];
   const storageKey = `sb-${projectRef}-auth-token`;
   const result = {
@@ -160,8 +320,10 @@ const run = async () => {
     app_url: appUrl,
     qa_workspace_id: identity.workspaceId,
     qa_operator_user_id: identity.authUserId,
+    qa_manager_user_id: identities.manager.authUserId,
     checked_at: new Date().toISOString(),
     steps: [],
+    fixture_checklist_id: capabilityFixture?.id || null,
   };
 
   if (!apply) {
@@ -171,52 +333,166 @@ const run = async () => {
 
   const browser = await chromium.launch({ headless: true, executablePath: chromePath });
   try {
+    const runtimeErrors = [];
+    const failedResponses = [];
+    const managerReferenceResponses = [];
+    const instrumentPage = (page, audience) => {
+      page.on('pageerror', (error) => runtimeErrors.push({ audience, ...safeError(error) }));
+      page.on('console', (message) => {
+        if (message.type() === 'error') {
+          runtimeErrors.push({
+            audience,
+            name: 'console',
+            message: message.text().slice(0, 500),
+          });
+        }
+      });
+      page.on('response', async (response) => {
+        const url = new URL(response.url());
+        if (audience === 'manager' && url.pathname.endsWith('/rest/v1/ritmika_profiles')) {
+          const payload = await response.json().catch(() => []);
+          managerReferenceResponses.push({
+            status: response.status(),
+            count: Array.isArray(payload) ? payload.length : null,
+            ids: Array.isArray(payload) ? payload.map((profile) => profile.id).filter(Boolean) : [],
+          });
+        }
+        if (response.status() < 400) return;
+        failedResponses.push({
+          audience,
+          status: response.status(),
+          host: url.host,
+          path: url.pathname,
+          body: await response.text().catch(() => '').then((value) => value.slice(0, 500)),
+        });
+      });
+    };
+
+    const checklistTitle = `QA · Verificação fim a fim ${new Date().toISOString().replace(/[-:TZ.]/g, '').slice(0, 12)}`;
+    const managerVisibleProfiles = await requestWithSession(
+      `/rest/v1/ritmika_profiles?select=id,auth_user_id,role&workspace_id=eq.${identity.workspaceId}`,
+      identities.manager.session.access_token,
+    );
+    if (!managerVisibleProfiles.some((profile) => profile.id === identity.profile.id)) {
+      const visibilityError = new Error('QA_MANAGER_CANNOT_READ_ASSIGNED_OPERATOR_PROFILE');
+      visibilityError.safePayload = {
+        workspace_id: identity.workspaceId,
+        expected_profile_id: identity.profile.id,
+        visible_profile_count: managerVisibleProfiles.length,
+      };
+      throw visibilityError;
+    }
+    result.steps.push({
+      step: 'manager_can_read_operator_profile',
+      ok: true,
+      visible_profile_count: managerVisibleProfiles.length,
+    });
+
+    const managerContext = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+    await installSession(managerContext, storageKey, identities.manager);
+    const managerPage = await managerContext.newPage();
+    instrumentPage(managerPage, 'manager');
+
+    await managerPage.goto(`${appUrl}/checklists/new`, { waitUntil: 'networkidle', timeout: 60000 });
+    await managerPage.getByRole('heading', { name: /^Novo checklist$/i, level: 1 })
+      .waitFor({ timeout: 15000 });
+    result.steps.push({ step: 'manager_builder_loaded', ok: true });
+
+    await managerPage.getByLabel(/^Título$/i).fill(checklistTitle);
+    await managerPage.getByLabel(/^Descrição$/i).fill(
+      'Fixture QA criada pelo fluxo real de gestão e destinada ao produto operacional.',
+    );
+    await managerPage.getByLabel(/^Título do item$/i).first().fill('Confirmar verificação operacional');
+    await managerPage.getByLabel(/^Evidência$/i).first().fill('Comprovante da verificação');
+    await managerPage.getByLabel(/Exigir evidência/i).first().check();
+    const responsibleSelect = managerPage.getByLabel(/Responsável padrão/i);
+    await responsibleSelect.locator(`option[value="${identity.profile.id}"]`)
+      .waitFor({ state: 'attached', timeout: 30000 })
+      .catch(async (error) => {
+        const referencesError = new Error('QA_OPERATOR_NOT_AVAILABLE_IN_MANAGER_ASSIGNMENT');
+        referencesError.safePayload = {
+          expected_profile_id: identity.profile.id,
+          available_options: await responsibleSelect.locator('option').count().catch(() => 0),
+          reference_responses: managerReferenceResponses,
+          manager_runtime_errors: runtimeErrors.filter((entry) => entry.audience === 'manager'),
+          manager_failed_responses: failedResponses.filter((response) => response.audience === 'manager'),
+          original_error: String(error?.message || error).slice(0, 300),
+        };
+        throw referencesError;
+      });
+    await responsibleSelect.selectOption(identity.profile.id);
+    result.steps.push({
+      step: 'manager_assignment_selected',
+      ok: true,
+      responsible_profile_id: identity.profile.id,
+    });
+
+    await managerPage.getByRole('button', { name: /Publicar/i }).click();
+    await managerPage.waitForURL(/\/checklists(?:\?|$)/, { timeout: 30000 });
+    await managerPage.getByText(checklistTitle, { exact: false }).first().waitFor({ timeout: 15000 });
+
+    const encodedTitle = encodeURIComponent(checklistTitle);
+    const [createdChecklist] = await request(
+      `/rest/v1/ritmika_checklists?select=*&workspace_id=eq.${identity.workspaceId}`
+        + `&title=eq.${encodedTitle}&order=created_at.desc&limit=1`,
+    );
+    if (!createdChecklist?.id) throw new Error('QA_MANAGER_CHECKLIST_NOT_PERSISTED');
+    if (createdChecklist.responsible_profile_id !== identity.profile.id) {
+      const assignmentError = new Error('QA_MANAGER_ASSIGNMENT_NOT_PERSISTED');
+      assignmentError.safePayload = {
+        checklist_id: createdChecklist.id,
+        expected_profile_id: identity.profile.id,
+        persisted_profile_id: createdChecklist.responsible_profile_id || null,
+      };
+      throw assignmentError;
+    }
+    result.checklist_id = createdChecklist.id;
+    result.checklist_title = checklistTitle;
+    result.steps.push({
+      step: 'manager_checklist_published',
+      ok: true,
+      checklist_id: createdChecklist.id,
+    });
+    await managerContext.close();
+
     const context = await browser.newContext({
       viewport: { width: 390, height: 844 },
       deviceScaleFactor: 1,
     });
-    await context.addInitScript(({ key, value }) => {
-      window.localStorage.setItem(key, JSON.stringify(value));
-    }, { key: storageKey, value: identity.session });
+    await installSession(context, storageKey, identity);
     const page = await context.newPage();
-    const runtimeErrors = [];
-    const failedResponses = [];
-    page.on('pageerror', (error) => runtimeErrors.push(safeError(error)));
-    page.on('console', (message) => {
-      if (message.type() === 'error') {
-        runtimeErrors.push({ name: 'console', message: message.text().slice(0, 500) });
-      }
-    });
-    page.on('response', async (response) => {
-      if (response.status() < 400) return;
-      const url = new URL(response.url());
-      failedResponses.push({
-        status: response.status(),
-        host: url.host,
-        path: url.pathname,
-        body: await response.text().catch(() => '').then((value) => value.slice(0, 500)),
-      });
-    });
+    instrumentPage(page, 'operation');
 
     await page.goto(`${appUrl}/app`, { waitUntil: 'networkidle', timeout: 60000 });
     await page.getByRole('heading', { name: /Olá,/i }).waitFor({ timeout: 15000 });
     result.steps.push({ step: 'operator_home_loaded', ok: true });
 
-    const cardAction = page.getByRole('button', {
-      name: /Ver execução|Começar|Continuar/i,
+    const targetCard = page.getByText(checklistTitle, { exact: false })
+      .first()
+      .locator('xpath=ancestor::article[1]');
+    await targetCard.waitFor({ timeout: 15000 });
+    const cardAction = targetCard.getByRole('button', {
+      name: /Abrir atividade|Revisar execução|Ver execução|Começar|Continuar/i,
     }).first();
-    await cardAction.waitFor({ timeout: 15000 });
-    const card = cardAction.locator('xpath=ancestor::*[self::article or self::li or contains(@class,"card")][1]');
-    const cardText = await card.innerText().catch(() => '');
-    result.checklist_title = await card.locator('h2, h3').first().innerText().catch(() => '')
-      || cardText.split('\n').find((line) => line.trim() && !/^Concluída$/i.test(line.trim()))?.trim()
-      || 'QA activity';
+    await cardAction.waitFor({ timeout: 15000 }).catch(async (error) => {
+      await page.screenshot({
+        path: `${evidenceDir}/prod-operation-e2e-target-action-missing.png`,
+        fullPage: true,
+      });
+      const actionError = new Error('QA_ASSIGNED_ACTIVITY_ACTION_NOT_FOUND');
+      actionError.safePayload = {
+        title: checklistTitle,
+        card_text: await targetCard.innerText().catch(() => ''),
+        visible_buttons: await targetCard.locator('button:visible').allTextContents().catch(() => []),
+        original_error: String(error?.message || error).slice(0, 300),
+      };
+      throw actionError;
+    });
     await cardAction.click();
     await page.waitForLoadState('networkidle');
 
     const executionUrl = new URL(page.url());
     let executionId = executionUrl.searchParams.get('executionId');
-    if (!executionId) throw new Error('QA_EXECUTION_ID_NOT_PERSISTED_IN_URL');
 
     const interactiveWaitStartedAt = Date.now();
     await page.waitForFunction(() => {
@@ -253,10 +529,33 @@ const run = async () => {
       executionId = new URL(page.url()).searchParams.get('executionId');
       if (!executionId) throw new Error('QA_RETRY_EXECUTION_ID_NOT_PERSISTED_IN_URL');
     }
+    if (!executionId) {
+      await page.waitForFunction(() => new URL(window.location.href).searchParams.has('executionId'), null, {
+        timeout: 15000,
+      }).catch(async (error) => {
+        const executionIdError = new Error('QA_EXECUTION_ID_NOT_PERSISTED_IN_URL');
+        executionIdError.safePayload = {
+          url_path: new URL(page.url()).pathname,
+          query: new URL(page.url()).search,
+          body_excerpt: await page.locator('body').innerText().then((value) => value.slice(0, 700)).catch(() => ''),
+          original_error: String(error?.message || error).slice(0, 300),
+        };
+        throw executionIdError;
+      });
+      executionId = new URL(page.url()).searchParams.get('executionId');
+    }
     result.execution_id = executionId;
     result.steps.push({ step: 'execution_started', ok: true, execution_id: executionId });
 
-    await answerFirstItem(page);
+    await answerCapabilityItems(page);
+    await page.getByRole('button', { name: /Concluir execução/i }).click();
+    await page.getByText(/Anexe as evidências obrigatórias/i).waitFor({ timeout: 15000 });
+    result.steps.push({ step: 'required_evidence_blocks_completion', ok: true });
+
+    await page.locator('input[type="file"]').first().setInputFiles(evidenceFixturePath);
+    await page.getByText(/Evidências \(1\)/i).waitFor({ timeout: 30000 });
+    result.steps.push({ step: 'required_evidence_uploaded', ok: true });
+
     await page.getByRole('button', { name: /Salvar progresso/i }).click();
     await page.getByText(/Progresso salvo/i).waitFor({ timeout: 15000 });
     result.steps.push({ step: 'progress_saved', ok: true });
