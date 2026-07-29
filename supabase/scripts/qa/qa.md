@@ -11,6 +11,7 @@ Scripts canônicos para cenários isolados de validação do Ritmika.
 - `setup-scenario`: cria ou atualiza uma atividade operacional isolada, com dois itens reais, atribuída ao funcionário QA. É dry-run por padrão e exige `--apply --confirm CREATE:QA_EMPLOYEE_SCENARIO`.
 - `verify-scenario`: comprova por leitura o checklist, responsável, role, vínculo Auth e totais de execuções/conclusões do cenário QA.
 - `apply-boundaries`: aplica a migration que separa leitura e escrita do gestor das tarefas e execuções do funcionário. Exige `APPLY:EMPLOYEE_BOUNDARIES`.
+- `apply-notification-boundaries`: restringe notificações para que o funcionário veja broadcasts e mensagens próprias, mas só gestores criem notificações. Exige `APPLY:EMPLOYEE_NOTIFICATION_BOUNDARIES`.
 
 Toda escrita é idempotente, limitada ao workspace `source_system = ritmika_qa`, começa em dry-run e exige confirmação literal. O script não possui reset destrutivo; uma eventual remoção do fixture exige autorização separada.
 

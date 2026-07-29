@@ -4,6 +4,7 @@ set -euo pipefail
 COMMAND="${1:-inspect}"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 BOUNDARY_MIGRATION="$ROOT_DIR/supabase/migrations/20260729002908_employee_role_boundaries.sql"
+NOTIFICATION_BOUNDARY_MIGRATION="$ROOT_DIR/supabase/migrations/20260729011500_employee_notification_boundaries.sql"
 : "${SUPABASE_ACCESS_TOKEN:?SUPABASE_ACCESS_TOKEN ausente}"
 : "${SUPABASE_PROJECT_REF:?SUPABASE_PROJECT_REF ausente}"
 
@@ -185,6 +186,7 @@ case "$COMMAND" in
           'ritmika_checklist_schedules',
           'ritmika_responses',
           'ritmika_execution_events',
+          'ritmika_notifications',
           'ritmika_profiles',
           'ritmika_workspace_members'
         )
@@ -209,7 +211,7 @@ case "$COMMAND" in
       select schemaname, tablename, policyname, cmd, roles, qual, with_check
       from pg_policies
       where schemaname = 'public'
-        and tablename in ('ritmika_checklists','ritmika_responses','ritmika_execution_events')
+        and tablename in ('ritmika_checklists','ritmika_responses','ritmika_execution_events','ritmika_notifications')
       order by tablename, cmd, policyname;
     " | jq -c '.'
     ;;
@@ -241,8 +243,16 @@ case "$COMMAND" in
     query_api "$(<"$BOUNDARY_MIGRATION")" >/dev/null
     jq -n '{status:"applied",migration:"employee_role_boundaries"}'
     ;;
+  apply-notification-boundaries)
+    if [[ "${2:-}" != "APPLY:EMPLOYEE_NOTIFICATION_BOUNDARIES" ]]; then
+      jq -n --arg migration "$NOTIFICATION_BOUNDARY_MIGRATION" '{status:"dry_run",migration:$migration,expected_confirmation:"APPLY:EMPLOYEE_NOTIFICATION_BOUNDARIES"}'
+      exit 2
+    fi
+    query_api "$(<"$NOTIFICATION_BOUNDARY_MIGRATION")" >/dev/null
+    jq -n '{status:"applied",migration:"employee_notification_boundaries"}'
+    ;;
   *)
-    printf 'Uso: %s {inspect|inventory|policies|setup-worker|setup-scenario|verify-scenario|apply-boundaries}\n' "$0" >&2
+    printf 'Uso: %s {inspect|inventory|policies|setup-worker|setup-scenario|verify-scenario|apply-boundaries|apply-notification-boundaries}\n' "$0" >&2
     exit 2
     ;;
 esac

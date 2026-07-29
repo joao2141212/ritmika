@@ -1,5 +1,5 @@
-import { Outlet, useNavigate } from 'react-router-dom';
-import { LogOut, Sparkles } from 'lucide-react';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { Bell, History, Home, LogOut, Sparkles, UserRound } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import './employee.css';
 
@@ -38,6 +38,13 @@ export default function EmployeeLayout() {
         </div>
         <Outlet />
       </main>
+
+      <nav className="employee-nav" aria-label="Navegação da área operacional">
+        <NavLink to="/app" end><Home aria-hidden="true" /><span>Hoje</span></NavLink>
+        <NavLink to="/app/history"><History aria-hidden="true" /><span>Histórico</span></NavLink>
+        <NavLink to="/app/notifications"><Bell aria-hidden="true" /><span>Avisos</span></NavLink>
+        <NavLink to="/app/profile"><UserRound aria-hidden="true" /><span>Perfil</span></NavLink>
+      </nav>
     </div>
   );
 }

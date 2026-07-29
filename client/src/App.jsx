@@ -14,6 +14,9 @@ const ChecklistBuilderWorkspace = lazy(() => import('./components/ChecklistBuild
 const ChecklistExecutionWorkspace = lazy(() => import('./components/ChecklistExecutionWorkspace'));
 const EmployeeLayout = lazy(() => import('./components/employee/EmployeeLayout'));
 const EmployeeHome = lazy(() => import('./pages/employee/EmployeeHome'));
+const EmployeeHistory = lazy(() => import('./pages/employee/EmployeeHistory'));
+const EmployeeNotifications = lazy(() => import('./pages/employee/EmployeeNotifications'));
+const EmployeeProfile = lazy(() => import('./pages/employee/EmployeeProfile'));
 const ChecklistDetails = lazy(() => import('./components/ChecklistDetailsRemote'));
 const Settings = lazy(() => import('./pages/SettingsRemote'));
 const Configurations = lazy(() => import('./pages/ConfigurationsRemote'));
@@ -107,6 +110,9 @@ function App() {
             </ProtectedRoute>
           }>
             <Route index element={<EmployeeHome />} />
+            <Route path="history" element={<EmployeeHistory />} />
+            <Route path="notifications" element={<EmployeeNotifications />} />
+            <Route path="profile" element={<EmployeeProfile />} />
             <Route
               path="checklists/:id/execute"
               element={<ChecklistExecutionWorkspace backPath="/app" />}
