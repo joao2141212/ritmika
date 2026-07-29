@@ -657,3 +657,62 @@
         transition-duration: 1ms;
     }
 }
+
+/* Mobile containment: keep every execution surface inside the usable viewport. */
+@media (max-width: 720px) {
+  .operation-execution,
+  .operation-execution .execution-topbar,
+  .operation-execution .execution-shell,
+  .operation-execution .execution-guided,
+  .operation-execution .execution-current-item,
+  .operation-execution .execution-current-head,
+  .operation-execution .execution-answer-block,
+  .operation-execution .execution-evidence {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .operation-execution {
+    overflow-x: hidden;
+    padding-bottom: calc(220px + env(safe-area-inset-bottom));
+  }
+
+  .operation-execution .execution-current-item,
+  .operation-execution .execution-current-head,
+  .operation-execution .execution-answer-block {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .operation-execution .execution-current-item > *,
+  .operation-execution .execution-current-head > *,
+  .operation-execution .execution-answer-block > *,
+  .operation-execution .execution-item-description,
+  .operation-execution .answer-choice-copy {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .operation-execution .execution-current-head h2,
+  .operation-execution .execution-item-description,
+  .operation-execution .answer-choice-copy strong,
+  .operation-execution .answer-choice-copy small {
+    overflow-wrap: anywhere;
+  }
+
+  .operation-execution .answer-segment {
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .operation-execution .answer-segment button {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .operation-execution .execution-action-dock {
+    width: auto;
+    max-width: calc(100vw - 24px);
+    box-sizing: border-box;
+  }
+}
