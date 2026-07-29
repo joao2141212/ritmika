@@ -37,7 +37,13 @@ export const createCachedRepository = (repository, namespace = 'ritmika') => new
 
         return async (...args) => {
             const result = await member.apply(target, args);
-            serverState.removeQueries({ queryKey: [namespace] });
+            // Mark related reads as stale without cancelling requests that are
+            // still serving another route. Removing the namespace here caused
+            // TanStack Query CancelledError failures during normal navigation.
+            await serverState.invalidateQueries({
+                queryKey: [namespace],
+                refetchType: 'none',
+            });
             return result;
         };
     },

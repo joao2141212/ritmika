@@ -145,6 +145,7 @@ body,
 }
 
 body {
+  margin: 0;
   background: #f7f9fc;
   color: #14212b;
 }

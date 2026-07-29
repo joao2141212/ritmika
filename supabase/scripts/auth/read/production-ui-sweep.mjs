@@ -170,9 +170,42 @@ const sweepViewport = async (browser, {
     const title = await page.locator('h1').first().textContent({ timeout: 3000 }).catch(() => null);
     const body = await page.locator('body').innerText({ timeout: 3000 }).catch(() => '');
     const visibleFailure = /Não foi possível|CancelledError|Erro inesperado|Tentar novamente/.test(body);
-    const horizontalOverflow = await page.evaluate(
-      () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 2,
-    ).catch(() => null);
+    const overflowAudit = await page.evaluate(() => {
+      const viewportWidth = document.documentElement.clientWidth;
+      const documentWidth = document.documentElement.scrollWidth;
+      const offenders = [...document.querySelectorAll('body *')]
+        .map((element) => {
+          const rect = element.getBoundingClientRect();
+          const style = window.getComputedStyle(element);
+          return {
+            tag: element.tagName.toLowerCase(),
+            className: String(element.className || '').slice(0, 180),
+            text: String(element.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 120),
+            left: Math.round(rect.left),
+            right: Math.round(rect.right),
+            width: Math.round(rect.width),
+            display: style.display,
+            position: style.position,
+          };
+        })
+        .filter((entry) => (
+          entry.display !== 'none'
+          && entry.width > 0
+          && (entry.left < -2 || entry.right > viewportWidth + 2)
+        ))
+        .sort((left, right) => (
+          Math.max(right.right - viewportWidth, Math.abs(Math.min(0, right.left)))
+          - Math.max(left.right - viewportWidth, Math.abs(Math.min(0, left.left)))
+        ))
+        .slice(0, 8);
+      return {
+        horizontalOverflow: documentWidth > viewportWidth + 2,
+        viewportWidth,
+        documentWidth,
+        offenders,
+      };
+    }).catch(() => null);
+    const horizontalOverflow = overflowAudit?.horizontalOverflow ?? null;
     const visibleButtons = await page.locator('button:visible').evaluateAll((buttons) => (
       buttons.slice(0, 8).map((button) => (
         button.innerText.trim() || button.getAttribute('aria-label') || button.title || 'icon-button'
@@ -199,6 +232,7 @@ const sweepViewport = async (browser, {
       status: typeof response?.status === 'function' ? response.status() : null,
       title,
       horizontalOverflow,
+      overflowAudit,
       visibleFailure,
       visibleButtons,
       textStart: body.slice(0, 240).replace(/\s+/g, ' '),
@@ -281,6 +315,7 @@ const run = async () => {
         title,
         textStart,
         horizontalOverflow,
+        overflowAudit,
         visibleFailure,
         pageErrors,
         consoleErrors,
@@ -292,6 +327,7 @@ const run = async () => {
         title,
         textStart,
         horizontalOverflow,
+        overflowAudit,
         visibleFailure,
         pageErrors,
         consoleErrors,
