@@ -23,7 +23,7 @@ export default function EmployeeLayout() {
         <div className="employee-account">
           <span className="employee-account-copy">
             <strong>{user?.name || 'Minha rotina'}</strong>
-            <small>Área operacional</small>
+            <small>App de Operação</small>
           </span>
           <button className="employee-icon-button" type="button" onClick={handleLogout} aria-label="Sair da conta">
             <LogOut size={19} aria-hidden="true" />
@@ -34,13 +34,13 @@ export default function EmployeeLayout() {
       <main className="employee-main">
         <div className="employee-context-pill">
           <Sparkles size={15} aria-hidden="true" />
-          Somente atividades atribuídas a você
+          Suas atividades e rotinas
         </div>
         <Outlet />
       </main>
 
-      <nav className="employee-nav" aria-label="Navegação da área operacional">
-        <NavLink to="/app" end><Home aria-hidden="true" /><span>Hoje</span></NavLink>
+      <nav className="employee-nav" aria-label="Navegação principal do App de Operação">
+        <NavLink to="/app" end><Home aria-hidden="true" /><span>Início</span></NavLink>
         <NavLink to="/app/history"><History aria-hidden="true" /><span>Histórico</span></NavLink>
         <NavLink to="/app/notifications"><Bell aria-hidden="true" /><span>Avisos</span></NavLink>
         <NavLink to="/app/profile"><UserRound aria-hidden="true" /><span>Perfil</span></NavLink>

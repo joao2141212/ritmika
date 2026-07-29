@@ -1,6 +1,6 @@
 # employee
 
-Área operacional do funcionário. Esta superfície é definida pela role do usuário, não pelo tamanho da tela. O portal de gestão continua sendo a aplicação principal em `/`, responsiva em desktop e celular; a operação do funcionário fica em `/app`.
+App de Operação para qualquer pessoa autorizada a executar atividades. Esta superfície é definida pelas permissões da conta, não por vínculo empregatício nem pelo tamanho da tela. O portal de gestão continua sendo a aplicação principal em `/`, responsiva em desktop e celular; a execução operacional fica em `/app`.
 
 ## Arquivos
 

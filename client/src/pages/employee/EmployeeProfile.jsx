@@ -14,11 +14,11 @@ export default function EmployeeProfile() {
       <header className="employee-page-header"><div><p className="employee-eyebrow">Conta operacional</p><h1 id="employee-profile-title">Meu perfil</h1><p>Identidade e permissões usadas nas suas execuções.</p></div></header>
       <article className="employee-profile-card">
         <span className="employee-profile-avatar">{String(user?.name || 'R').trim().charAt(0).toUpperCase()}</span>
-        <div><h2>{user?.name || 'Funcionário Ritmika'}</h2><p>{user?.email || 'E-mail não informado'}</p></div>
+        <div><h2>{user?.name || 'Conta Ritmika'}</h2><p>{user?.email || 'E-mail não informado'}</p></div>
       </article>
       <div className="employee-profile-grid">
         <article><UserRound /><div><small>Tipo de acesso</small><strong>Operação</strong><p>Executa apenas atividades autorizadas.</p></div></article>
-        <article><Building2 /><div><small>Unidades vinculadas</small><strong>{units || 'Conforme atribuição'}</strong><p>O gestor controla seu escopo operacional.</p></div></article>
+        <article><Building2 /><div><small>Unidades vinculadas</small><strong>{units || 'Conforme atribuição'}</strong><p>A gestão controla o escopo disponível nesta conta.</p></div></article>
         <article><ShieldCheck /><div><small>Proteção</small><strong>Permissões ativas</strong><p>Dados de gestão não ficam disponíveis nesta área.</p></div></article>
       </div>
       <button className="employee-danger-button" type="button" onClick={handleLogout}><LogOut />Sair da conta</button>
