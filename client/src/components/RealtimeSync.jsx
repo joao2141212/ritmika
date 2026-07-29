@@ -57,6 +57,7 @@ const RealtimeSync = () => {
         void supabase.realtime.setAuth().then(() => {
             if (!active) return;
             channel.subscribe((status, error) => {
+                if (!active) return;
                 if (status === 'SUBSCRIBED') {
                     stopFallback();
                     logger.info({

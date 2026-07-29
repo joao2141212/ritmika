@@ -274,6 +274,11 @@ const run = async () => {
     await page.getByRole('button', { name: /Executar novamente/i }).waitFor({ timeout: 15000 });
     result.steps.push({ step: 'execution_completed', ok: true });
 
+    await page.goto(`${appUrl}/app/notifications`, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.getByRole('heading', { name: /^Avisos$/i }).waitFor({ timeout: 15000 });
+    await page.getByText(/^Execução concluída$/i).first().waitFor({ timeout: 15000 });
+    result.steps.push({ step: 'completion_notification_visible', ok: true });
+
     await page.goto(`${appUrl}/app/history`, { waitUntil: 'networkidle', timeout: 60000 });
     await page.getByRole('heading', { name: /Histórico/i }).waitFor({ timeout: 15000 });
     const historyContainsExecution = await page.getByText(result.checklist_title, { exact: false })
@@ -302,6 +307,26 @@ const run = async () => {
       answered: persisted.qtd_items_answered,
       total: persisted.qtd_items,
     });
+
+    await page.goto(`${appUrl}/app`, { waitUntil: 'networkidle', timeout: 60000 });
+    const activitySearch = page.getByPlaceholder(/Buscar atividade/i);
+    await activitySearch.fill('verificacao');
+    await page.getByText(result.checklist_title, { exact: false }).first().waitFor({ timeout: 15000 });
+    result.steps.push({ step: 'accent_insensitive_activity_search', ok: true });
+
+    await page.goto(`${appUrl}/checklists`, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.waitForURL(/\/app(?:\?|$)/, { timeout: 15000 });
+    result.steps.push({ step: 'manager_routes_blocked_for_operator', ok: true });
+
+    await page.goto(`${appUrl}/app/profile`, { waitUntil: 'networkidle', timeout: 60000 });
+    await page.getByRole('heading', { name: /^Meu perfil$/i }).waitFor({ timeout: 15000 });
+    await page.getByText(/^Operação$/i).waitFor({ timeout: 15000 });
+    result.steps.push({ step: 'operator_profile_loaded', ok: true });
+
+    await page.locator('.employee-danger-button').click();
+    await page.waitForURL(/\/login(?:\?|$)/, { timeout: 15000 });
+    await page.waitForTimeout(750);
+    result.steps.push({ step: 'operator_logout_completed', ok: true });
 
     result.runtime_errors = runtimeErrors;
     result.failed_responses = failedResponses;
