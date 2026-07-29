@@ -4,6 +4,7 @@ import { Archive, Building2, Check, Layers3, LoaderCircle, LogOut, Mail, Pencil,
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import { settingsService } from '../services/checklistProducaoService';
+import { matchesSearchText } from '../lib/plainText';
 import '../styles/settings-remote.css';
 
 const DEFAULT_PREFERENCES = {
@@ -56,8 +57,9 @@ const ConfigurationsRemote = () => {
     const [preferences, setPreferences] = useState(DEFAULT_PREFERENCES);
     const [units, setUnits] = useState([]);
     const [sectors, setSectors] = useState([]);
+    const [sectorQuery, setSectorQuery] = useState('');
     const [users, setUsers] = useState([]);
-    const [userQuery, setUserQuery] = useState('');
+    const [userQuery, setUserQuery] = useState(() => searchParams.get('user') || '');
     const [userScope, setUserScope] = useState('all');
     const [userUnitFilter, setUserUnitFilter] = useState('');
     const [inviteOpen, setInviteOpen] = useState(false);
@@ -91,10 +93,10 @@ const ConfigurationsRemote = () => {
         });
     }, [userQuery, userScope, userUnitFilter, users]);
 
-    useEffect(() => {
-        const requestedUser = searchParams.get('user');
-        if (activeTab === 'users' && requestedUser) setUserQuery(requestedUser);
-    }, [activeTab, searchParams]);
+    const visibleSectors = useMemo(
+        () => sectors.filter((sector) => matchesSearchText(sector.name, sectorQuery)),
+        [sectorQuery, sectors],
+    );
 
     const loadConfiguration = async () => {
         try {
@@ -153,6 +155,8 @@ const ConfigurationsRemote = () => {
     };
 
     useEffect(() => {
+        // Initial remote hydration is intentionally triggered once on mount.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         loadConfiguration();
         // Configuration is loaded once per authenticated workspace.
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -414,15 +418,63 @@ const ConfigurationsRemote = () => {
 
             {activeTab === 'sectors' && (
                 <section className="settings-remote-panel settings-entity-panel">
-                    <div className="settings-entity-toolbar"><div className="settings-remote-section-heading"><span><Layers3 size={18} /></span><div><h2>Setores</h2><p>{sectors.length} setores ativos no workspace</p></div></div>{!sectorFormOpen && <button type="button" className="settings-save" onClick={() => { setSectorDraft(EMPTY_SECTOR); setSectorFormOpen(true); }}><Plus size={16} /> Novo setor</button>}</div>
+                    <div className="settings-entity-toolbar settings-sector-toolbar">
+                        <div className="settings-remote-section-heading">
+                            <span><Layers3 size={18} /></span>
+                            <div>
+                                <h2>Setores</h2>
+                                <p>Organize as áreas usadas para distribuir e acompanhar as rotinas.</p>
+                            </div>
+                        </div>
+                        {!sectorFormOpen && <button type="button" className="settings-save" onClick={() => { setSectorDraft(EMPTY_SECTOR); setSectorFormOpen(true); }}><Plus size={16} /> Novo setor</button>}
+                    </div>
                     {sectorFormOpen && (
-                    <form onSubmit={saveSector} className="settings-entity-form">
-                        <label className="settings-field"><span>Nome</span><input value={sectorDraft.name} onChange={(event) => setSectorDraft({ ...sectorDraft, name: event.target.value })} placeholder="Ex.: Cozinha" required autoFocus /></label>
-                        <label className="settings-field"><span>Chave do sistema</span><input value={sectorDraft.system_key} onChange={(event) => setSectorDraft({ ...sectorDraft, system_key: event.target.value })} placeholder="Opcional" /></label>
-                        <div className="settings-inline-actions"><button type="submit" className="settings-save" disabled={entitySaving}>{entitySaving ? <LoaderCircle size={15} className="is-spinning" /> : <Save size={15} />}{sectorDraft.id ? 'Atualizar' : 'Criar'}</button><button type="button" className="settings-system-row" onClick={() => { setSectorDraft(EMPTY_SECTOR); setSectorFormOpen(false); }}>Cancelar</button></div>
-                    </form>
+                        <form onSubmit={saveSector} className="settings-entity-form settings-sector-form">
+                            <div className="settings-form-intro">
+                                <strong>{sectorDraft.id ? 'Editar setor' : 'Criar setor'}</strong>
+                                <span>Use um nome curto e reconhecível para toda a equipe.</span>
+                            </div>
+                            <label className="settings-field">
+                                <span>Nome do setor</span>
+                                <input value={sectorDraft.name} onChange={(event) => setSectorDraft({ ...sectorDraft, name: event.target.value })} placeholder="Ex.: Cozinha" required autoFocus />
+                            </label>
+                            <div className="settings-inline-actions">
+                                <button type="submit" className="settings-save" disabled={entitySaving}>{entitySaving ? <LoaderCircle size={15} className="is-spinning" /> : <Save size={15} />}{sectorDraft.id ? 'Salvar alterações' : 'Criar setor'}</button>
+                                <button type="button" className="settings-system-row" onClick={() => { setSectorDraft(EMPTY_SECTOR); setSectorFormOpen(false); }}>Cancelar</button>
+                            </div>
+                        </form>
                     )}
-                    <div className="settings-entity-list">{sectors.length === 0 ? <div className="settings-empty-note">Nenhum setor cadastrado. Crie o primeiro para classificar checklists.</div> : sectors.map((sector) => <article className="settings-entity-row" key={sector.id}><div><strong>{sector.name}</strong><small>{sector.system_key || 'Setor próprio'}</small></div><div className="settings-inline-actions"><button type="button" className="settings-icon-action" onClick={() => { setSectorDraft({ id: sector.id, name: sector.name || '', system_key: sector.system_key || '' }); setSectorFormOpen(true); }} aria-label={`Editar ${sector.name}`} title="Editar"><Pencil size={15} /></button><button type="button" className="settings-icon-action danger" onClick={() => archiveSector(sector)} aria-label={`Arquivar ${sector.name}`} title="Arquivar"><Archive size={15} /></button></div></article>)}</div>
+                    {sectors.length > 0 && (
+                        <div className="settings-sector-overview">
+                            <div>
+                                <strong>{sectors.length}</strong>
+                                <span>{sectors.length === 1 ? 'setor ativo' : 'setores ativos'}</span>
+                            </div>
+                            <label className="settings-search-field settings-sector-search">
+                                <Search size={16} aria-hidden="true" />
+                                <input value={sectorQuery} onChange={(event) => setSectorQuery(event.target.value)} placeholder="Buscar setor..." aria-label="Buscar setor" />
+                            </label>
+                        </div>
+                    )}
+                    <div className="settings-sector-grid">
+                        {sectors.length === 0 ? (
+                            <div className="settings-empty-note">Nenhum setor cadastrado. Crie o primeiro para classificar checklists.</div>
+                        ) : visibleSectors.length === 0 ? (
+                            <div className="settings-empty-note">Nenhum setor corresponde à busca.</div>
+                        ) : visibleSectors.map((sector) => (
+                            <article className="settings-sector-card" key={sector.id}>
+                                <div className="settings-sector-mark" aria-hidden="true">{sector.name?.trim()?.charAt(0)?.toLocaleUpperCase() || 'S'}</div>
+                                <div className="settings-sector-copy">
+                                    <strong>{sector.name}</strong>
+                                    <span>Área operacional</span>
+                                </div>
+                                <div className="settings-sector-actions">
+                                    <button type="button" className="settings-sector-action" onClick={() => { setSectorDraft({ id: sector.id, name: sector.name || '', system_key: sector.system_key || '' }); setSectorFormOpen(true); }} aria-label={`Editar ${sector.name}`} title="Editar setor"><Pencil size={16} /><span>Editar</span></button>
+                                    <button type="button" className="settings-sector-action danger" onClick={() => archiveSector(sector)} aria-label={`Arquivar ${sector.name}`} title="Arquivar setor"><Archive size={16} /><span>Arquivar</span></button>
+                                </div>
+                            </article>
+                        ))}
+                    </div>
                 </section>
             )}
 

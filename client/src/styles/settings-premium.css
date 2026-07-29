@@ -262,3 +262,186 @@
     .settings-content-stage .settings-field select,
     .settings-content-stage .settings-field textarea { transition: none; }
 }
+.settings-sector-toolbar {
+    align-items: flex-start;
+    gap: 24px;
+}
+
+.settings-sector-form {
+    grid-template-columns: minmax(240px, 1fr) minmax(240px, 1.4fr);
+    align-items: end;
+    padding: 22px;
+    border: 1px solid #d7e6e4;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #f3fbf9 0%, #ffffff 72%);
+}
+
+.settings-form-intro {
+    display: grid;
+    gap: 5px;
+    align-self: center;
+}
+
+.settings-form-intro strong {
+    color: #17343a;
+    font-size: 1.05rem;
+}
+
+.settings-form-intro span {
+    max-width: 42ch;
+    color: #71838b;
+    line-height: 1.45;
+}
+
+.settings-sector-overview {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin: 24px 0 18px;
+    padding: 16px 18px;
+    border: 1px solid #e0e9ec;
+    border-radius: 18px;
+    background: #f8fbfc;
+}
+
+.settings-sector-overview > div {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    color: #5f727a;
+}
+
+.settings-sector-overview strong {
+    color: #12343a;
+    font-size: 1.55rem;
+}
+
+.settings-sector-search {
+    width: min(100%, 340px);
+}
+
+.settings-sector-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 14px;
+}
+
+.settings-sector-grid > .settings-empty-note {
+    grid-column: 1 / -1;
+}
+
+.settings-sector-card {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 14px;
+    min-width: 0;
+    padding: 18px;
+    border: 1px solid #dfe9eb;
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 10px 30px rgba(24, 65, 72, 0.05);
+    transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.settings-sector-card:hover {
+    transform: translateY(-2px);
+    border-color: #a9d8d1;
+    box-shadow: 0 16px 38px rgba(24, 65, 72, 0.09);
+}
+
+.settings-sector-mark {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    color: #08796f;
+    background: linear-gradient(145deg, #dff7f2, #effaf7);
+    font-size: 1.05rem;
+    font-weight: 800;
+}
+
+.settings-sector-copy {
+    display: grid;
+    align-content: center;
+    gap: 3px;
+    min-width: 0;
+}
+
+.settings-sector-copy strong {
+    overflow: hidden;
+    color: #18343a;
+    font-size: 1.02rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.settings-sector-copy span {
+    color: #7a8b92;
+    font-size: 0.82rem;
+}
+
+.settings-sector-actions {
+    display: flex;
+    grid-column: 1 / -1;
+    gap: 8px;
+    padding-top: 14px;
+    border-top: 1px solid #edf2f3;
+}
+
+.settings-sector-action {
+    display: inline-flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 40px;
+    padding: 0 12px;
+    border: 1px solid #dce7e9;
+    border-radius: 12px;
+    color: #38545a;
+    background: #ffffff;
+    font: inherit;
+    font-size: 0.84rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.settings-sector-action:hover {
+    border-color: #94cbc3;
+    color: #08796f;
+    background: #f2fbf9;
+}
+
+.settings-sector-action.danger {
+    color: #b84b4b;
+}
+
+.settings-sector-action.danger:hover {
+    border-color: #efb8b8;
+    color: #9f3434;
+    background: #fff6f6;
+}
+
+@media (max-width: 760px) {
+    .settings-sector-toolbar,
+    .settings-sector-overview {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .settings-sector-toolbar .settings-save,
+    .settings-sector-search {
+        width: 100%;
+    }
+
+    .settings-sector-form {
+        grid-template-columns: 1fr;
+        padding: 18px;
+    }
+
+    .settings-sector-grid {
+        grid-template-columns: 1fr;
+    }
+}
