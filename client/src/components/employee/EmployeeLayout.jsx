@@ -1,17 +1,18 @@
 import { Suspense, useEffect } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Bell, History, Home, LogOut, Sparkles, UserRound } from 'lucide-react';
+import { NavLink, Outlet } from 'react-router-dom';
+import { Bell, ClipboardList, History, Home, Sparkles } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import RouteSkeleton from '../RouteSkeleton';
 import './employee.css';
+import './employee-navigation.css';
 
 export default function EmployeeLayout() {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
     const preload = () => Promise.allSettled([
       import('../../pages/employee/EmployeeHome'),
+      import('../../pages/employee/EmployeeActivities'),
       import('../../pages/employee/EmployeeHistory'),
       import('../../pages/employee/EmployeeNotifications'),
       import('../../pages/employee/EmployeeProfile'),
@@ -25,11 +26,6 @@ export default function EmployeeLayout() {
     return () => window.clearTimeout(timerId);
   }, []);
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login', { replace: true });
-  };
-
   return (
     <div className="employee-shell">
       <header className="employee-topbar">
@@ -38,15 +34,15 @@ export default function EmployeeLayout() {
           <span>Ritmika</span>
         </a>
 
-        <div className="employee-account">
-          <span className="employee-account-copy">
+        <NavLink className="employee-profile-shortcut" to="/app/profile" aria-label="Abrir meu perfil">
+          <span className="employee-profile-shortcut-copy">
             <strong>{user?.name || 'Minha rotina'}</strong>
-            <small>App de Operação</small>
+            <small>Meu perfil</small>
           </span>
-          <button className="employee-icon-button" type="button" onClick={handleLogout} aria-label="Sair da conta">
-            <LogOut size={19} aria-hidden="true" />
-          </button>
-        </div>
+          <span className="employee-profile-shortcut-avatar" aria-hidden="true">
+            {String(user?.name || 'R').trim().charAt(0).toUpperCase()}
+          </span>
+        </NavLink>
       </header>
 
       <main className="employee-main">
@@ -61,9 +57,9 @@ export default function EmployeeLayout() {
 
       <nav className="employee-nav" aria-label="Navegação principal do App de Operação">
         <NavLink to="/app" end><Home aria-hidden="true" /><span>Início</span></NavLink>
+        <NavLink to="/app/activities"><ClipboardList aria-hidden="true" /><span>Atividades</span></NavLink>
         <NavLink to="/app/history"><History aria-hidden="true" /><span>Histórico</span></NavLink>
         <NavLink to="/app/notifications"><Bell aria-hidden="true" /><span>Avisos</span></NavLink>
-        <NavLink to="/app/profile"><UserRound aria-hidden="true" /><span>Perfil</span></NavLink>
       </nav>
     </div>
   );

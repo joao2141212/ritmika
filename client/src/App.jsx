@@ -13,6 +13,7 @@ const loadChecklistWorkspace = () => import('./components/ChecklistWorkspace');
 const loadChecklistExecutionWorkspace = () => import('./components/ChecklistExecutionWorkspace');
 const loadEmployeeLayout = () => import('./components/employee/EmployeeLayout');
 const loadEmployeeHome = () => import('./pages/employee/EmployeeHome');
+const loadEmployeeActivities = () => import('./pages/employee/EmployeeActivities');
 const loadEmployeeHistory = () => import('./pages/employee/EmployeeHistory');
 const loadEmployeeNotifications = () => import('./pages/employee/EmployeeNotifications');
 const loadEmployeeProfile = () => import('./pages/employee/EmployeeProfile');
@@ -28,6 +29,7 @@ const ChecklistBuilderWorkspace = lazy(() => import('./components/ChecklistBuild
 const ChecklistExecutionWorkspace = lazy(loadChecklistExecutionWorkspace);
 const EmployeeLayout = lazy(loadEmployeeLayout);
 const EmployeeHome = lazy(loadEmployeeHome);
+const EmployeeActivities = lazy(loadEmployeeActivities);
 const EmployeeHistory = lazy(loadEmployeeHistory);
 const EmployeeNotifications = lazy(loadEmployeeNotifications);
 const EmployeeProfile = lazy(loadEmployeeProfile);
@@ -71,6 +73,7 @@ const MANAGER_ROUTE_LOADERS = [
 const OPERATION_ROUTE_LOADERS = [
   loadEmployeeLayout,
   loadEmployeeHome,
+  loadEmployeeActivities,
   loadEmployeeHistory,
   loadEmployeeNotifications,
   loadEmployeeProfile,
@@ -170,6 +173,7 @@ function App() {
             </ProtectedRoute>
           }>
             <Route index element={<EmployeeHome />} />
+            <Route path="activities" element={<EmployeeActivities />} />
             <Route path="history" element={<EmployeeHistory />} />
             <Route path="notifications" element={<EmployeeNotifications />} />
             <Route path="profile" element={<EmployeeProfile />} />

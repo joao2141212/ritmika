@@ -78,9 +78,10 @@ function assignmentState(response) {
   return 'pending';
 }
 
-export default function EmployeeHome() {
+export default function EmployeeHome({ view = 'home' }) {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const isActivitiesPage = view === 'activities';
   const [activityFilter, setActivityFilter] = useState('all');
   const [activityQuery, setActivityQuery] = useState('');
   const query = useQuery({
@@ -113,17 +114,32 @@ export default function EmployeeHome() {
       || assignments[0]
       || null;
   }, [query.data]);
-  const visibleAssignments = useMemo(() => (query.data || []).filter((assignment) => {
-    const state = assignmentState(assignment.latestResponse);
-    const matchesState = activityFilter === 'all' || activityFilter === state;
-    return matchesState && matchesSearchText(
-      `${assignment.title || ''} ${assignment.description || ''}`,
-      activityQuery,
-    );
-  }), [activityFilter, activityQuery, query.data]);
+  const visibleAssignments = useMemo(() => {
+    const assignments = query.data || [];
+    if (!isActivitiesPage) {
+      return assignments
+        .filter((assignment) => assignmentState(assignment.latestResponse) !== 'finished')
+        .sort((left, right) => {
+          const leftState = assignmentState(left.latestResponse);
+          const rightState = assignmentState(right.latestResponse);
+          return Number(rightState === 'in_progress') - Number(leftState === 'in_progress');
+        })
+        .slice(0, 3);
+    }
+    return assignments.filter((assignment) => {
+      const state = assignmentState(assignment.latestResponse);
+      const matchesState = activityFilter === 'all' || activityFilter === state;
+      return matchesState && matchesSearchText(
+        `${assignment.title || ''} ${assignment.description || ''}`,
+        activityQuery,
+      );
+    });
+  }, [activityFilter, activityQuery, isActivitiesPage, query.data]);
 
   return (
     <section className="employee-dashboard" aria-labelledby="employee-title">
+      {!isActivitiesPage && (
+        <>
       <div className="employee-hero">
         <div>
           <p className="employee-eyebrow">Sua rotina de hoje</p>
@@ -170,15 +186,24 @@ export default function EmployeeHome() {
           )}
         </article>
       </div>
+        </>
+      )}
 
       <div className="employee-list-header">
         <div>
-          <h2>Minhas atividades</h2>
-          <p>Prioridade visual para o que ainda depende de você.</p>
+          <p className="employee-eyebrow">{isActivitiesPage ? 'Sua fila' : 'Agora'}</p>
+          {isActivitiesPage ? <h1 id="employee-title">Atividades</h1> : <h2>Próximas atividades</h2>}
+          <p>{isActivitiesPage ? 'Encontre tudo o que foi atribuído a você.' : 'Continue o que está em andamento ou comece a próxima prioridade.'}</p>
         </div>
+        {!isActivitiesPage && metrics.total > 0 && (
+          <button className="employee-list-link" type="button" onClick={() => navigate('/app/activities')}>
+            Ver todas
+            <ArrowRight size={18} aria-hidden="true" />
+          </button>
+        )}
       </div>
 
-      {metrics.total > 0 && (
+      {isActivitiesPage && metrics.total > 0 && (
         <div className="employee-activity-manager" aria-label="Localizar e filtrar atividades">
           <label className="employee-activity-search">
             <Search size={18} aria-hidden="true" />
@@ -230,16 +255,16 @@ export default function EmployeeHome() {
         <div className="employee-state">
           <CheckCircle2 size={30} aria-hidden="true" />
           <strong>Nenhuma atividade atribuída agora</strong>
-          <p>Quando o gestor atribuir uma atividade a você, ela aparecerá aqui.</p>
+          <p>Quando uma atividade for atribuída a você, ela aparecerá aqui.</p>
         </div>
       )}
 
       {!query.isLoading && !query.isError && metrics.total > 0 && visibleAssignments.length === 0 && (
         <div className="employee-state">
-          <Search size={30} aria-hidden="true" />
-          <strong>Nenhuma atividade encontrada</strong>
-          <p>Ajuste a busca ou escolha outra situação.</p>
-          <button type="button" onClick={() => { setActivityFilter('all'); setActivityQuery(''); }}>Limpar filtros</button>
+          {isActivitiesPage ? <Search size={30} aria-hidden="true" /> : <CheckCircle2 size={30} aria-hidden="true" />}
+          <strong>{isActivitiesPage ? 'Nenhuma atividade encontrada' : 'Tudo em dia por aqui'}</strong>
+          <p>{isActivitiesPage ? 'Ajuste a busca ou escolha outra situação.' : 'As próximas atividades aparecerão aqui quando forem atribuídas.'}</p>
+          {isActivitiesPage && <button type="button" onClick={() => { setActivityFilter('all'); setActivityQuery(''); }}>Limpar filtros</button>}
         </div>
       )}
 
