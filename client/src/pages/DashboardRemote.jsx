@@ -666,9 +666,9 @@ const DashboardRemote = () => {
                 <div className="remote-activity-toolbar">
                     <label className="remote-activity-search">
                         <Search size={18} aria-hidden="true" />
-                        <span className="sr-only">Buscar na fila de trabalho</span>
                         <input
                             type="search"
+                            aria-label="Buscar na fila de trabalho"
                             value={taskQuery}
                             onChange={(event) => setTaskQuery(event.target.value)}
                             placeholder="Buscar atividade, checklist ou responsável"

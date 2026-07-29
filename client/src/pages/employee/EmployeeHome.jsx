@@ -178,9 +178,9 @@ export default function EmployeeHome() {
         <div className="employee-activity-manager" aria-label="Localizar e filtrar atividades">
           <label className="employee-activity-search">
             <Search size={18} aria-hidden="true" />
-            <span className="sr-only">Buscar atividade</span>
             <input
               type="search"
+              aria-label="Buscar atividade"
               value={activityQuery}
               onChange={(event) => setActivityQuery(event.target.value)}
               placeholder="Buscar atividade"
