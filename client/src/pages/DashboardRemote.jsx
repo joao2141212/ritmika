@@ -104,7 +104,7 @@ const TaskCard = ({ task, status }) => {
         <button
             type="button"
             className="remote-task-card"
-            onClick={() => navigate('/checklists/' + task.id + '/execute', {
+            onClick={() => navigate('/checklists/' + task.id + '/details', {
                 state: { executionId: task.execution_id },
             })}
         >

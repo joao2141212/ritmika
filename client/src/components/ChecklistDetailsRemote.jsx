@@ -19,7 +19,9 @@ const ChecklistDetailsRemote = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
-    const executionId = location.state?.executionId || id;
+    const executionId = new URLSearchParams(location.search).get('executionId')
+        || location.state?.executionId
+        || id;
     const [execution, setExecution] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');

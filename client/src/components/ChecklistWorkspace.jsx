@@ -18,7 +18,6 @@ import {
     ListChecks,
     MoreHorizontal,
     Pencil,
-    Play,
     Plus,
     Search,
     Square,
@@ -808,10 +807,10 @@ const ChecklistWorkspace = () => {
                                                 <button
                                                     type="button"
                                                     className="checklist-run-button"
-                                                    onClick={() => navigate(`/checklists/${encodeURIComponent(checklist.id)}/execute`)}
-                                                    aria-label={`Executar ${titleOf(checklist)}`}
+                                                    onClick={() => navigate(`/checklists/${encodeURIComponent(checklist.id)}/historico`)}
+                                                    aria-label={`Acompanhar ${titleOf(checklist)}`}
                                                 >
-                                                    <Play size={14} /> <span>Executar</span>
+                                                    <ClipboardCheck size={14} /> <span>Acompanhar</span>
                                                 </button>
                                                 <button type="button" className="icon-button" onClick={() => setEditingChecklistId(checklist.id)} aria-label={`Editar ${titleOf(checklist)}`} title="Editar">
                                                     <Pencil size={15} />
@@ -889,9 +888,9 @@ const ChecklistWorkspace = () => {
                                     <button
                                         type="button"
                                         className="light-button primary"
-                                        onClick={() => navigate(`/checklists/${encodeURIComponent(checklist.id)}/execute`)}
+                                        onClick={() => navigate(`/checklists/${encodeURIComponent(checklist.id)}/historico`)}
                                     >
-                                        <Play size={15} /> Executar
+                                        <ClipboardCheck size={15} /> Acompanhar
                                     </button>
                                     <button
                                         type="button"

@@ -189,7 +189,7 @@ function App() {
             <Route path="checklists/new" element={<ChecklistBuilderWorkspace />} />
             <Route path="checklist/add" element={<ChecklistBuilderWorkspace />} />
             <Route path="checklists/:id/edit" element={<ChecklistBuilderWorkspace />} />
-            <Route path="checklists/:id/execute" element={<ChecklistExecutionWorkspace />} />
+            <Route path="checklists/:id/execute" element={<ChecklistDetails />} />
             <Route path="checklists/:id/contagem" element={<ChecklistContagem />} />
             <Route path="checklists/:id/historico" element={<ChecklistHistorico />} />
             <Route path="checklists/:id/details" element={<ChecklistDetails />} />
