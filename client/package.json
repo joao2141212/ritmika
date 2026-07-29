@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "test:access-routing": "node scripts/check-access-routing.mjs",
     "test:mobile-management": "node scripts/check-management-mobile-css.mjs",
     "preview": "vite preview"
   },

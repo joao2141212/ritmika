@@ -65,11 +65,11 @@ export const AuthProvider = ({ children }) => {
             if (profile) {
                 setUser(profile);
                 setWorkspaceSelection(null);
-                return { success: true };
+                return { success: true, user: profile };
             }
 
             const { data: authData } = await supabase.auth.getUser();
-            setUser({
+            const fallbackUser = {
                 id: userId,
                 workspace_id: membership.workspace_id,
                 name: authData?.user?.user_metadata?.name || authData?.user?.email || 'Usuário Ritmika',
@@ -78,9 +78,10 @@ export const AuthProvider = ({ children }) => {
                 is_owner: Boolean(membership.is_owner),
                 managed_units: membership.managed_units || [],
                 preferences: membership.preferences || {},
-            });
+            };
+            setUser(fallbackUser);
             setWorkspaceSelection(null);
-            return { success: true };
+            return { success: true, user: fallbackUser };
         } catch (error) {
             logger.error({
                 fn: 'AuthContext.loadUserProfile',

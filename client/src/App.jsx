@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { classifyAccess } from './lib/accessRouting';
 import AppErrorBoundary from './components/AppErrorBoundary';
 import RealtimeSync from './components/RealtimeSync';
 import { serverState } from './lib/serverState';
@@ -45,9 +46,6 @@ const AppBoot = () => (
   </main>
 );
 
-const MANAGER_ROLES = new Set(['owner', 'admin', 'manager']);
-const EMPLOYEE_ROLES = new Set(['operator', 'employee']);
-
 const ProtectedRoute = ({ children, audience = 'manager' }) => {
   const { user, loading, workspaceSelection } = useAuth();
 
@@ -67,16 +65,14 @@ const ProtectedRoute = ({ children, audience = 'manager' }) => {
     return <Navigate to="/login" replace />;
   }
 
-  const role = String(user.role || '').toLowerCase();
-  const isManager = Boolean(user.is_owner) || MANAGER_ROLES.has(role);
-  const isEmployee = EMPLOYEE_ROLES.has(role);
+  const { isManager, isOperator, canAccessOperation } = classifyAccess(user);
 
   if (audience === 'manager' && !isManager) {
-    return <Navigate to={isEmployee ? '/app' : '/login'} replace />;
+    return <Navigate to={isOperator ? '/app' : '/login'} replace />;
   }
 
-  if (audience === 'employee' && !isEmployee) {
-    return <Navigate to={isManager ? '/' : '/login'} replace />;
+  if (audience === 'employee' && !canAccessOperation) {
+    return <Navigate to="/login" replace />;
   }
 
   return children;

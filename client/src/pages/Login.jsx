@@ -5,6 +5,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowRight, CheckCircle2, Eye, EyeOff, LockKeyhole, Mail, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { resolvePostLoginPath } from '../lib/accessRouting';
 import '../styles/login.css'; // Will create this next
 
 const Login = () => {
@@ -24,7 +25,7 @@ const Login = () => {
         try {
             const result = await login(email.trim(), password);
             if (result.success) {
-                navigate('/');
+                navigate(resolvePostLoginPath(result.user), { replace: true });
             } else {
                 const message = String(result.error || '');
                 setError(/invalid login credentials/i.test(message)
