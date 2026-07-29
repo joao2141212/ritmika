@@ -34,6 +34,19 @@ inferirem manutencao de Auth, workspaces, roles e dados sem custo alto.
   - Prova: valida rotas autenticadas em producao desktop/mobile, HTTP, erro JS,
     overflow horizontal e screenshots das telas principais.
 
+## Gate E2E de produção
+
+- `supabase/scripts/auth/write/production-operation-e2e.mjs`
+  - Efeito: mutação idempotente somente no workspace `ritmika_qa` e operação
+    real no frontend publicado.
+  - Dry-run: `bash supabase/scripts/auth/run.sh production-operation-e2e`.
+  - Aplicação: `bash supabase/scripts/auth/run.sh production-operation-e2e --apply`.
+  - Prova: gestor cria, atribui e publica; operação recebe, inicia, responde,
+    testa bloqueio de evidência, anexa, salva, recarrega, conclui, recebe aviso,
+    consulta histórico e confirma persistência no banco. Uma fixture estável
+    cobre também comentário e data/hora.
+  - Saída: `evidence/production-operation-e2e.json`, sem senha ou token.
+
 ## Regras
 
 - Scripts do Ritmika nunca mutam Konclui.
@@ -75,7 +88,6 @@ bash supabase/scripts/auth/run.sh account-state --user-id <uuid> --action ban
 - Deploy Netlify servindo o commit atual.
 - Edge Functions publicadas na versao atual.
 - Variaveis remotas usando publishable key e secret key modernas.
-- QA autenticado completo no browser controlado.
 - Reconcilicao de dados reais Konclui -> Ritmika por modulo.
 Registro canônico das operações repetíveis do Ritmika. O root operacional é
 `supabase/scripts/`. O CBM pode excluir essa pasta do grafo técnico, portanto

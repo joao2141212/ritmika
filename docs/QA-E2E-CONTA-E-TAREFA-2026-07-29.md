@@ -102,7 +102,36 @@ Script:
   Konclui.
 - O Konclui possui escopo de usuário por unidade e setor. O vínculo direto por
   setor ainda precisa de auditoria vertical e prova no Ritmika.
-- Upload de evidência, assinatura, GPS, QR/código de barras, recorrência e
-  notificações precisam de cenários E2E próprios.
+- Assinatura, GPS, QR/código de barras, recorrência, push externo e operação
+  offline precisam de cenários E2E próprios.
 - O lint global ainda falha em 16 ocorrências preexistentes das regras React
   `set-state-in-effect` e `immutability`. O lint dos arquivos tocados passou.
+
+## Certificação de produção do fluxo completo
+
+Execução mais recente: `2026-07-29T03:58:51.688Z` até
+`2026-07-29T03:59:11.406Z`.
+
+Comando canônico:
+
+```bash
+bash supabase/scripts/auth/run.sh production-operation-e2e --apply
+```
+
+Sinais observados:
+
+- gestor QA leu 4 perfis autorizados, abriu o construtor, atribuiu e publicou;
+- o checklist `daf774cd-d573-4e8c-a7d3-8494e4745ce9` apareceu no `/app` do
+  operador atribuído;
+- a execução `bc789c81-73a6-4a80-bab6-dcf3e4510a9f` ficou interativa em
+  1.072 ms;
+- a conclusão foi bloqueada sem evidência, o arquivo foi anexado, o progresso
+  foi salvo, recarregado e concluído em 100%;
+- aviso de conclusão, histórico e registro final no Supabase foram confirmados;
+- a fixture de capacidades concluiu 3/3 itens, cobrindo check, comentário,
+  data/hora e evidência;
+- busca sem acento, bloqueio de rota de gestão, perfil e logout passaram;
+- `runtime_errors` e `failed_responses` ficaram vazios.
+
+A prova serializada está em `evidence/production-operation-e2e.json` e pode ser
+recriada pelo comando acima usando apenas o workspace QA.

@@ -13,7 +13,8 @@ de nomes históricos.
 | Portal do Gestor | `https://ritmikapp.netlify.app/` | publicado | usuários autenticados com membership; produto pretendido para `owner`, `admin` e `manager` |
 | Master da Plataforma | `https://ritmikapp.netlify.app/master` | publicado no mesmo frontend | somente administrador de plataforma |
 | Curadoria de sugestões | `https://ritmikapp.netlify.app/platform/ideas` | publicado no mesmo frontend | somente administrador de plataforma |
-| App do Funcionário | `https://ritmika-app.netlify.app/` | **planejado, não certificado como publicado** | `operator`, `employee` ou papel operacional equivalente |
+| App de Operação | `https://ritmikapp.netlify.app/app` | publicado no frontend atual e certificado em produção | `operator`, `employee` ou papel operacional equivalente |
+| Host dedicado do App de Operação | `https://ritmika-app.netlify.app/` | planejado, ainda não certificado como publicado | mesmo público operacional |
 
 ## Regra fundamental
 
@@ -32,8 +33,8 @@ de nomes históricos.
 |---|---|
 | Gestor abre `ritmikapp.netlify.app` no computador | Portal do Gestor |
 | Gestor abre `ritmikapp.netlify.app` no celular | Portal do Gestor responsivo |
-| Funcionário abre o futuro `ritmika-app.netlify.app` no celular | App do Funcionário |
-| Funcionário abre o futuro `ritmika-app.netlify.app` no computador | App do Funcionário responsivo |
+| Pessoa operacional abre `ritmikapp.netlify.app/app` no celular | App de Operação |
+| Pessoa operacional abre `ritmikapp.netlify.app/app` no computador | App de Operação responsivo |
 
 A largura da tela nunca troca o produto. O brief visual do produto operacional
 está em `APP-FUNCIONARIO-VISUAL-BRIEF.md`.
@@ -138,9 +139,15 @@ Autorização:
 - consulta cross-workspace ocorre por RPC protegida;
 - usuário QA/cliente sem privilégio master deve receber bloqueio do backend.
 
-## 4. App do Funcionário
+## 4. App de Operação
 
-URL reservada/recomendada:
+URL publicada e certificada:
+
+```text
+https://ritmikapp.netlify.app/app
+```
+
+Host dedicado reservado:
 
 ```text
 https://ritmika-app.netlify.app/
@@ -148,11 +155,12 @@ https://ritmika-app.netlify.app/
 
 Estado real:
 
-- arquitetura e roadmap existem;
-- o segundo frontend, segundo site Netlify, manifest próprio e roteamento por
-  papel ainda precisam de certificação de publicação;
-- não registrar esta URL como pronta até existir deploy servido, login
-  operacional e prova de RLS com uma conta de funcionário.
+- o produto operacional já está servido em `/app` no site atual;
+- login operacional, atribuição, execução, evidência obrigatória, retomada,
+  conclusão, aviso, histórico, bloqueio de rota de gestão, perfil e logout
+  passaram no gate de produção em 29 de julho de 2026;
+- o segundo site Netlify, manifest próprio e host dedicado continuam planejados
+  e não devem ser apresentados como publicados.
 
 Documento de implementação:
 
@@ -167,11 +175,11 @@ Navegação planejada:
 - Notificações
 - Perfil
 
-Critério mínimo para mudar o estado para publicado:
+Critério mínimo para publicar o host dedicado:
 
 1. segundo site Netlify identificado por site ID;
 2. bundle operacional servido;
-3. login de uma conta `operator`/`employee`;
+3. login de uma conta operacional;
 4. rota administrativa bloqueada no frontend e no backend;
 5. execução real de tarefa;
 6. teste em celular e desktop;

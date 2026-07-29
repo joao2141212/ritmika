@@ -6,6 +6,12 @@ Operações administrativas mutáveis. Nenhuma delas aplica mudanças sem `--app
 - `set-account-state.mjs`: bloqueia ou desbloqueia login via `ban_duration` oficial do Supabase Auth.
 - `set-access.mjs`: sincroniza role, ownership e unidades entre membership e profile; se o profile falhar, tenta restaurar o membership e registra falha parcial crítica se o rollback falhar.
 - `reconcile-workspace-emails.mjs`: troca logins técnicos pelos e-mails reais importados, preserva UUID e senha, atualiza o relatório privado e restaura os e-mails anteriores se a operação não fechar por completo.
+- `production-operation-e2e.mjs`: gate de produção restrito ao workspace QA. Em
+  dry-run valida ambiente e identidades; com `--apply` cria e publica uma tarefa
+  pelo portal, atribui ao operador, executa no `/app`, valida evidência,
+  persistência, histórico, aviso, busca, autorização e logout. Também mantém
+  uma fixture idempotente para comentário e data/hora. Salva prova em
+  `evidence/` e nunca imprime credenciais.
 - `run.sh`: carrega o ambiente e impede execução de arquivo fora desta pasta.
 
 Fluxo seguro:
