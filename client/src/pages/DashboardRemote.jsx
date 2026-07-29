@@ -258,6 +258,7 @@ const DashboardRemote = () => {
     }, [dashboardFilters, periodDays]);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- carga remota inicial controla loading, erro e dados do dashboard.
         loadDashboard();
     }, [loadDashboard]);
 

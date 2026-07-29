@@ -71,3 +71,21 @@ Atualizado em 2026-07-28. Fonte de prova: varredura autenticada em produção us
 - `supabase/scripts/auth/read/workspace.mjs --json` sem `--workspace-id` falha com `workspace_id_must_be_uuid`. Precisa de mensagem de ajuda melhor ou default QA explícito.
 - `supabase/scripts/auth/read/production-ui-sweep.mjs` foi criado, mas o repositório ainda não tem `playwright` como dependência local. Ele funciona como contrato de QA quando a dependência estiver disponível ou quando rodado no runtime do Codex.
 - Varredura autenticada profunda ainda não clicou ações internas como executar checklist, revisar perfil, salvar configurações, marcar notificação e abrir curso. Isso é o próximo bloco de prova.
+
+## Auditoria visual e funcional em produção - 29/07/2026
+
+### Entregue e comprovado
+
+- Portal Gestor: dashboard modular, filtros contidos, métricas responsivas e cards operacionais com dados reais.
+- Configurações > Setores: chaves técnicas ocultas, busca tolerante a acentos e espaços, cards responsivos e ações humanas.
+- App Operacional Ritmika: Home, Histórico, Avisos, Perfil e execução de checklist autenticados com conta QA operacional.
+- Responsividade operacional: Home validada em 390 x 844 sem overflow horizontal.
+- Persistência: execução QA salva com 2/2 respostas, recarregada mantendo texto e progresso, e concluída com 100%.
+- Hierarquia: 3 contas, 2 workspaces e memberships separados entre cliente Konclui e workspace QA; inventário repetível em `supabase/scripts/auth/read/inspect-auth-hierarchy.cjs`.
+
+### Achados adicionados ao roadmap
+
+- P0 UI: nunca expor códigos internos de evento ou estado, como `EXECUTION_COMPLETED`, `EXECUTION_STARTED` e `completed`. Critério de aceite: toda enumeração técnica precisa de rótulo humano e fallback neutro.
+- P0 UX: a execução precisa voltar para a lista da superfície de origem. Critério de aceite: no App Operacional, “Voltar à lista” retorna para `/app`; no Gestor, retorna para `/checklists`.
+- P0 QA: manter credencial operacional isolada recuperável sem imprimir segredo. Critério de aceite: reset explícito da conta QA, persistência apenas em `.env` ignorado e validação por login real.
+- P1 UX: avisos devem comunicar categoria, título, contexto e data em linguagem humana. O código técnico permanece apenas na telemetria.

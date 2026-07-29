@@ -335,8 +335,8 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
                             <CheckCircle2 size={34} color="#0e9f8d" />
                             <h2>Execução concluída</h2>
                             <p>O resultado foi persistido no histórico do workspace Ritmika.</p>
-                            <div className="execution-meta"><span>Score</span><strong>{execution?.score ?? 100}%</strong><span>Status: completed</span></div>
-                            <div className="builder-actions"><button type="button" className="light-button secondary" onClick={() => navigate('/checklists')}>Voltar à lista</button><button type="button" className="light-button primary" onClick={retry}><RotateCcw size={16} /> Executar novamente</button></div>
+                            <div className="execution-meta"><span>Pontuação</span><strong>{execution?.score ?? 100}%</strong><span>Atividade concluída</span></div>
+                            <div className="builder-actions"><button type="button" className="light-button secondary" onClick={() => navigate(backPath)}>Voltar à lista</button><button type="button" className="light-button primary" onClick={retry}><RotateCcw size={16} /> Executar novamente</button></div>
                         </section>
                     ) : (
                         <section className="execution-panel">
@@ -364,9 +364,9 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
                         <div className="execution-kpi"><span>Status</span><strong>{completed ? 'Concluído' : 'Em andamento'}</strong></div>
                         <div className="execution-kpi"><span>Obrigatórios</span><strong>{answerableItems.filter((item) => item.required).length}</strong></div>
                         <div className="execution-kpi"><span>Respondidos</span><strong>{answeredCount}</strong></div>
-                        {completed && <div className="execution-kpi"><span>Score</span><strong>{execution?.score ?? 100}%</strong></div>}
+                        {completed && <div className="execution-kpi"><span>Pontuação</span><strong>{execution?.score ?? 100}%</strong></div>}
                     </section>
-                    <section className="execution-panel"><h2>Estados cobertos</h2><p>Em andamento, validação de obrigatórios, concluído, retry e erro de persistência.</p></section>
+                    <section className="execution-panel"><h2>Como funciona</h2><p>Suas respostas podem ser salvas durante o preenchimento. A conclusão só é liberada quando os itens obrigatórios estiverem respondidos.</p></section>
                 </aside>
             </div>
         </section>

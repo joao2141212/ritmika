@@ -63,8 +63,9 @@ setup_worker() {
   [[ -n "$workspace_id" ]] || { printf 'QA_WORKSPACE_NOT_UNIQUE\n' >&2; exit 3; }
 
   local expected='CREATE:QA_WORKER'
-  local normalized_email
+  local normalized_email worker_name
   normalized_email="$(printf '%s' "$RITMIKA_QA_WORKER_EMAIL" | tr '[:upper:]' '[:lower:]')"
+  worker_name="${RITMIKA_QA_WORKER_NAME:-Operador QA Ritmika}"
   if [[ "$apply" != true ]]; then
     jq -n --arg workspace_id "$workspace_id" --arg confirmation "$expected" '{status:"dry_run",target:"qa_workspace_only",workspace_id:$workspace_id,role:"operator",expected_confirmation:$confirmation}'
     return
@@ -77,7 +78,8 @@ setup_worker() {
   auth_payload="$(jq -n \
     --arg email "$normalized_email" \
     --arg password "$RITMIKA_QA_WORKER_PASSWORD" \
-    '{email:$email,password:$password,email_confirm:true,app_metadata:{role:"operator",account_class:"qa",ritmika_qa:true},user_metadata:{name:"Funcionário QA Ritmika"}}')"
+    --arg name "$worker_name" \
+    '{email:$email,password:$password,email_confirm:true,app_metadata:{role:"operator",account_class:"qa",ritmika_qa:true},user_metadata:{name:$name}}')"
 
   if [[ -z "$user_id" ]]; then
     user_id="$(rest_api '/auth/v1/admin/users' POST "$auth_payload" | jq -r '.id')"
@@ -99,10 +101,10 @@ setup_worker() {
   profiles="$(rest_api "/rest/v1/ritmika_profiles?select=id&workspace_id=eq.${workspace_id}&auth_user_id=eq.${user_id}")"
   profile_id="$(jq -r '.[0].id // empty' <<<"$profiles")"
   if [[ -n "$profile_id" ]]; then
-    rest_api "/rest/v1/ritmika_profiles?id=eq.${profile_id}" PATCH "$(jq -n --arg email "$normalized_email" '{name:"Funcionário QA Ritmika",email:$email,role:"operator",is_owner:false,managed_units:[],metadata:{ritmika_qa:true,qa_fixture:true}}')" >/dev/null
+    rest_api "/rest/v1/ritmika_profiles?id=eq.${profile_id}" PATCH "$(jq -n --arg email "$normalized_email" --arg name "$worker_name" '{name:$name,email:$email,role:"operator",is_owner:false,managed_units:[],metadata:{ritmika_qa:true,qa_fixture:true}}')" >/dev/null
   else
     profile_id="$(uuidgen | tr '[:upper:]' '[:lower:]')"
-    rest_api '/rest/v1/ritmika_profiles' POST "$(jq -n --arg id "$profile_id" --arg workspace "$workspace_id" --arg user "$user_id" --arg email "$normalized_email" '{id:$id,workspace_id:$workspace,auth_user_id:$user,source_user_id:("qa-worker:"+$user),email:$email,name:"Funcionário QA Ritmika",role:"operator",is_owner:false,managed_units:[],preferences:{},metadata:{ritmika_qa:true,qa_fixture:true}}')" >/dev/null
+    rest_api '/rest/v1/ritmika_profiles' POST "$(jq -n --arg id "$profile_id" --arg workspace "$workspace_id" --arg user "$user_id" --arg email "$normalized_email" --arg name "$worker_name" '{id:$id,workspace_id:$workspace,auth_user_id:$user,source_user_id:("qa-worker:"+$user),email:$email,name:$name,role:"operator",is_owner:false,managed_units:[],preferences:{},metadata:{ritmika_qa:true,qa_fixture:true}}')" >/dev/null
   fi
 
   jq -n --arg workspace_id "$workspace_id" --arg user_id "$user_id" '{status:"applied",workspace_id:$workspace_id,user_id:$user_id,role:"operator",credentials_exposed:false}'
