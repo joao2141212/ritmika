@@ -42,6 +42,10 @@ roteamento, login, área master, PWA ou App do Funcionário.
 As referências visuais e o contrato de experiência exclusivo do produto
 operacional estão em `APP-FUNCIONARIO-VISUAL-BRIEF.md`.
 
+As capturas autorizadas do Koncluí e os contratos observados nelas estão em
+`docs/referencias-konclui/referencias-konclui.md`. Essas imagens são referência
+de produto, não fixtures de QA nem autorização para alterar o Koncluí.
+
 ## UI Distillation Compiler
 
 O pacote reutilizável de captura comportamental fica em

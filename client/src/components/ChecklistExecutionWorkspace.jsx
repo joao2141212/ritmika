@@ -79,6 +79,8 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
     const [error, setError] = useState('');
     const [evidenceByItem, setEvidenceByItem] = useState({});
     const [evidenceBusy, setEvidenceBusy] = useState({});
+    const [activeItemIndex, setActiveItemIndex] = useState(0);
+    const [stepFeedback, setStepFeedback] = useState('');
 
     useEffect(() => {
         let active = true;
@@ -118,6 +120,8 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
                 setChecklist(data);
                 setExecution(started);
                 setAnswers(started.answers || {});
+                setActiveItemIndex(0);
+                setStepFeedback('');
                 setCompleted(started.status === 'completed' || Boolean(started.completed_at));
                 setEvidenceByItem(groupEvidence(evidence));
             } catch (openError) {
@@ -150,13 +154,47 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
     const answerableItems = useMemo(() => items.filter((item) => item.type !== 'separator'), [items]);
     const answeredCount = answerableItems.filter((item) => isAnswered(answers[item.id])).length;
     const progress = answerableItems.length ? Math.round((answeredCount / answerableItems.length) * 100) : 0;
+    const activeItem = answerableItems[activeItemIndex] || null;
+    const isFirstItem = activeItemIndex === 0;
+    const isLastItem = activeItemIndex === answerableItems.length - 1;
 
     const setAnswer = (itemId, value) => {
         setAnswers((current) => ({ ...current, [itemId]: value }));
         setMissingItems((current) => current.filter((missingId) => missingId !== itemId));
+        setStepFeedback('Resposta registrada neste item.');
         if (value === NOT_APPLICABLE) {
             setMissingEvidenceItems((current) => current.filter((missingId) => missingId !== itemId));
         }
+    };
+
+    const focusItem = (index) => {
+        setActiveItemIndex(Math.max(0, Math.min(index, answerableItems.length - 1)));
+        setStepFeedback('');
+    };
+
+    const validateCurrentItem = () => {
+        if (!activeItem) return true;
+        if (activeItem.required && !isAnswered(answers[activeItem.id])) {
+            setMissingItems((current) => current.includes(activeItem.id) ? current : [...current, activeItem.id]);
+            setStepFeedback('Responda este item obrigatório antes de continuar.');
+            return false;
+        }
+        if (
+            isAnswered(answers[activeItem.id])
+            && requiresEvidence(activeItem)
+            && answers[activeItem.id] !== NOT_APPLICABLE
+            && (evidenceByItem[activeItem.id] || []).length === 0
+        ) {
+            setMissingEvidenceItems((current) => current.includes(activeItem.id) ? current : [...current, activeItem.id]);
+            setStepFeedback('Anexe a evidência obrigatória deste item antes de continuar.');
+            return false;
+        }
+        return true;
+    };
+
+    const goToNextItem = () => {
+        if (!validateCurrentItem()) return;
+        if (!isLastItem) focusItem(activeItemIndex + 1);
     };
 
     const saveProgress = async () => {
@@ -189,18 +227,23 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
             .map((item) => item.id);
         if (missing.length > 0) {
             setMissingItems(missing);
+            focusItem(answerableItems.findIndex((item) => item.id === missing[0]));
+            setStepFeedback('Há um item obrigatório sem resposta.');
             toast.error('Preencha os itens obrigatórios antes de concluir.');
             return;
         }
         const missingEvidence = answerableItems
             .filter((item) => (
-                requiresEvidence(item)
+                isAnswered(answers[item.id])
+                && requiresEvidence(item)
                 && answers[item.id] !== NOT_APPLICABLE
                 && (evidenceByItem[item.id] || []).length === 0
             ))
             .map((item) => item.id);
         if (missingEvidence.length > 0) {
             setMissingEvidenceItems(missingEvidence);
+            focusItem(answerableItems.findIndex((item) => item.id === missingEvidence[0]));
+            setStepFeedback('Há uma evidência obrigatória pendente.');
             toast.error('Anexe as evidências obrigatórias antes de concluir.');
             return;
         }
@@ -233,6 +276,8 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
             setMissingItems([]);
             setMissingEvidenceItems([]);
             setCompleted(false);
+            setActiveItemIndex(0);
+            setStepFeedback('');
             toast.success('Execução reiniciada.');
         } catch (retryError) {
             logger.error({
@@ -323,13 +368,15 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
         const type = item.type === 'boolean' ? 'check' : item.type;
         if (type === 'check') {
             return (
-                <div className="answer-segment">
-                    <button type="button" className={value === false ? 'selected' : ''} onClick={() => setAnswer(item.id, false)}>Não Feito</button>
-                    <button type="button" className={value === true ? 'selected' : ''} onClick={() => setAnswer(item.id, true)}>Feito</button>
+                <div className="answer-segment" role="group" aria-label="Resultado da atividade">
+                    <button type="button" data-answer="not-done" aria-pressed={value === false} className={value === false ? 'selected not-done' : 'not-done'} onClick={() => setAnswer(item.id, false)}>Não feito</button>
+                    <button type="button" data-answer="done" aria-pressed={value === true} className={value === true ? 'selected done' : 'done'} onClick={() => setAnswer(item.id, true)}>Feito</button>
                     {item.allow_not_applicable && (
                         <button
                             type="button"
-                            className={value === NOT_APPLICABLE ? 'selected' : ''}
+                            data-answer="not-applicable"
+                            aria-pressed={value === NOT_APPLICABLE}
+                            className={value === NOT_APPLICABLE ? 'selected not-applicable' : 'not-applicable'}
                             onClick={() => setAnswer(item.id, NOT_APPLICABLE)}
                         >
                             Não se aplica
@@ -369,7 +416,7 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
     if (error || !checklist) return <section className="ritmika-light-mode"><div className="error-state"><p>{error || 'Checklist não encontrado.'}</p><button type="button" className="light-button secondary" onClick={() => navigate(backPath)}>Voltar</button></div></section>;
 
     return (
-        <section className="ritmika-light-mode">
+        <section className="ritmika-light-mode operation-execution">
             <header className="execution-topbar">
                 <div>
                     <button type="button" className="light-button secondary" onClick={() => navigate(backPath)}><ArrowLeft size={16} /> {backPath === '/app' ? 'Minhas atividades' : 'Checklists'}</button>
@@ -382,13 +429,6 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
 
             <div className="execution-shell">
                 <div className="execution-column">
-                    {!completed && (
-                        <section className="execution-panel">
-                            <div className="execution-panel-head"><div><h2>Progresso</h2><p>{progress}% preenchido</p></div><strong>{answeredCount}/{answerableItems.length}</strong></div>
-                            <div className="execution-progress"><span style={{ width: `${progress}%` }} /></div>
-                        </section>
-                    )}
-
                     {completed ? (
                         <section className="completion-state">
                             <CheckCircle2 size={34} color="#0e9f8d" />
@@ -398,24 +438,75 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
                             <div className="builder-actions"><button type="button" className="light-button secondary" onClick={() => navigate(backPath)}>Voltar à lista</button><button type="button" className="light-button primary" onClick={retry}><RotateCcw size={16} /> Executar novamente</button></div>
                         </section>
                     ) : (
-                        <section className="execution-panel">
-                            <div className="execution-items">
-                                {items.map((item, index) => {
-                                    if (item.type === 'separator') return <div className="preview-item" key={item.id}><strong>{item.title || `Etapa ${index + 1}`}</strong></div>;
+                        <section className="execution-panel execution-guided" data-testid="execution-guided-flow">
+                            <div className="execution-guided-progress">
+                                <div><strong>{progress}%</strong><span> concluído</span></div>
+                                <span>{answeredCount}/{answerableItems.length} respondidos</span>
+                                <div className="execution-progress" role="progressbar" aria-label="Progresso da execução" aria-valuemin="0" aria-valuemax="100" aria-valuenow={progress}><span style={{ width: `${progress}%` }} /></div>
+                            </div>
+                            <nav className="execution-step-trail" aria-label="Itens da execução">
+                                {answerableItems.map((item, index) => {
+                                    const hasIssue = missingItems.includes(item.id) || missingEvidenceItems.includes(item.id);
+                                    const state = hasIssue ? 'attention' : isAnswered(answers[item.id]) ? 'answered' : 'pending';
                                     return (
-                                        <article
-                                            className={`execution-item ${missingItems.includes(item.id) || missingEvidenceItems.includes(item.id) ? 'missing' : ''}`}
+                                        <button
+                                            type="button"
+                                            className="execution-step-dot"
+                                            data-state={state}
+                                            aria-current={index === activeItemIndex ? 'step' : undefined}
+                                            aria-label={`Item ${index + 1}: ${item.title || 'Sem título'} · ${state === 'answered' ? 'respondido' : state === 'attention' ? 'requer atenção' : 'pendente'}`}
                                             key={item.id}
+                                            onClick={() => focusItem(index)}
                                         >
-                                            <div><h3>{index + 1}. {item.title}{item.required ? <span className="required-mark"> *</span> : null}</h3>{item.description && <p>{item.description}</p>}</div>
-                                             {renderAnswer(item)}
-                                             {item.allow_not_applicable && <label className="checkbox-row"><input type="checkbox" checked={answers[item.id] === '__not_applicable__'} onChange={(event) => setAnswer(item.id, event.target.checked ? '__not_applicable__' : '')} /> Não se aplica</label>}
-                                            {renderEvidence(item)}
-                                        </article>
+                                            {index + 1}
+                                        </button>
                                     );
                                 })}
+                            </nav>
+
+                            {activeItem ? (
+                                <article
+                                    className={`execution-current-item ${missingItems.includes(activeItem.id) || missingEvidenceItems.includes(activeItem.id) ? 'missing' : ''}`}
+                                    data-testid="execution-current-item"
+                                >
+                                    <div className="execution-current-head">
+                                        <div>
+                                            <p className="execution-item-position">Item {activeItemIndex + 1} de {answerableItems.length}</p>
+                                            <h2>{activeItem.title || 'Atividade sem título'}{activeItem.required ? <span className="required-mark"> *</span> : null}</h2>
+                                        </div>
+                                        <span className={`execution-answer-status ${isAnswered(answers[activeItem.id]) ? 'answered' : ''}`}>
+                                            {isAnswered(answers[activeItem.id]) ? 'Respondido' : activeItem.required ? 'Obrigatório' : 'Opcional'}
+                                        </span>
+                                    </div>
+                                    {activeItem.description && <p className="execution-item-description">{activeItem.description}</p>}
+                                    <div className="execution-answer-block">
+                                        <p className="execution-answer-label">Informe o resultado</p>
+                                        {renderAnswer(activeItem)}
+                                    </div>
+                                    {renderEvidence(activeItem)}
+                                    {stepFeedback && (
+                                        <p
+                                            className={`execution-step-feedback ${missingItems.includes(activeItem.id) || missingEvidenceItems.includes(activeItem.id) ? 'error' : ''}`}
+                                            role="status"
+                                            aria-live="polite"
+                                        >
+                                            {stepFeedback}
+                                        </p>
+                                    )}
+                                </article>
+                            ) : (
+                                <div className="execution-empty-items" role="status">Este checklist ainda não possui itens executáveis.</div>
+                            )}
+
+                            <div className="execution-action-dock">
+                                <button type="button" className="light-button secondary" disabled={isFirstItem || saving} onClick={() => focusItem(activeItemIndex - 1)}><ArrowLeft size={16} /> Anterior</button>
+                                <button type="button" className="light-button secondary save-progress" disabled={saving || !execution} onClick={saveProgress}><Save size={16} /> Salvar</button>
+                                {isLastItem ? (
+                                    <button type="button" className="light-button primary" disabled={saving || !activeItem} onClick={complete}><Send size={16} /> Concluir atividade</button>
+                                ) : (
+                                    <button type="button" className="light-button primary" disabled={saving || !activeItem} onClick={goToNextItem}>Próximo <span aria-hidden="true">→</span></button>
+                                )}
                             </div>
-                            <div className="builder-actions"><button type="button" className="light-button secondary" disabled={saving} onClick={saveProgress}><Save size={16} /> Salvar progresso</button><button type="button" className="light-button primary" disabled={saving} onClick={complete}><Send size={16} /> Concluir execução</button></div>
                         </section>
                     )}
                 </div>
