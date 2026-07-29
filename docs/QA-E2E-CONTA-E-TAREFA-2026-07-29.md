@@ -157,3 +157,17 @@ O ciclo mutável foi repetido depois desse deploy, de
 salvamento, restauração após reload, aviso, histórico e persistência no banco.
 A fixture operacional `v2` confirmou 4/4 itens, incluindo número com três
 casas decimais. `runtime_errors` e `failed_responses` permaneceram vazios.
+
+## Correção da home de gestão no mobile
+
+Deploy validado em `2026-07-29T04:31:03.768Z`:
+
+- dashboard, cabeçalho, filtros, painéis e cards passaram a calcular largura
+  com `border-box`, impedindo que padding ultrapasse o viewport;
+- captura autenticada em 390 px confirmou cards completos em coluna única;
+- 36/36 rotas passaram sem overflow documental nem `visualClipping`;
+- a auditoria agora distingue rolagem horizontal intencional de conteúdo
+  realmente cortado, eliminando o falso positivo anterior;
+- o E2E mutável foi repetido de `2026-07-29T04:31:19.253Z` a
+  `2026-07-29T04:31:41.499Z`, com execução em 100%, fixture 4/4 e nenhum erro
+  de runtime ou resposta HTTP.

@@ -34,7 +34,9 @@ inferirem manutencao de Auth, workspaces, roles e dados sem custo alto.
   - Prova: valida rotas autenticadas em producao desktop/mobile, HTTP, erro JS,
     overflow horizontal e screenshots das telas principais. Quando encontra
     overflow, registra largura do documento e os elementos ofensores com
-    classe, caixa e texto abreviado para evitar diagnóstico genérico.
+    classe, caixa e texto abreviado para evitar diagnóstico genérico. Também
+    reprova elementos cortados fora do viewport, exceto quando pertencem a um
+    contêiner de rolagem horizontal explícito.
   - Saída: `evidence/production-ui-sweep.json`, sem senha ou token.
 
 ## Gate E2E de produção
