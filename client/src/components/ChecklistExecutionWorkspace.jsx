@@ -336,7 +336,20 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
                 : ['Opção 1', 'Opção 2'];
             return <select className="light-select" value={value || ''} onChange={(event) => setAnswer(item.id, event.target.value)}><option value="">Selecione uma opção</option>{options.map((option) => <option key={option} value={option}>{option}</option>)}</select>;
         }
-        if (type === 'numeric') return <input className="light-input" type="number" value={value ?? ''} onChange={(event) => setAnswer(item.id, event.target.value)} placeholder="Informe um número" />;
+        if (type === 'numeric') {
+            return (
+                <input
+                    className="light-input"
+                    type="number"
+                    inputMode="decimal"
+                    step="0.001"
+                    value={value ?? ''}
+                    onChange={(event) => setAnswer(item.id, event.target.value)}
+                    placeholder="Informe um número"
+                    aria-label={item.title || 'Resposta numérica'}
+                />
+            );
+        }
         if (type === 'date_time' || type === 'datetime') return <input className="light-input" type="datetime-local" value={value || ''} onChange={(event) => setAnswer(item.id, event.target.value)} />;
         if (type === 'gps') return <div className="search-field"><MapPin size={16} /><input value={value || ''} onChange={(event) => setAnswer(item.id, event.target.value)} placeholder="Latitude, longitude" /></div>;
         if (type === 'barcode') return <div className="search-field"><Barcode size={16} /><input value={value || ''} onChange={(event) => setAnswer(item.id, event.target.value)} placeholder="Código de barras ou QR" /></div>;

@@ -32,7 +32,10 @@ inferirem manutencao de Auth, workspaces, roles e dados sem custo alto.
   - Uso: `npx --yes dotenv-cli -e .env -- node supabase/scripts/auth/read/production-ui-sweep.mjs`
   - Escopo: usa somente workspace QA `ritmika_qa`; nao muta Konclui.
   - Prova: valida rotas autenticadas em producao desktop/mobile, HTTP, erro JS,
-    overflow horizontal e screenshots das telas principais.
+    overflow horizontal e screenshots das telas principais. Quando encontra
+    overflow, registra largura do documento e os elementos ofensores com
+    classe, caixa e texto abreviado para evitar diagnóstico genérico.
+  - Saída: `evidence/production-ui-sweep.json`, sem senha ou token.
 
 ## Gate E2E de produção
 

@@ -135,3 +135,24 @@ Sinais observados:
 
 A prova serializada está em `evidence/production-operation-e2e.json` e pode ser
 recriada pelo comando acima usando apenas o workspace QA.
+
+## Revalidação após estabilização de navegação
+
+Deploy validado em `2026-07-29T04:14:21.078Z`:
+
+- 36/36 rotas autenticadas passaram no portal de gestão e no app operacional,
+  em viewports de 1440 px e 390 px;
+- nenhum overflow documental, erro de página, erro de console ou resposta HTTP
+  com falha foi observado;
+- consultas deixam de ser removidas durante mutações e agora são somente
+  invalidadas, eliminando o `CancelledError` que aparecia ao alternar telas;
+- a margem nativa do navegador foi zerada e a largura documental ficou
+  exatamente igual ao viewport;
+- a prova está em `evidence/production-ui-sweep.json`.
+
+O ciclo mutável foi repetido depois desse deploy, de
+`2026-07-29T04:14:49.787Z` a `2026-07-29T04:15:10.710Z`. O checklist
+`d7337596-58fc-4f6a-b342-33d07e5aa6ae` gerou a execução
+`9c6b1271-145d-4d7d-8555-cc9b362e1d6c`, concluída em 100% com evidência,
+salvamento, restauração após reload, aviso, histórico e persistência no banco.
+`runtime_errors` e `failed_responses` permaneceram vazios.

@@ -171,13 +171,13 @@ const ensureCapabilityFixture = async ({ workspaceId, authUserId }) => {
     workspace_id: workspaceId,
     source_id: sourceId,
     title: 'QA · Capacidades operacionais',
-    description: 'Fixture QA para validar resposta, comentário, data e evidência fotográfica.',
+    description: 'Fixture QA para validar resposta, comentário, data, número e evidência fotográfica.',
     status: 'active',
     checklist_kind: 'operational',
     responsible_profile_id: profile.id,
     schedule: {},
     variables: {},
-    metadata: { qa_fixture: true, capability_contract: 'operation-v1' },
+    metadata: { qa_fixture: true, capability_contract: 'operation-v2' },
     items: [
       {
         id: 'qa-capability-check',
@@ -205,6 +205,16 @@ const ensureCapabilityFixture = async ({ workspaceId, authUserId }) => {
         title: 'Momento da verificação',
         description: 'Informe a data e hora observadas.',
         order: 2,
+        required: true,
+        is_required: true,
+        evidences: [],
+      },
+      {
+        id: 'qa-capability-numeric',
+        type: 'numeric',
+        title: 'Temperatura aferida',
+        description: 'Informe o valor observado com até três casas decimais.',
+        order: 3,
         required: true,
         is_required: true,
         evidences: [],
@@ -300,6 +310,16 @@ const answerCapabilityItems = async (page) => {
   const datetimeFields = page.locator('input[type="datetime-local"]:visible');
   if (await datetimeFields.count() < 1) throw new Error('QA_DATETIME_CONTROL_NOT_FOUND');
   await datetimeFields.first().fill('2026-07-29T12:00');
+
+  const numericField = page.getByRole('spinbutton', { name: 'Temperatura aferida' });
+  if (await numericField.count() !== 1) throw new Error('QA_NUMERIC_CONTROL_NOT_FOUND');
+  if (await numericField.getAttribute('step') !== '0.001') {
+    throw new Error('QA_NUMERIC_PRECISION_CONTRACT_MISSING');
+  }
+  if (await numericField.getAttribute('inputmode') !== 'decimal') {
+    throw new Error('QA_NUMERIC_KEYBOARD_CONTRACT_MISSING');
+  }
+  await numericField.fill('12.345');
 
   const fileFields = page.locator('input[type="file"]');
   if (await fileFields.count() < 1) throw new Error('QA_EVIDENCE_UPLOAD_CONTROL_NOT_FOUND');
@@ -647,7 +667,7 @@ const run = async () => {
     if (!persistedCapability?.id || persistedCapability.is_finished !== true) {
       throw new Error('QA_CAPABILITY_COMPLETION_NOT_PERSISTED');
     }
-    if (Number(persistedCapability.qtd_items_answered || 0) < 3) {
+    if (Number(persistedCapability.qtd_items_answered || 0) < 4) {
       throw new Error('QA_CAPABILITY_ANSWERS_NOT_PERSISTED');
     }
     result.steps.push({
