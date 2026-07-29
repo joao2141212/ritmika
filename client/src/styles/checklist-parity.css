@@ -238,7 +238,7 @@
 
 .checklist-parity-table th,
 .checklist-parity-table td {
-    padding: 12px 14px;
+    padding: 10px 14px;
     border-bottom: 1px solid #edf1f5;
     text-align: left;
     vertical-align: middle;
@@ -255,7 +255,8 @@
 }
 
 .checklist-parity-table tbody tr:hover {
-    background: #fbfdff;
+    background: #f5fbfa;
+    box-shadow: inset 3px 0 0 #0e9f8d;
 }
 
 .checklist-parity-table .checklist-table-select {
@@ -264,7 +265,7 @@
 }
 
 .checklist-parity-table .checklist-table-actions {
-    width: 126px;
+    width: 218px;
     text-align: right;
 }
 
@@ -275,11 +276,51 @@
     padding: 0;
     border: 0;
     background: transparent;
-    color: #1a5fa7;
-    font-weight: 700;
+    color: #17313b;
+    font-size: 13px;
+    font-weight: 750;
     text-align: left;
     text-overflow: ellipsis;
     cursor: pointer;
+}
+
+.checklist-title-link:hover {
+    color: #08786d;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.checklist-row-meta {
+    color: #7a8d96 !important;
+    font-variant-numeric: tabular-nums;
+}
+
+.checklist-run-button {
+    display: inline-flex;
+    min-height: 34px;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-right: 6px;
+    padding: 0 12px;
+    border: 1px solid #b9ddd7;
+    border-radius: 9px;
+    background: #eef9f7;
+    color: #08786d;
+    font: inherit;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.checklist-run-button:hover {
+    border-color: #0e9f8d;
+    background: #e4f7f3;
+}
+
+.checklist-run-button:focus-visible,
+.checklist-title-link:focus-visible {
+    outline: 3px solid rgba(14, 159, 141, 0.22);
+    outline-offset: 2px;
 }
 
 .checklist-parity-table td small {
@@ -459,5 +500,94 @@
     .checklist-table-pagination {
         flex-wrap: wrap;
         justify-content: center;
+    }
+
+    .checklist-table-shell,
+    .checklist-table-scroll {
+        overflow: visible;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+    }
+
+    .checklist-parity-table,
+    .checklist-parity-table tbody {
+        display: block;
+        min-width: 0;
+    }
+
+    .checklist-parity-table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    .checklist-data-row {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 10px 16px;
+        margin-bottom: 12px;
+        padding: 16px;
+        border: 1px solid #dce7e9;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 4px 14px rgba(23, 49, 59, 0.05);
+    }
+
+    .checklist-parity-table .checklist-data-row:hover {
+        box-shadow: 0 4px 14px rgba(23, 49, 59, 0.05);
+    }
+
+    .checklist-parity-table .checklist-data-row td {
+        display: grid;
+        grid-template-columns: 92px minmax(0, 1fr);
+        align-items: center;
+        padding: 0;
+        border: 0;
+        white-space: normal;
+    }
+
+    .checklist-parity-table .checklist-data-row td::before {
+        content: attr(data-label);
+        color: #7a8d96;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .checklist-parity-table .checklist-table-primary,
+    .checklist-parity-table .checklist-table-actions {
+        grid-column: 1 / -1;
+        width: auto;
+        text-align: left;
+    }
+
+    .checklist-parity-table .checklist-table-primary {
+        display: block;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #edf3f3;
+    }
+
+    .checklist-parity-table .checklist-table-primary::before,
+    .checklist-parity-table .checklist-table-actions::before,
+    .checklist-parity-table .checklist-table-select::before {
+        display: none;
+    }
+
+    .checklist-parity-table .checklist-table-select {
+        position: absolute;
+        margin: 2px 0 0 calc(100% - 52px);
+    }
+
+    .checklist-parity-table .checklist-table-actions {
+        display: flex;
+        justify-content: flex-end;
+        padding-top: 10px;
+        border-top: 1px solid #edf3f3;
     }
 }

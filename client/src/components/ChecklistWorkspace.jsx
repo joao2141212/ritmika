@@ -778,8 +778,8 @@ const ChecklistWorkspace = () => {
                                     const schedule = checklist.schedule || {};
                                     const responsible = checklist.user_name || checklist.responsaveis?.join(', ') || '—';
                                     return (
-                                        <tr key={checklist.id}>
-                                            <td className="checklist-table-select">
+                                        <tr key={checklist.id} className="checklist-data-row">
+                                            <td className="checklist-table-select" data-label="Selecionar">
                                                 <input
                                                     type="checkbox"
                                                     checked={selectedIds.includes(String(checklist.id))}
@@ -789,31 +789,30 @@ const ChecklistWorkspace = () => {
                                                 />
                                             </td>
                                             {columns.checklist && (
-                                                <td>
+                                                <td className="checklist-table-primary" data-label="Checklist">
                                                     <button type="button" className="checklist-title-link" onClick={() => setEditingChecklistId(checklist.id)}>
                                                         {titleOf(checklist)}
                                                     </button>
-                                                    <small>{itemsOf(checklist).length} itens</small>
-                                                    <div style={{ marginTop: '0.5rem' }}>
-                                                        <button
-                                                            type="button"
-                                                            className="light-button primary"
-                                                            onClick={() => navigate(`/checklists/${encodeURIComponent(checklist.id)}/execute`)}
-                                                        >
-                                                            <Play size={15} /> Executar
-                                                        </button>
-                                                    </div>
+                                                    <small className="checklist-row-meta">{itemsOf(checklist).length} itens</small>
                                                 </td>
                                             )}
-                                            {columns.responsible && <td>{responsible}</td>}
-                                            {columns.sector && <td>{checklist.sector_name || '—'}</td>}
+                                            {columns.responsible && <td data-label="Responsável">{responsible}</td>}
+                                            {columns.sector && <td data-label="Setor">{checklist.sector_name || '—'}</td>}
                                             {columns.status && (
-                                                <td><span className={`status-pill ${published ? 'active' : 'inactive'}`}>{statusLabelOf(checklist)}</span></td>
+                                                <td data-label="Status"><span className={`status-pill ${published ? 'active' : 'inactive'}`}>{statusLabelOf(checklist)}</span></td>
                                             )}
-                                            {columns.moment && <td>{checklist.moment_name || '—'}</td>}
-                                            {columns.execution && <td>{scheduleOf(checklist)}</td>}
-                                            {columns.time && <td>{checklist.schedule_time || schedule.schedule_time || '—'}</td>}
-                                            <td className="checklist-table-actions">
+                                            {columns.moment && <td data-label="Momento">{checklist.moment_name || '—'}</td>}
+                                            {columns.execution && <td data-label="Execução">{scheduleOf(checklist)}</td>}
+                                            {columns.time && <td data-label="Horário">{checklist.schedule_time || schedule.schedule_time || '—'}</td>}
+                                            <td className="checklist-table-actions" data-label="Ações">
+                                                <button
+                                                    type="button"
+                                                    className="checklist-run-button"
+                                                    onClick={() => navigate(`/checklists/${encodeURIComponent(checklist.id)}/execute`)}
+                                                    aria-label={`Executar ${titleOf(checklist)}`}
+                                                >
+                                                    <Play size={14} /> <span>Executar</span>
+                                                </button>
                                                 <button type="button" className="icon-button" onClick={() => setEditingChecklistId(checklist.id)} aria-label={`Editar ${titleOf(checklist)}`} title="Editar">
                                                     <Pencil size={15} />
                                                 </button>
