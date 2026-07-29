@@ -1601,7 +1601,7 @@ export const remoteChecklistRepository = {
 
     async getUsers() {
         const team = await this.getTeam();
-        return Array.isArray(team?.filters?.users) ? team.filters.users : [];
+        return Array.isArray(team) ? team : [];
     },
 
     async getTeam() {
