@@ -146,8 +146,52 @@
 .remote-link-button { border-radius: 14px; box-shadow: 0 8px 20px rgba(24, 48, 64, .045); }
 
 @media (max-width: 900px) {
-  .remote-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .remote-stat-card:first-child { grid-column: span 2; }
+  .dashboard-remote {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: clip;
+  }
+
+  .dashboard-remote .remote-dashboard-header,
+  .dashboard-remote .remote-filter-shell,
+  .dashboard-remote .remote-summary-grid,
+  .dashboard-remote .analytics-overview-grid,
+  .dashboard-remote .remote-dashboard-panel {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .dashboard-remote .remote-dashboard-header h1,
+  .dashboard-remote .remote-dashboard-header p {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .dashboard-remote .remote-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-inline: 0;
+    padding: 0;
+    overflow-x: visible;
+    scroll-snap-type: none;
+  }
+
+  .dashboard-remote .remote-stat-card,
+  .dashboard-remote .remote-stat-card:first-child,
+  .dashboard-remote .remote-stat-card:nth-child(2),
+  .dashboard-remote .remote-stat-card:last-child {
+    grid-column: auto;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .dashboard-remote .remote-stat-card:last-child {
+    grid-column: 1 / -1;
+  }
+
   .remote-task-list { grid-template-columns: 1fr; }
   .remote-activity-manager .remote-task-list .remote-task-card:first-child { grid-column: auto; }
   .remote-activity-toolbar { grid-template-columns: 1fr; }
@@ -213,12 +257,12 @@
 
   .remote-stat-card:first-child,
   .dashboard-remote .remote-stat-card:first-child {
-    grid-column: 1 / -1;
+    grid-column: auto;
   }
 
   .remote-stat-card:last-child,
   .dashboard-remote .remote-stat-card:last-child {
-    grid-column: auto;
+    grid-column: 1 / -1;
   }
 
   .remote-stat-card strong { font-size: 30px; }
@@ -226,4 +270,15 @@
   .remote-activity-pulse { display: flex; overflow-x: auto; scrollbar-width: none; }
   .remote-activity-pulse::-webkit-scrollbar { display: none; }
   .remote-activity-pulse span { min-width: 94px; }
+}
+
+@media (max-width: 420px) {
+  .dashboard-remote .remote-filter-toolbar,
+  .dashboard-remote .remote-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-remote .remote-stat-card:last-child {
+    grid-column: auto;
+  }
 }
