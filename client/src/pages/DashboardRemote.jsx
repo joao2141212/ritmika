@@ -47,6 +47,12 @@ const EMPTY_DATA = {
     details: [],
 };
 
+const isCancellationError = (error) => (
+    error?.name === 'CancelledError'
+    || error?.name === 'AbortError'
+    || /cancelled|canceled|aborted/i.test(String(error?.message || ''))
+);
+
 const DEFAULT_WIDGETS = {
     summary: true,
     alerts: true,
@@ -224,6 +230,7 @@ const TrendChart = ({ data }) => {
 const DashboardRemote = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
+    const workspaceId = user?.workspace_id || null;
     const [data, setData] = useState(EMPTY_DATA);
     const [activeTab, setActiveTab] = useState('todo');
     const [taskQuery, setTaskQuery] = useState('');
@@ -251,7 +258,29 @@ const DashboardRemote = () => {
         try {
             setLoading(true);
             setError('');
-            setData(await dashboardService.getData({ periodDays, ...dashboardFilters }));
+            const requestDashboard = () => dashboardService.getData({ periodDays, ...dashboardFilters });
+            let dashboardData;
+            try {
+                dashboardData = await requestDashboard();
+            } catch (requestError) {
+                if (!isCancellationError(requestError)) throw requestError;
+                logger.warn({
+                    file: 'client/src/pages/DashboardRemote.jsx',
+                    fn: 'DashboardRemote.loadDashboard',
+                    operation: 'dashboard.load.retry_after_cancellation',
+                    layer: 'client-data',
+                    status: 'retrying',
+                    errorCode: 'DASHBOARD_REQUEST_CANCELLED',
+                    error: requestError,
+                    workspaceId,
+                    periodDays,
+                    filters: dashboardFilters,
+                    retryAttempt: 1,
+                });
+                await new Promise((resolve) => window.setTimeout(resolve, 150));
+                dashboardData = await requestDashboard();
+            }
+            setData(dashboardData);
         } catch (loadError) {
             const telemetry = logger.error({
                 file: 'client/src/pages/DashboardRemote.jsx',
@@ -261,7 +290,7 @@ const DashboardRemote = () => {
                 status: 'error',
                 errorCode: loadError?.code || 'DASHBOARD_LOAD_FAILED',
                 error: loadError,
-                workspaceId: user?.workspace_id || null,
+                workspaceId,
                 periodDays,
                 filters: dashboardFilters,
                 source: 'supabase',
@@ -275,7 +304,7 @@ const DashboardRemote = () => {
         } finally {
             setLoading(false);
         }
-    }, [dashboardFilters, periodDays, user?.workspace_id]);
+    }, [dashboardFilters, periodDays, workspaceId]);
 
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect -- carga remota inicial controla loading, erro e dados do dashboard.
