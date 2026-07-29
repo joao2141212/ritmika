@@ -12,6 +12,8 @@ const Dashboard = lazy(() => import('./pages/DashboardRemote'));
 const ChecklistWorkspace = lazy(() => import('./components/ChecklistWorkspace'));
 const ChecklistBuilderWorkspace = lazy(() => import('./components/ChecklistBuilderWorkspace'));
 const ChecklistExecutionWorkspace = lazy(() => import('./components/ChecklistExecutionWorkspace'));
+const EmployeeLayout = lazy(() => import('./components/employee/EmployeeLayout'));
+const EmployeeHome = lazy(() => import('./pages/employee/EmployeeHome'));
 const ChecklistDetails = lazy(() => import('./components/ChecklistDetailsRemote'));
 const Settings = lazy(() => import('./pages/SettingsRemote'));
 const Configurations = lazy(() => import('./pages/ConfigurationsRemote'));
@@ -40,7 +42,10 @@ const AppBoot = () => (
   </main>
 );
 
-const ProtectedRoute = ({ children }) => {
+const MANAGER_ROLES = new Set(['owner', 'admin', 'manager']);
+const EMPLOYEE_ROLES = new Set(['operator', 'employee']);
+
+const ProtectedRoute = ({ children, audience = 'manager' }) => {
   const { user, loading, workspaceSelection } = useAuth();
 
   if (loading) {
@@ -57,6 +62,18 @@ const ProtectedRoute = ({ children }) => {
 
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  const role = String(user.role || '').toLowerCase();
+  const isManager = Boolean(user.is_owner) || MANAGER_ROLES.has(role);
+  const isEmployee = EMPLOYEE_ROLES.has(role);
+
+  if (audience === 'manager' && !isManager) {
+    return <Navigate to={isEmployee ? '/app' : '/login'} replace />;
+  }
+
+  if (audience === 'employee' && !isEmployee) {
+    return <Navigate to={isManager ? '/' : '/login'} replace />;
   }
 
   return children;
@@ -84,8 +101,20 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
 
+          <Route path="/app" element={
+            <ProtectedRoute audience="employee">
+              <EmployeeLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<EmployeeHome />} />
+            <Route
+              path="checklists/:id/execute"
+              element={<ChecklistExecutionWorkspace backPath="/app" />}
+            />
+          </Route>
+
           <Route path="/" element={
-            <ProtectedRoute>
+            <ProtectedRoute audience="manager">
               <Layout />
             </ProtectedRoute>
           }>

@@ -52,7 +52,7 @@ const groupEvidence = (rows = []) => rows.reduce((groups, evidence) => {
     return groups;
 }, {});
 
-const ChecklistExecutionWorkspace = () => {
+const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
     const { id } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
@@ -307,13 +307,13 @@ const ChecklistExecutionWorkspace = () => {
     };
 
     if (loading) return <section className="ritmika-light-mode"><div className="empty-state">Carregando execução remota…</div></section>;
-    if (error || !checklist) return <section className="ritmika-light-mode"><div className="error-state"><p>{error || 'Checklist não encontrado.'}</p><button type="button" className="light-button secondary" onClick={() => navigate('/checklists')}>Voltar</button></div></section>;
+    if (error || !checklist) return <section className="ritmika-light-mode"><div className="error-state"><p>{error || 'Checklist não encontrado.'}</p><button type="button" className="light-button secondary" onClick={() => navigate(backPath)}>Voltar</button></div></section>;
 
     return (
         <section className="ritmika-light-mode">
             <header className="execution-topbar">
                 <div>
-                    <button type="button" className="light-button secondary" onClick={() => navigate('/checklists')}><ArrowLeft size={16} /> Checklists</button>
+                    <button type="button" className="light-button secondary" onClick={() => navigate(backPath)}><ArrowLeft size={16} /> {backPath === '/app' ? 'Minhas atividades' : 'Checklists'}</button>
                     <p className="execution-eyebrow">Execução · Workspace Ritmika</p>
                     <h1>{titleOf(checklist)}</h1>
                     <p className="execution-subtitle">Responda aos itens, salve o progresso e conclua quando os obrigatórios estiverem preenchidos.</p>
