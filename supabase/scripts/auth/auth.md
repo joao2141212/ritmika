@@ -15,6 +15,7 @@ bash supabase/scripts/auth/run.sh inventory
 bash supabase/scripts/auth/run.sh account --user-id <uuid>
 bash supabase/scripts/auth/run.sh workspace --workspace-id <uuid>
 bash supabase/scripts/auth/run.sh reset-password --user-id <uuid>
+bash supabase/scripts/auth/run.sh reconcile-workspace-emails --workspace-id <uuid> --report .env.customer-logins.local
 bash supabase/scripts/auth/run.sh set-access --user-id <uuid> --workspace-id <uuid> --role operator --owner false
 bash supabase/scripts/auth/run.sh account-state --user-id <uuid> --action ban
 ```
@@ -22,6 +23,18 @@ bash supabase/scripts/auth/run.sh account-state --user-id <uuid> --action ban
 Toda escrita começa em dry-run. O dry-run devolve a confirmação literal exigida para `--apply`. Alvos classificados como `customer` também exigem `--allow-customer`. Nenhum comando imprime senha, secret key ou token.
 
 O Koncluí não é alvo destes scripts. Eles operam somente no Supabase do Ritmika.
+
+## Reconciliação dos logins com os e-mails importados
+
+`reconcile-workspace-emails` substitui logins técnicos `@ritmika.invalid` pelos e-mails reais já presentes nos perfis do Ritmika. A operação preserva senha, UUID Auth, membership, role e atribuições; valida formato, duplicidade e colisões antes de escrever; atualiza atomicamente o relatório local; e tenta restaurar os logins anteriores se houver falha.
+
+```bash
+bash supabase/scripts/auth/run.sh reconcile-workspace-emails \
+  --workspace-id <uuid> \
+  --report .env.customer-logins.local
+```
+
+O dry-run informa a confirmação literal. Em workspace de cliente, a aplicação exige também `--allow-customer`.
 ## Diagnóstico Auth consolidado
 
 - Leitura e validação de credenciais: `read/inspect-auth-user.mjs`.

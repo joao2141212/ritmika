@@ -5,6 +5,7 @@ Operações administrativas mutáveis. Nenhuma delas aplica mudanças sem `--app
 - `reset-password.mjs`: redefine senha pelo Auth Admin; a senha entra somente em `RITMIKA_NEW_PASSWORD` e nunca aparece na saída.
 - `set-account-state.mjs`: bloqueia ou desbloqueia login via `ban_duration` oficial do Supabase Auth.
 - `set-access.mjs`: sincroniza role, ownership e unidades entre membership e profile; se o profile falhar, tenta restaurar o membership e registra falha parcial crítica se o rollback falhar.
+- `reconcile-workspace-emails.mjs`: troca logins técnicos pelos e-mails reais importados, preserva UUID e senha, atualiza o relatório privado e restaura os e-mails anteriores se a operação não fechar por completo.
 - `run.sh`: carrega o ambiente e impede execução de arquivo fora desta pasta.
 
 Fluxo seguro:
