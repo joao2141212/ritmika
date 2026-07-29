@@ -711,9 +711,10 @@
   }
 
   .operation-execution .execution-action-dock {
-    position: sticky;
+    position: sticky !important;
     inset-inline: auto;
-    bottom: calc(78px + env(safe-area-inset-bottom));
+    top: auto !important;
+    bottom: calc(78px + env(safe-area-inset-bottom)) !important;
     width: 100%;
     max-width: 100%;
     margin: 18px 0 calc(78px + env(safe-area-inset-bottom));
