@@ -318,7 +318,9 @@
 }
 
 .settings-sector-search {
+    flex: 0 0 46px;
     width: min(100%, 340px);
+    min-height: 46px;
 }
 
 .settings-sector-grid {
@@ -433,6 +435,8 @@
 
     .settings-sector-toolbar .settings-save,
     .settings-sector-search {
+        flex-basis: 46px;
+        height: 46px;
         width: 100%;
     }
 
