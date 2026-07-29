@@ -8,6 +8,11 @@
   --employee-bg: #f4f8f8;
 }
 
+.employee-shell,
+.employee-shell * {
+  box-sizing: border-box;
+}
+
 .employee-shell { min-height: 100vh; color: var(--employee-ink); background: radial-gradient(circle at 8% 0%, #ddf4ee 0, transparent 28rem), var(--employee-bg); }
 .employee-topbar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; min-height: 72px; padding: 12px clamp(18px, 4vw, 56px); border-bottom: 1px solid rgba(197, 218, 219, .9); background: rgba(255, 255, 255, .88); backdrop-filter: blur(18px); }
 .employee-brand { display: inline-flex; gap: 10px; align-items: center; color: var(--employee-ink); font-size: 20px; font-weight: 800; text-decoration: none; }
