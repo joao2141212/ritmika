@@ -272,7 +272,7 @@ const ConfigurationsRemote = () => {
         event.preventDefault();
         try {
             setInviteBusy(true);
-            await settingsService.inviteUser({
+            const inviteResult = await settingsService.inviteUser({
                 name: inviteDraft.name.trim(),
                 email: inviteDraft.email.trim().toLocaleLowerCase(),
                 role: inviteDraft.role,
@@ -281,7 +281,11 @@ const ConfigurationsRemote = () => {
             setInviteDraft(EMPTY_INVITE);
             setInviteOpen(false);
             await loadConfiguration();
-            toast.success('Convite enviado.');
+            toast.success(
+                inviteResult?.invitationCreated
+                    ? 'Convite enviado.'
+                    : 'Acesso do usuário atualizado.',
+            );
         } catch (inviteError) {
             toast.error(inviteError instanceof Error ? inviteError.message : 'Não foi possível enviar o convite.');
         } finally {

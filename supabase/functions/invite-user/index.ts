@@ -7,7 +7,23 @@ const corsHeaders = {
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-const errorText = (error: unknown) => error instanceof Error ? error.message : String(error);
+const errorText = (error: unknown) => {
+    if (error instanceof Error) return error.message;
+    if (typeof error === 'string') return error;
+    if (error && typeof error === 'object') {
+        const value = error as Record<string, unknown>;
+        const fields = ['message', 'details', 'hint', 'code']
+            .map((key) => value[key] ? `${key}=${String(value[key])}` : '')
+            .filter(Boolean);
+        if (fields.length > 0) return fields.join(' | ');
+        try {
+            return JSON.stringify(value);
+        } catch {
+            return 'Erro não serializável.';
+        }
+    }
+    return String(error);
+};
 
 const responseCaller = (stack: string | undefined) => {
     const frame = String(stack || '')
