@@ -18,6 +18,9 @@ case "$COMMAND" in
     verify-workspace-login)
         exec bash "$SCRIPT_DIR/read/run.sh" "$SCRIPT_DIR/read/verify-workspace-login.mjs" "$@"
         ;;
+    verify-all-workspace-logins)
+        exec bash "$SCRIPT_DIR/read/run.sh" "$SCRIPT_DIR/read/verify-all-workspace-logins.mjs" "$@"
+        ;;
     environment)
         exec bash "$SCRIPT_DIR/read/run.sh" "$SCRIPT_DIR/read/environment.mjs" "$@"
         ;;
@@ -34,7 +37,7 @@ case "$COMMAND" in
         exec bash "$SCRIPT_DIR/write/run.sh" "$SCRIPT_DIR/write/set-account-state.mjs" "$@"
         ;;
     *)
-        echo "usage: auth/run.sh {environment|inventory|account|workspace|verify-workspace-login|reset-password|provision-workspace-logins|set-access|account-state} [args]" >&2
+        echo "usage: auth/run.sh {environment|inventory|account|workspace|verify-workspace-login|verify-all-workspace-logins|reset-password|provision-workspace-logins|set-access|account-state} [args]" >&2
         exit 2
         ;;
 esac

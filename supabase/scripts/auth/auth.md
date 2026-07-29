@@ -68,3 +68,13 @@ bash supabase/scripts/auth/run.sh verify-workspace-login \
 ```
 
 O verificador escolhe uma conta provisionada que já possua atribuição, autentica com a chave pública, prova `app_metadata`, membership, profile, tarefas atribuídas e ausência de acesso a outro workspace. A sessão de verificação é encerrada ao final.
+
+Auditoria de todas as credenciais provisionadas:
+
+```bash
+bash supabase/scripts/auth/run.sh verify-all-workspace-logins \
+  --workspace-id <uuid> \
+  --report .env.customer-logins.local
+```
+
+Esse comando autentica cada conta individualmente, valida `app_metadata`, membership, profile, isolamento por workspace e encerra todas as sessões abertas durante a auditoria. Nenhum login ou senha é impresso.
