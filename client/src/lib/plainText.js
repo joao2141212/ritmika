@@ -41,5 +41,12 @@ export const normalizeSearchText = (value) => toPlainText(value)
 
 export const matchesSearchText = (value, query) => {
     const normalizedQuery = normalizeSearchText(query);
-    return !normalizedQuery || normalizeSearchText(value).includes(normalizedQuery);
+    if (!normalizedQuery) return true;
+
+    const normalizedValue = normalizeSearchText(value);
+    if (normalizedValue.includes(normalizedQuery)) return true;
+
+    const compactQuery = normalizedQuery.replace(/\s+/g, '');
+    const compactValue = normalizedValue.replace(/\s+/g, '');
+    return compactValue.includes(compactQuery);
 };
