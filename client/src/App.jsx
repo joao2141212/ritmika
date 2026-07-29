@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -7,25 +7,38 @@ import AppErrorBoundary from './components/AppErrorBoundary';
 import RealtimeSync from './components/RealtimeSync';
 import { serverState } from './lib/serverState';
 
-const Layout = lazy(() => import('./components/Layout'));
+const loadLayout = () => import('./components/Layout');
+const loadDashboard = () => import('./pages/DashboardRemote');
+const loadChecklistWorkspace = () => import('./components/ChecklistWorkspace');
+const loadChecklistExecutionWorkspace = () => import('./components/ChecklistExecutionWorkspace');
+const loadEmployeeLayout = () => import('./components/employee/EmployeeLayout');
+const loadEmployeeHome = () => import('./pages/employee/EmployeeHome');
+const loadEmployeeHistory = () => import('./pages/employee/EmployeeHistory');
+const loadEmployeeNotifications = () => import('./pages/employee/EmployeeNotifications');
+const loadEmployeeProfile = () => import('./pages/employee/EmployeeProfile');
+const loadConfigurations = () => import('./pages/ConfigurationsRemote');
+const loadTeam = () => import('./pages/TeamRemote');
+const loadNotifications = () => import('./pages/Notifications');
+
+const Layout = lazy(loadLayout);
 const Login = lazy(() => import('./pages/Login'));
-const Dashboard = lazy(() => import('./pages/DashboardRemote'));
-const ChecklistWorkspace = lazy(() => import('./components/ChecklistWorkspace'));
+const Dashboard = lazy(loadDashboard);
+const ChecklistWorkspace = lazy(loadChecklistWorkspace);
 const ChecklistBuilderWorkspace = lazy(() => import('./components/ChecklistBuilderWorkspace'));
-const ChecklistExecutionWorkspace = lazy(() => import('./components/ChecklistExecutionWorkspace'));
-const EmployeeLayout = lazy(() => import('./components/employee/EmployeeLayout'));
-const EmployeeHome = lazy(() => import('./pages/employee/EmployeeHome'));
-const EmployeeHistory = lazy(() => import('./pages/employee/EmployeeHistory'));
-const EmployeeNotifications = lazy(() => import('./pages/employee/EmployeeNotifications'));
-const EmployeeProfile = lazy(() => import('./pages/employee/EmployeeProfile'));
+const ChecklistExecutionWorkspace = lazy(loadChecklistExecutionWorkspace);
+const EmployeeLayout = lazy(loadEmployeeLayout);
+const EmployeeHome = lazy(loadEmployeeHome);
+const EmployeeHistory = lazy(loadEmployeeHistory);
+const EmployeeNotifications = lazy(loadEmployeeNotifications);
+const EmployeeProfile = lazy(loadEmployeeProfile);
 const ChecklistDetails = lazy(() => import('./components/ChecklistDetailsRemote'));
 const Settings = lazy(() => import('./pages/SettingsRemote'));
-const Configurations = lazy(() => import('./pages/ConfigurationsRemote'));
+const Configurations = lazy(loadConfigurations);
 const ChecklistContagem = lazy(() => import('./pages/ChecklistContagem'));
 const ChecklistHistorico = lazy(() => import('./pages/ChecklistHistorico'));
-const Team = lazy(() => import('./pages/TeamRemote'));
+const Team = lazy(loadTeam);
 const WorkspaceSelection = lazy(() => import('./pages/WorkspaceSelection'));
-const Notifications = lazy(() => import('./pages/Notifications'));
+const Notifications = lazy(loadNotifications);
 const AIAnalyses = lazy(() => import('./pages/AIAnalysesRemote'));
 const Courses = lazy(() => import('./pages/CoursesRemote'));
 const CourseModules = lazy(() => import('./pages/CourseModulesRemote'));
@@ -45,6 +58,56 @@ const AppBoot = () => (
     <div className="app-boot-progress" aria-hidden="true"><span /></div>
   </main>
 );
+
+const MANAGER_ROUTE_LOADERS = [
+  loadLayout,
+  loadDashboard,
+  loadChecklistWorkspace,
+  loadConfigurations,
+  loadTeam,
+  loadNotifications,
+];
+
+const OPERATION_ROUTE_LOADERS = [
+  loadEmployeeLayout,
+  loadEmployeeHome,
+  loadEmployeeHistory,
+  loadEmployeeNotifications,
+  loadEmployeeProfile,
+  loadChecklistExecutionWorkspace,
+];
+
+const RouteWarmup = () => {
+  const { user, loading } = useAuth();
+
+  useEffect(() => {
+    if (loading || !user) return undefined;
+    const { isManager, canAccessOperation } = classifyAccess(user);
+    const loaders = [
+      ...(isManager ? MANAGER_ROUTE_LOADERS : []),
+      ...(canAccessOperation ? OPERATION_ROUTE_LOADERS : []),
+    ];
+    if (loaders.length === 0) return undefined;
+
+    const warmRoutes = () => {
+      void Promise.allSettled(loaders.map((loadRoute) => loadRoute()));
+    };
+    let idleId;
+    let timeoutId;
+    if ('requestIdleCallback' in window) {
+      idleId = window.requestIdleCallback(warmRoutes, { timeout: 1_500 });
+    } else {
+      timeoutId = window.setTimeout(warmRoutes, 250);
+    }
+
+    return () => {
+      if (idleId) window.cancelIdleCallback(idleId);
+      if (timeoutId) window.clearTimeout(timeoutId);
+    };
+  }, [loading, user]);
+
+  return null;
+};
 
 const ProtectedRoute = ({ children, audience = 'manager' }) => {
   const { user, loading, workspaceSelection } = useAuth();
@@ -85,6 +148,7 @@ function App() {
   return (
     <QueryClientProvider client={serverState}>
       <AuthProvider>
+        <RouteWarmup />
         <AppErrorBoundary>
         <Router>
         <OfflineSync />

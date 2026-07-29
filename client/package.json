@@ -8,6 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "test:access-routing": "node scripts/check-access-routing.mjs",
+    "test:navigation-cache": "node scripts/check-navigation-cache.mjs",
     "test:mobile-management": "node scripts/check-management-mobile-css.mjs",
     "test:mobile-team": "node scripts/check-team-mobile-overflow.mjs",
     "test:mobile-operation": "node scripts/check-operation-mobile-shell.mjs",

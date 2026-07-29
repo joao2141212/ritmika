@@ -1,5 +1,5 @@
 import { QueryClient } from '@tanstack/react-query';
-import { logger } from './logger';
+import { logger } from './logger.js';
 
 const READ_METHOD = /^(get|list|find|search|count)/;
 
@@ -28,15 +28,16 @@ export const createCachedRepository = (repository, namespace = 'ritmika') => new
         if (typeof member !== 'function' || typeof property !== 'string') return member;
 
         if (READ_METHOD.test(property)) {
-            return (...args) => serverState.fetchQuery({
+            return (...args) => serverState.ensureQueryData({
                 queryKey: [namespace, property, ...stableArgs(args)],
                 queryFn: () => member.apply(target, args),
+                revalidateIfStale: true,
             });
         }
 
         return async (...args) => {
             const result = await member.apply(target, args);
-            await serverState.invalidateQueries({ queryKey: [namespace] });
+            serverState.removeQueries({ queryKey: [namespace] });
             return result;
         };
     },
@@ -52,7 +53,7 @@ export const invalidateServerState = (source, context = {}) => {
         source,
         ...context,
     });
-    return serverState.invalidateQueries();
+    return serverState.invalidateQueries({ refetchType: 'none' });
 };
 
 export const clearServerState = (source) => {
