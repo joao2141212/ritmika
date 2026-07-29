@@ -253,12 +253,29 @@ const DashboardRemote = () => {
             setError('');
             setData(await dashboardService.getData({ periodDays, ...dashboardFilters }));
         } catch (loadError) {
-            setError(loadError instanceof Error ? loadError.message : 'Não foi possível carregar o dashboard.');
-            toast.error('Não foi possível carregar o dashboard.');
+            const telemetry = logger.error({
+                file: 'client/src/pages/DashboardRemote.jsx',
+                fn: 'DashboardRemote.loadDashboard',
+                operation: 'dashboard.load',
+                layer: 'client-data',
+                status: 'error',
+                errorCode: loadError?.code || 'DASHBOARD_LOAD_FAILED',
+                error: loadError,
+                workspaceId: user?.workspace_id || null,
+                periodDays,
+                filters: dashboardFilters,
+                source: 'supabase',
+                nextAction: 'retry_dashboard_load_or_search_console_by_correlation_id',
+            });
+            const cause = loadError?.message || loadError?.error_description || 'Falha desconhecida no carregamento remoto';
+            const code = loadError?.code || loadError?.status || 'DASHBOARD_LOAD_FAILED';
+            const reference = telemetry?.correlationId || telemetry?.eventId || 'sem-referencia';
+            setError(`Falha ao carregar indicadores. Causa: ${cause}. Código: ${code}. Referência: ${reference}.`);
+            toast.error(`Dashboard indisponível. Código ${code}. Ref. ${reference}`);
         } finally {
             setLoading(false);
         }
-    }, [dashboardFilters, periodDays]);
+    }, [dashboardFilters, periodDays, user?.workspace_id]);
 
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect -- carga remota inicial controla loading, erro e dados do dashboard.
