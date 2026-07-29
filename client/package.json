@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "test:access-routing": "node scripts/check-access-routing.mjs",
     "test:mobile-management": "node scripts/check-management-mobile-css.mjs",
+    "test:mobile-team": "node scripts/check-team-mobile-overflow.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

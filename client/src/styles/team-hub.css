@@ -7,6 +7,15 @@
     color: var(--team-ink);
 }
 
+.team-hub,
+.team-hub-panel,
+.team-hub-grid,
+.team-member-card {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+}
+
 .team-hub .sr-only {
     position: absolute;
     width: 1px;
@@ -63,10 +72,11 @@
 .team-member-card:hover { border-color: #b9d5d4; box-shadow: 0 10px 24px rgba(25, 62, 67, .07); }
 .team-member-topline, .team-member-identity, .team-member-badges, .team-progress-block > div { display: flex; align-items: center; }
 .team-member-topline { justify-content: space-between; gap: 12px; }
+.team-member-topline > * { min-width: 0; }
 .team-member-identity { gap: 11px; min-width: 0; }
 .team-member-identity > div { display: flex; flex-direction: column; min-width: 0; }
 .team-member-identity strong, .team-member-identity span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.team-member-identity span { color: var(--team-muted); font-size: .8rem; }
+.team-member-identity span { color: var(--team-muted); font-size: .8rem; overflow-wrap: anywhere; white-space: normal; }
 .team-member-avatar { display: grid; place-items: center; width: 43px; height: 43px; flex: 0 0 43px; border-radius: 13px; color: #0f615a; background: #e3f4f2; font-weight: 800; }
 .team-highlight { display: inline-flex; align-items: center; gap: 4px; padding: 6px 8px; color: #8a5a12; background: #fff4df; border-radius: 999px; font-size: .72rem; font-weight: 800; }
 .team-member-badges { gap: 7px; flex-wrap: wrap; }
@@ -100,10 +110,13 @@
 @media (max-width: 760px) {
     .team-hub-hero, .team-hub-toolbar { align-items: stretch; flex-direction: column; }
     .team-hub-actions { justify-content: stretch; }
+    .team-hub-actions button, .team-member-manage { width: 100%; max-width: 100%; }
     .team-hub-actions button { flex: 1; }
+    .team-hub-panel { width: 100%; max-width: 100%; overflow: hidden; }
     .team-hub-grid { grid-template-columns: 1fr; }
     .team-hub-filters, .team-hub-search { width: 100%; }
     .team-hub-role-filter, .team-hub-role-filter select { width: 100%; }
+    .team-member-topline { align-items: flex-start; flex-direction: column; }
 }
 
 @media (max-width: 480px) {
