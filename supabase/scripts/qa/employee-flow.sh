@@ -151,7 +151,7 @@ setup_scenario() {
       workspace_id:$workspace,
       source_id:"qa:employee-flow:v1",
       title:"QA · Inspeção operacional completa",
-      description:"Atividade isolada para validar atribuição, progresso, conclusão e feedback da interface do funcionário.",
+      description:"Atividade isolada para validar atribuição, progresso, conclusão e feedback do App de Operação.",
       status:"active",
       checklist_kind:"operational",
       responsible_profile_id:$worker,
@@ -237,6 +237,45 @@ case "$COMMAND" in
       group by c.id, c.status, c.responsible_profile_id, p.role, p.auth_user_id;
     " | jq -c '.'
     ;;
+  normalize-operation-copy)
+    expected='NORMALIZE:QA_OPERATION_COPY'
+    if [[ "${2:-}" != "--apply" || "${3:-}" != "--confirm" || "${4:-}" != "$expected" ]]; then
+      query_api "
+        select count(*)::int as matching_checklists
+        from public.ritmika_checklists c
+        join public.ritmika_workspaces w on w.id = c.workspace_id
+        where w.source_system = 'ritmika_qa'
+          and (
+            c.description ilike '%app do funcionário%'
+            or c.description ilike '%interface do funcionário%'
+            or c.description ilike '%feedback da App de Operação%'
+          );
+      " | jq -c --arg confirmation "$expected" '{status:"dry_run",target:"qa_workspace_only",matching_checklists:.[0].matching_checklists,expected_confirmation:$confirmation}'
+      exit 0
+    fi
+    query_api "
+      with updated as (
+        update public.ritmika_checklists c
+        set description = replace(
+          replace(
+            replace(c.description, 'app do funcionário', 'App de Operação'),
+            'interface do funcionário', 'App de Operação'
+          ),
+          'feedback da App de Operação', 'feedback do App de Operação'
+        )
+        from public.ritmika_workspaces w
+        where w.id = c.workspace_id
+          and w.source_system = 'ritmika_qa'
+          and (
+            c.description ilike '%app do funcionário%'
+            or c.description ilike '%interface do funcionário%'
+            or c.description ilike '%feedback da App de Operação%'
+          )
+        returning c.id
+      )
+      select count(*)::int as updated from updated;
+    " | jq -c '{status:"applied",target:"qa_workspace_only",updated:.[0].updated}'
+    ;;
   apply-boundaries)
     if [[ "${2:-}" != "APPLY:EMPLOYEE_BOUNDARIES" ]]; then
       jq -n --arg migration "$BOUNDARY_MIGRATION" '{status:"dry_run",migration:$migration,expected_confirmation:"APPLY:EMPLOYEE_BOUNDARIES"}'
@@ -254,7 +293,7 @@ case "$COMMAND" in
     jq -n '{status:"applied",migration:"employee_notification_boundaries"}'
     ;;
   *)
-    printf 'Uso: %s {inspect|inventory|policies|setup-worker|setup-scenario|verify-scenario|apply-boundaries|apply-notification-boundaries}\n' "$0" >&2
+    printf 'Uso: %s {inspect|inventory|policies|setup-worker|setup-scenario|verify-scenario|normalize-operation-copy|apply-boundaries|apply-notification-boundaries}\n' "$0" >&2
     exit 2
     ;;
 esac
