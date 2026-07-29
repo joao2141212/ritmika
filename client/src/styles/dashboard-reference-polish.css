@@ -154,10 +154,73 @@
 }
 
 @media (max-width: 560px) {
-  .dashboard-remote { padding: 22px 14px 96px; }
-  .remote-dashboard-header h1 { font-size: 40px; }
-  .remote-summary-grid { grid-template-columns: 1fr 1fr; }
-  .remote-stat-card { min-height: 124px; padding: 17px; border-radius: 20px; }
+  .dashboard-remote {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+    padding: 16px 12px calc(96px + env(safe-area-inset-bottom));
+  }
+
+  .remote-dashboard-header {
+    width: 100%;
+    padding: 20px 16px;
+  }
+
+  .remote-dashboard-header h1 {
+    max-width: 100%;
+    font-size: clamp(30px, 9.5vw, 36px);
+    overflow-wrap: anywhere;
+  }
+
+  .remote-header-actions {
+    flex-wrap: wrap;
+  }
+
+  .remote-filter-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    width: 100%;
+  }
+
+  .remote-filter-toolbar .remote-period-control,
+  .remote-filter-trigger {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .remote-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-inline: 0;
+    padding: 0;
+    overflow-x: visible;
+    scroll-snap-type: none;
+  }
+
+  .remote-stat-card,
+  .dashboard-remote .remote-stat-card,
+  .dashboard-remote .remote-stat-card:first-child,
+  .dashboard-remote .remote-stat-card:nth-child(2),
+  .dashboard-remote .remote-stat-card:last-child {
+    flex: initial;
+    width: 100%;
+    min-width: 0;
+    min-height: 124px;
+    padding: 17px;
+    border-radius: 20px;
+  }
+
+  .remote-stat-card:first-child,
+  .dashboard-remote .remote-stat-card:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .remote-stat-card:last-child,
+  .dashboard-remote .remote-stat-card:last-child {
+    grid-column: auto;
+  }
+
   .remote-stat-card strong { font-size: 30px; }
   .remote-dashboard-panel { padding: 18px; border-radius: 22px; }
   .remote-activity-pulse { display: flex; overflow-x: auto; scrollbar-width: none; }
