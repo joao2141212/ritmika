@@ -3,6 +3,9 @@
 > O estado publicado e as URLs canônicas de todas as superfícies ficam em
 > `ROUTES-AND-SURFACES.md`. Este arquivo descreve a implementação do App do
 > Funcionário e não prova, sozinho, que a URL planejada está publicada.
+>
+> A linguagem visual, a tradução das referências e as proibições contra
+> reutilizar o mobile do gestor ficam em `APP-FUNCIONARIO-VISUAL-BRIEF.md`.
 
 ## Decisão fixa
 
@@ -12,6 +15,8 @@
 - O app do funcionário não é definido por viewport. Ele poderá abrir em celular, tablet ou computador.
 - A seleção do produto será determinada por conta, papel e permissões.
 - Os dois produtos usarão o mesmo Supabase e o mesmo modelo multiempresa.
+- A versão responsiva do gestor e o App do Funcionário não compartilham layout,
+  navegação ou identidade de produto.
 
 ## Vocabulário canônico de produto
 

@@ -39,6 +39,9 @@ O inventário canônico de produtos, URLs, rotas, públicos e estado de publica�
 está em `ROUTES-AND-SURFACES.md`. Consulte esse arquivo antes de alterar domínio,
 roteamento, login, área master, PWA ou App do Funcionário.
 
+As referências visuais e o contrato de experiência exclusivo do produto
+operacional estão em `APP-FUNCIONARIO-VISUAL-BRIEF.md`.
+
 ## UI Distillation Compiler
 
 O pacote reutilizável de captura comportamental fica em

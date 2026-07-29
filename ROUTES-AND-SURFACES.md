@@ -26,6 +26,18 @@ de nomes históricos.
   celular continua sendo apenas a versão responsiva do gestor. Isso não o
   transforma no App do Funcionário.
 
+### Distinção que não pode ser misturada
+
+| Situação | Produto correto |
+|---|---|
+| Gestor abre `ritmikapp.netlify.app` no computador | Portal do Gestor |
+| Gestor abre `ritmikapp.netlify.app` no celular | Portal do Gestor responsivo |
+| Funcionário abre o futuro `ritmika-app.netlify.app` no celular | App do Funcionário |
+| Funcionário abre o futuro `ritmika-app.netlify.app` no computador | App do Funcionário responsivo |
+
+A largura da tela nunca troca o produto. O brief visual do produto operacional
+está em `APP-FUNCIONARIO-VISUAL-BRIEF.md`.
+
 ## 1. Portal do Gestor
 
 Base de produção:
@@ -145,6 +157,7 @@ Estado real:
 Documento de implementação:
 
 - `ROADMAP-APP-FUNCIONARIO.md`
+- `APP-FUNCIONARIO-VISUAL-BRIEF.md`
 
 Navegação planejada:
 

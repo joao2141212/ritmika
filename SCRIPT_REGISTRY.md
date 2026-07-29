@@ -11,6 +11,7 @@ inferirem manutencao de Auth, workspaces, roles e dados sem custo alto.
 - App publicado: `https://ritmikapp.netlify.app/`
 - Referencia externa: Konclui autorizado somente leitura
 - Rotas e superficies: `ROUTES-AND-SURFACES.md`
+- Brief visual do App do Funcionario: `APP-FUNCIONARIO-VISUAL-BRIEF.md`
 
 ## Modelo de produto
 
@@ -47,6 +48,8 @@ inferirem manutencao de Auth, workspaces, roles e dados sem custo alto.
 
 - `ROUTES-AND-SURFACES.md`: URLs, rotas, publico, autorizacao e estado real do
   Portal do Gestor, Master e App do Funcionario.
+- `APP-FUNCIONARIO-VISUAL-BRIEF.md`: hierarquia visual, navegacao, estados,
+  separacao tecnica e proibicoes do produto operacional.
 - `supabase/scripts/scripts.md`: mapa raiz dos scripts operacionais.
 - `supabase/scripts/auth/auth.md`: identidade, Auth, empresas, funcionarios,
   roles, reset de senha, bloqueio/desbloqueio e acesso por workspace.
