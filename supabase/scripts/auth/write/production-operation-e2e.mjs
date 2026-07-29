@@ -473,8 +473,6 @@ const run = async () => {
       ok: true,
       checklist_id: createdChecklist.id,
     });
-    await managerContext.close();
-
     const context = await browser.newContext({
       viewport: { width: 390, height: 844 },
       deviceScaleFactor: 1,
@@ -701,6 +699,18 @@ const run = async () => {
     await page.waitForURL(/\/login(?:\?|$)/, { timeout: 15000 });
     await page.waitForTimeout(750);
     result.steps.push({ step: 'operator_logout_completed', ok: true });
+
+    await managerPage.goto(
+      `${appUrl}/checklists/${createdChecklist.id}/execute?executionId=${result.execution_id}`,
+      { waitUntil: 'networkidle', timeout: 60000 },
+    );
+    await managerPage.getByText(/^Histórico remoto$/i).waitFor({ timeout: 15000 });
+    const managerAnswerControls = managerPage.getByRole('button', { name: /^(Feito|Não Feito)$/i });
+    if (await managerAnswerControls.count() > 0) {
+      throw new Error('QA_MANAGER_EXECUTION_CONTROLS_EXPOSED');
+    }
+    result.steps.push({ step: 'manager_execution_is_read_only', ok: true });
+    await managerContext.close();
 
     result.runtime_errors = runtimeErrors;
     result.failed_responses = failedResponses;
