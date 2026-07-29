@@ -3,6 +3,8 @@ import path from 'node:path';
 
 const cssPath = path.resolve('src/styles/team-hub.css');
 const css = fs.readFileSync(cssPath, 'utf8');
+const rootCssPath = path.resolve('src/index.css');
+const rootCss = fs.readFileSync(rootCssPath, 'utf8');
 
 const requiredRules = [
     ['containeres principais limitados ao viewport', /\.team-hub,\s*\.team-hub-panel,\s*\.team-hub-grid,\s*\.team-member-card\s*\{[^}]*min-width:\s*0;[^}]*max-width:\s*100%;/s],
@@ -13,6 +15,9 @@ const requiredRules = [
 ];
 
 const failures = requiredRules.filter(([, pattern]) => !pattern.test(css));
+if (!/html,\s*body,\s*#root\s*\{[^}]*max-width:\s*100%;[^}]*overflow-x:\s*clip;/s.test(rootCss)) {
+    failures.push(['raiz do app impede overflow horizontal da página']);
+}
 if (failures.length) {
     console.error(`Falha de contrato mobile em ${path.relative(process.cwd(), cssPath)}:`);
     failures.forEach(([label]) => console.error(`- ${label}`));
