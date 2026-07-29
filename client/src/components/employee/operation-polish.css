@@ -118,12 +118,14 @@
 
 .employee-activity-manager {
   display: grid;
-  grid-template-columns: minmax(240px, 1fr) auto;
-  gap: 16px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
   align-items: center;
-  padding: 14px;
+  width: 100%;
+  min-width: 0;
+  padding: 16px;
   border: 1px solid rgba(31, 92, 84, .08);
-  border-radius: 22px;
+  border-radius: 24px;
   background: rgba(255, 255, 255, .82);
   box-shadow: 0 14px 36px rgba(23, 49, 58, .06);
   backdrop-filter: blur(16px);
@@ -133,10 +135,12 @@
   display: flex;
   gap: 10px;
   align-items: center;
-  min-height: 48px;
-  padding: 0 16px;
+  width: 100%;
+  min-width: 0;
+  min-height: 52px;
+  padding: 0 18px;
   border: 1px solid #dce7e5;
-  border-radius: 15px;
+  border-radius: 16px;
   color: var(--employee-muted);
   background: #fff;
 }
@@ -157,23 +161,23 @@
 }
 
 .employee-activity-filters {
-  display: flex;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  min-width: 0;
   padding: 5px;
-  overflow-x: auto;
   border-radius: 16px;
   background: #edf3f1;
-  scrollbar-width: none;
 }
-
-.employee-activity-filters::-webkit-scrollbar { display: none; }
 
 .employee-activity-filters button {
   display: inline-flex;
   gap: 8px;
   align-items: center;
-  min-height: 38px;
-  padding: 0 13px;
+  justify-content: center;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 12px;
   border: 0;
   border-radius: 12px;
   color: #557078;
@@ -222,7 +226,7 @@
   .employee-insight-grid { grid-template-columns: 1fr; }
   .employee-progress-card { min-height: 190px; }
   .employee-priority-card { min-height: 190px; }
-  .employee-activity-manager { grid-template-columns: 1fr; }
+  .employee-activity-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 520px) {
@@ -233,13 +237,14 @@
   .employee-progress-card { align-items: flex-start; }
   .employee-progress-ring { width: 112px; height: 112px; flex-basis: 112px; }
   .employee-activity-manager {
-    margin-inline: -2px;
     padding: 12px;
     border-radius: 20px;
   }
-  .employee-activity-filters {
-    margin-inline: -2px;
-    scroll-snap-type: x proximity;
-  }
-  .employee-activity-filters button { scroll-snap-align: start; }
+  .employee-activity-search { min-height: 50px; padding-inline: 15px; }
+  .employee-activity-filters { gap: 6px; }
+  .employee-activity-filters button { min-height: 42px; padding-inline: 9px; }
+}
+
+@media (max-width: 360px) {
+  .employee-activity-filters { grid-template-columns: minmax(0, 1fr); }
 }
