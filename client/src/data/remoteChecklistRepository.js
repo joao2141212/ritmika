@@ -2430,7 +2430,7 @@ export const remoteChecklistRepository = {
         try {
             await this.createNotification({
                 recipientProfileId: current.profile_id || null,
-                sourceId: `execution-completed:${execution.id}`,
+                sourceId: `execution-completed:${execution.id}:${execution.metadata?.retry_count || 0}`,
                 kind: 'execution_completed',
                 title: 'Execução concluída',
                 body: `Checklist concluído com ${progress}% de progresso.`,

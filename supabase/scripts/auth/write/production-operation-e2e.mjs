@@ -208,7 +208,9 @@ const run = async () => {
     await cardAction.waitFor({ timeout: 15000 });
     const card = cardAction.locator('xpath=ancestor::*[self::article or self::li or contains(@class,"card")][1]');
     const cardText = await card.innerText().catch(() => '');
-    result.checklist_title = cardText.split('\n').find((line) => line.trim())?.trim() || 'QA activity';
+    result.checklist_title = await card.locator('h2, h3').first().innerText().catch(() => '')
+      || cardText.split('\n').find((line) => line.trim() && !/^Concluída$/i.test(line.trim()))?.trim()
+      || 'QA activity';
     await cardAction.click();
     await page.waitForLoadState('networkidle');
 
