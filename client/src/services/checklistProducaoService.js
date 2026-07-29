@@ -279,6 +279,22 @@ export const parityService = {
         return remoteChecklistRepository.getNewsEntries(filters);
     },
 
+    async getPlatformNewsEntries() {
+        return remoteChecklistRepository.getPlatformNewsEntries();
+    },
+
+    async getPlatformWorkspaces() {
+        return remoteChecklistRepository.getPlatformWorkspaces();
+    },
+
+    async savePlatformNewsEntry(entry) {
+        return remoteChecklistRepository.savePlatformNewsEntry(entry);
+    },
+
+    async setPlatformNewsPublished(id, isPublished) {
+        return remoteChecklistRepository.setPlatformNewsPublished(id, isPublished);
+    },
+
     async getSupportSettings() {
         return remoteChecklistRepository.getSupportSettings();
     },

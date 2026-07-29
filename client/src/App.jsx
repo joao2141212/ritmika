@@ -23,6 +23,7 @@ const CourseModules = lazy(() => import('./pages/CourseModulesRemote'));
 const Help = lazy(() => import('./pages/HelpRemote'));
 const Ideas = lazy(() => import('./pages/IdeasRemote'));
 const PlatformIdeasAdmin = lazy(() => import('./pages/PlatformIdeasAdmin'));
+const MasterAdmin = lazy(() => import('./pages/MasterAdmin'));
 const News = lazy(() => import('./pages/NewsRemote'));
 
 const AppBoot = () => (
@@ -102,6 +103,7 @@ function App() {
             <Route path="help" element={<Help />} />
             <Route path="ideas" element={<Ideas />} />
             <Route path="platform/ideas" element={<PlatformIdeasAdmin />} />
+            <Route path="master" element={<MasterAdmin />} />
             <Route path="news" element={<News />} />
           </Route>
         </Routes>

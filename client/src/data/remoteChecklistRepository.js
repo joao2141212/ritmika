@@ -1973,6 +1973,64 @@ export const remoteChecklistRepository = {
         });
     },
 
+    async getPlatformNewsEntries() {
+        const client = requireSupabase();
+        const result = await client
+            .from('ritmika_product_news_entries')
+            .select('*, workspace:ritmika_workspaces(id,name,source_system)')
+            .order('updated_at', { ascending: false });
+        return unwrap('getPlatformNewsEntries', result) || [];
+    },
+
+    async getPlatformWorkspaces() {
+        const result = await requireSupabase()
+            .from('ritmika_workspaces')
+            .select('id,name,source_system,source_id,created_at')
+            .order('name', { ascending: true });
+        return unwrap('getPlatformWorkspaces', result) || [];
+    },
+
+    async savePlatformNewsEntry(entry) {
+        const client = requireSupabase();
+        const payload = {
+            workspace_id: entry.workspace_id || null,
+            source_id: entry.source_id || `master-news:${crypto.randomUUID()}`,
+            title: String(entry.title || '').trim(),
+            summary: String(entry.summary || '').trim(),
+            body: String(entry.body || '').trim(),
+            category: String(entry.category || 'produto').trim(),
+            is_published: Boolean(entry.is_published),
+            published_at: entry.is_published ? (entry.published_at || new Date().toISOString()) : null,
+            metadata: {
+                ...(entry.metadata && typeof entry.metadata === 'object' ? entry.metadata : {}),
+                managed_from: 'master',
+            },
+            updated_at: new Date().toISOString(),
+        };
+        if (!payload.title || !payload.summary || !payload.body) {
+            throw new Error('Título, resumo e conteúdo são obrigatórios.');
+        }
+
+        const result = entry.id
+            ? await client.from('ritmika_product_news_entries').update(payload).eq('id', entry.id).select('*').single()
+            : await client.from('ritmika_product_news_entries').insert(payload).select('*').single();
+        return unwrap('savePlatformNewsEntry', result, { newsId: entry.id || null, workspaceId: payload.workspace_id });
+    },
+
+    async setPlatformNewsPublished(id, isPublished) {
+        const result = await requireSupabase()
+            .from('ritmika_product_news_entries')
+            .update({
+                is_published: Boolean(isPublished),
+                published_at: isPublished ? new Date().toISOString() : null,
+                updated_at: new Date().toISOString(),
+            })
+            .eq('id', id)
+            .select('*')
+            .single();
+        return unwrap('setPlatformNewsPublished', result, { newsId: id, isPublished: Boolean(isPublished) });
+    },
+
     async getSupportSettings() {
         const context = await getWorkspaceContext();
         const result = await requireSupabase()
