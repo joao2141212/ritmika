@@ -5,8 +5,36 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { createClient } = require('@supabase/supabase-js');
 
-const confirmation = 'RESET:QA_OPERATOR_CREDENTIALS';
-const qaEmail = process.env.QA_OPERATOR_EMAIL || 'qa.worker.ritmika@example.com';
+const target = process.env.QA_CREDENTIAL_TARGET || 'operator';
+const targetConfig = {
+  operator: {
+    confirmation: 'RESET:QA_OPERATOR_CREDENTIALS',
+    emailKey: 'QA_OPERATOR_EMAIL',
+    passwordKey: 'QA_OPERATOR_PASSWORD',
+    userIdKey: 'QA_OPERATOR_USER_ID',
+    defaultEmail: 'qa.worker.ritmika@example.com',
+  },
+  manager: {
+    confirmation: 'RESET:QA_MANAGER_CREDENTIALS',
+    emailKey: 'QA_MANAGER_EMAIL',
+    passwordKey: 'QA_MANAGER_PASSWORD',
+    userIdKey: 'QA_MANAGER_USER_ID',
+    defaultEmail: '',
+  },
+}[target];
+
+if (!targetConfig) {
+  process.stderr.write(`${JSON.stringify({
+    fn: 'resetQaCredentials',
+    status: 'error',
+    errorCode: 'INVALID_QA_CREDENTIAL_TARGET',
+    target,
+  })}\n`);
+  process.exit(2);
+}
+
+const confirmation = targetConfig.confirmation;
+const qaEmail = process.env[targetConfig.emailKey] || targetConfig.defaultEmail;
 const envPath = path.resolve(process.cwd(), '.env');
 
 function fail(errorCode, error, extra = {}) {
@@ -26,6 +54,10 @@ if (process.env.RITMIKA_WRITE_CONFIRMATION !== confirmation) {
     'A confirmação explícita para redefinir apenas a credencial QA não foi fornecida.',
     { expectedConfirmation: confirmation },
   );
+}
+
+if (!qaEmail) {
+  fail('QA_EMAIL_REQUIRED', `${targetConfig.emailKey} é obrigatório para o alvo ${target}.`);
 }
 
 if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SECRET_KEY) {
@@ -104,16 +136,16 @@ async function resetQaCredentials() {
 
   const currentEnv = fs.readFileSync(envPath, 'utf8');
   const updatedEnv = upsertEnvValues(currentEnv, {
-    QA_OPERATOR_USER_ID: user.id,
-    QA_OPERATOR_EMAIL: qaEmail,
-    QA_OPERATOR_PASSWORD: password,
+    [targetConfig.userIdKey]: user.id,
+    [targetConfig.emailKey]: qaEmail,
+    [targetConfig.passwordKey]: password,
   });
   fs.writeFileSync(envPath, updatedEnv, { mode: 0o600 });
   fs.chmodSync(envPath, 0o600);
 
   process.stdout.write(`${JSON.stringify({
     status: 'ok',
-    target: 'qa_operator_only',
+    target: `qa_${target}_only`,
     userId: user.id,
     email: qaEmail,
     envPath,
