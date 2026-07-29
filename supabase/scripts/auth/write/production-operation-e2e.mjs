@@ -166,11 +166,11 @@ const ensureCapabilityFixture = async ({ workspaceId, authUserId }) => {
   );
   if (!profile?.id) throw new Error('QA_OPERATOR_PROFILE_NOT_FOUND');
 
-  const sourceId = 'qa-operation-capabilities-v1';
+  const sourceId = 'qa-operation-capabilities-v2';
   const fixture = {
     workspace_id: workspaceId,
     source_id: sourceId,
-    title: 'QA · Capacidades operacionais',
+    title: 'QA · Capacidades operacionais v2',
     description: 'Fixture QA para validar resposta, comentário, data, número e evidência fotográfica.',
     status: 'active',
     checklist_kind: 'operational',
@@ -667,8 +667,12 @@ const run = async () => {
     if (!persistedCapability?.id || persistedCapability.is_finished !== true) {
       throw new Error('QA_CAPABILITY_COMPLETION_NOT_PERSISTED');
     }
-    if (Number(persistedCapability.qtd_items_answered || 0) < 4) {
-      throw new Error('QA_CAPABILITY_ANSWERS_NOT_PERSISTED');
+    const capabilityAnswered = Number(persistedCapability.qtd_items_answered || 0);
+    const capabilityTotal = Number(persistedCapability.qtd_items || 0);
+    if (capabilityAnswered !== 4 || capabilityTotal !== 4) {
+      throw new Error(
+        `QA_CAPABILITY_COUNTS_INCONSISTENT:answered=${capabilityAnswered}:total=${capabilityTotal}`,
+      );
     }
     result.steps.push({
       step: 'capability_fixture_completed',

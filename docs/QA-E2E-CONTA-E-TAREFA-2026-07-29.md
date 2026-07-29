@@ -151,8 +151,9 @@ Deploy validado em `2026-07-29T04:14:21.078Z`:
 - a prova está em `evidence/production-ui-sweep.json`.
 
 O ciclo mutável foi repetido depois desse deploy, de
-`2026-07-29T04:14:49.787Z` a `2026-07-29T04:15:10.710Z`. O checklist
-`d7337596-58fc-4f6a-b342-33d07e5aa6ae` gerou a execução
-`9c6b1271-145d-4d7d-8555-cc9b362e1d6c`, concluída em 100% com evidência,
+`2026-07-29T04:19:18.621Z` a `2026-07-29T04:19:40.419Z`. O checklist
+`8dd82428-7791-4249-8646-0986773f5954` gerou a execução
+`2c03fb5d-b832-4736-a131-2f1a12ef84ca`, concluída em 100% com evidência,
 salvamento, restauração após reload, aviso, histórico e persistência no banco.
-`runtime_errors` e `failed_responses` permaneceram vazios.
+A fixture operacional `v2` confirmou 4/4 itens, incluindo número com três
+casas decimais. `runtime_errors` e `failed_responses` permaneceram vazios.

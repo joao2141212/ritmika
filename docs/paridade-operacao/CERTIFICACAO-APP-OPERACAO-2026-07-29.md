@@ -138,7 +138,7 @@ Estes itens continuam abertos e não podem ser apresentados como prontos:
 | Vídeo | Aberto | Nenhuma captura/upload de vídeo certificado |
 | Assinatura digital | Aberto | Entrada textual não equivale a assinatura gráfica |
 | Sequenciamento obrigatório | Aberto | Nenhum gate de ordem certificado |
-| Número com três casas decimais | Aberto | Contrato e teclado móvel não certificados |
+| Número com três casas decimais | Certificado no frontend web | Fixture `v2` validou `step=0.001`, teclado decimal e persistência 4/4 |
 | PIN/biometria/troca rápida | Aberto | Fluxo inexistente ou não certificado |
 | Persistência após reiniciar app | Aberto | Reload web foi provado; reinício nativo não |
 | Respostas em tempo real para gestor no app | Aberto | Não certificado no App de Operação |
@@ -146,8 +146,9 @@ Estes itens continuam abertos e não podem ser apresentados como prontos:
 | WhatsApp de desvio | Aberto | Nenhuma entrega real certificada |
 | Offline e sincronização | Aberto | Nenhum cenário offline certificado |
 
-Última reexecução do E2E de produção: `2026-07-29T04:11:19.691Z`, status
-`ok`, execução interativa em `1392 ms`, sem falhas HTTP e sem erros de runtime.
+Última reexecução do E2E de produção: `2026-07-29T04:19:18.621Z`, status
+`ok`, execução interativa em `1023 ms`, fixture operacional 4/4, sem falhas
+HTTP e sem erros de runtime.
 
 O App de Operação está certificado para o ciclo direto de gestão, atribuição,
 execução guiada, foto obrigatória, comentário, data/hora, persistência,
