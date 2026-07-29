@@ -157,6 +157,9 @@ export default function EmployeeHome() {
             const responseTotal = Number(assignment.latestResponse?.qtd_items || itemCount || 0);
             const progress = responseTotal > 0 ? Math.round((answered / responseTotal) * 100) : 0;
             const actionLabel = state === 'finished' ? 'Ver execução' : state === 'in_progress' ? 'Continuar' : 'Começar';
+            const executionQuery = assignment.latestResponse?.id
+              ? `?executionId=${encodeURIComponent(assignment.latestResponse.id)}`
+              : '';
             return (
               <article className={`employee-task employee-task-${state}`} key={assignment.id}>
                 <div className="employee-task-topline">
@@ -170,7 +173,7 @@ export default function EmployeeHome() {
                 <div className="employee-progress" aria-label={`Progresso: ${progress}%`}>
                   <span style={{ width: `${Math.max(0, Math.min(progress, 100))}%` }} />
                 </div>
-                <button type="button" onClick={() => navigate(`/app/checklists/${assignment.id}/execute`)}>
+                <button type="button" onClick={() => navigate(`/app/checklists/${assignment.id}/execute${executionQuery}`)}>
                   {actionLabel}<ArrowRight size={18} aria-hidden="true" />
                 </button>
               </article>
