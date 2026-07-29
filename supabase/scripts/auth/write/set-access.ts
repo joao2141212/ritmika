@@ -4,7 +4,7 @@ import {
     logEvent,
     patchTable,
     requireAdminEnvironment,
-} from '../lib/admin-api.mjs';
+} from '../lib/admin-api.ts';
 import {
     argValue,
     assertUuid,
@@ -12,7 +12,7 @@ import {
     hasFlag,
     parseBoolean,
     printJson,
-} from '../lib/cli.mjs';
+} from '../lib/cli.ts';
 
 const ALLOWED_ROLES = new Set(['admin', 'manager', 'operator', 'viewer']);
 

@@ -64,7 +64,7 @@ try {
     const user = await findUser();
     if (!user) fail('auth_user_not_found', { userId: userId || null, email: email || null });
 
-    const result = {
+const result: Record<string, any> = {
         status: 'ok',
         operation: 'read_only',
         user: {

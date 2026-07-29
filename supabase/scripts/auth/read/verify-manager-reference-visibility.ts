@@ -9,7 +9,9 @@ const appUrl = process.env.RITMIKA_APP_URL || 'https://ritmikapp.netlify.app';
 const chromePath = process.env.CHROME_EXECUTABLE_PATH
   || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 
-const request = async (path, { method = 'GET', body, key = secretKey, token = '' } = {}) => {
+type RequestOptions = { method?: string; body?: unknown; key?: string; token?: string };
+
+const request = async (path: string, { method = 'GET', body, key = secretKey, token = '' }: RequestOptions = {}) => {
   const response = await fetch(`${baseUrl}${path}`, {
     method,
     headers: {
@@ -103,7 +105,7 @@ const run = async () => {
     await responsible.waitFor({ timeout: 15000 });
     await page.waitForTimeout(3000);
     ui.responsible_options = await responsible.locator('option').evaluateAll((options) => (
-      options.map((option) => ({ value: option.value, label: option.textContent?.trim() }))
+      options.map((option) => ({ value: (option as HTMLOptionElement).value, label: option.textContent?.trim() }))
     ));
     await mkdir('evidence', { recursive: true });
     await page.screenshot({ path: 'evidence/manager-reference-visibility.png', fullPage: true });

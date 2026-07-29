@@ -21,7 +21,7 @@ const apiHeaders = {
     Authorization: `Bearer ${secretKey}`,
 };
 
-const requestJson = async (url, options = {}) => {
+const requestJson = async (url: string | URL, options: RequestInit = {}) => {
     const response = await fetch(url, {
         ...options,
         headers: {

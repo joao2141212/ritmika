@@ -3,8 +3,8 @@ import {
     fetchTable,
     logEvent,
     requireAdminEnvironment,
-} from '../lib/admin-api.mjs';
-import { argValue, assertUuid, hasFlag, printJson } from '../lib/cli.mjs';
+} from '../lib/admin-api.ts';
+import { argValue, assertUuid, hasFlag, printJson } from '../lib/cli.ts';
 
 const run = async () => {
     requireAdminEnvironment();
@@ -22,9 +22,9 @@ const run = async () => {
 
     if (workspaces.length !== 1) throw new Error('workspace_not_found');
     const membershipByUser = new Map(memberships.map((row) => [row.user_id, row]));
-    const directory = profiles.map((profile) => {
+const directory: Array<Record<string, any>> = profiles.map((profile) => {
         const membership = profile.auth_user_id ? membershipByUser.get(profile.auth_user_id) : null;
-        const record = {
+        const record: Record<string, any> = {
             profile_id: profile.id,
             auth_user_id: profile.auth_user_id || null,
             source_user_id: profile.source_user_id || null,

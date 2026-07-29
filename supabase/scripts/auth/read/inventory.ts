@@ -7,7 +7,7 @@ import {
     isQaRecord,
     logEvent,
     requireAdminEnvironment,
-} from '../lib/admin-api.mjs';
+} from '../lib/admin-api.ts';
 
 const run = async () => {
     requireAdminEnvironment();

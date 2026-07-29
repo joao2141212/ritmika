@@ -2,8 +2,8 @@
 
 Arquivos compartilhados pelos comandos de identidade.
 
-- `admin-api.mjs`: cliente server-side para Auth Admin e PostgREST usando exclusivamente `SUPABASE_SECRET_KEY` no formato `sb_secret_`; pagina usuários, consulta tabelas, aplica PATCH e emite telemetria estruturada.
-- `cli.mjs`: argumentos, flags, UUID, booleanos, listas CSV e saída JSON.
+- `admin-api.ts`: cliente server-side para Auth Admin e PostgREST usando exclusivamente `SUPABASE_SECRET_KEY` no formato `sb_secret_`; pagina usuários, consulta tabelas, aplica PATCH e emite telemetria estruturada.
+- `cli.ts`: argumentos, flags, UUID, booleanos, listas CSV e saída JSON.
 
 Esses módulos não executam operações sozinhos. A secret key permanece apenas no ambiente local ignorado pelo Git.
 

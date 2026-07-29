@@ -4,8 +4,8 @@ import {
     isQaRecord,
     logEvent,
     requireAdminEnvironment,
-} from '../lib/admin-api.mjs';
-import { argValue, assertUuid, hasFlag, printJson } from '../lib/cli.mjs';
+} from '../lib/admin-api.ts';
+import { argValue, assertUuid, hasFlag, printJson } from '../lib/cli.ts';
 
 const ALLOWED_ACTIONS = new Set(['ban', 'unban']);
 

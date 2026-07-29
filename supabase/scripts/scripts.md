@@ -1,37 +1,39 @@
 # scripts.md
 
-Mapa canonico da pasta `supabase/scripts`.
+## Finalidade
 
-## Subpastas
+Este diretório concentra operações administrativas, de leitura, escrita e
+validação do Ritmika. O código executável novo usa TypeScript/ESM via `tsx`.
 
-- `auth/`: operacoes administrativas de identidade e tenancy no Supabase do
-  Ritmika. Cobre inventario de usuarios, empresas, funcionarios, roles,
-  reset de senha, bloqueio/desbloqueio e acesso por workspace.
+## Contratos
 
-## Entrada recomendada
+- `auth/` contém operações de identidade, sessões QA, memberships e acesso.
+- `db/` contém runners SQL, validações de dados e operações de Storage.
+- `runtime/` contém o processo comum, carregamento local do `.env` e execução
+  de subprocessos.
+- Arquivos `.sh` mantidos em subpastas são somente compatibilidade para chamadas
+  antigas; o caminho canônico deve ser o runner `.ts` ou o script npm equivalente.
+- SQL continua em SQL, porque é a linguagem nativa do banco. TypeScript apenas
+  controla seleção, confirmação, conexão e telemetria da execução.
 
-Use sempre o roteador da subpasta em vez de chamar arquivos internos
-diretamente:
+## Comandos canônicos
 
-```bash
-bash supabase/scripts/auth/run.sh inventory
-bash supabase/scripts/auth/run.sh account --user-id <uuid>
-bash supabase/scripts/auth/run.sh workspace --workspace-id <uuid>
-bash supabase/scripts/auth/run.sh reset-password --user-id <uuid>
-bash supabase/scripts/auth/run.sh set-access --user-id <uuid> --workspace-id <uuid> --role operator --owner false
-bash supabase/scripts/auth/run.sh account-state --user-id <uuid> --action ban
-```
+- `npm run supabase:typecheck`
+- `npm run supabase:auth -- help`
+- `npm run supabase:auth:read -- help`
+- `npm run supabase:auth:write -- help`
+- `npm run supabase:db:read -- help`
+- `npm run supabase:db:write -- help`
 
-## Contrato de seguranca
+## Segurança e custo
 
-- `read/` e inventarios sao somente leitura.
-- `write/` sempre inicia em dry-run.
-- Escrita real exige `--apply` mais `--confirm '<confirmacao-literal>'`.
-- Conta de cliente real exige tambem `--allow-customer`.
-- Nenhum script deve imprimir segredo, token, senha ou e-mail completo.
-- Nenhum script deve enviar mensagem externa.
+Os runners carregam o `.env` ignorado localmente e nunca imprimem chaves.
+Leituras SQL exigem um arquivo permitido. Escritas SQL exigem
+`--apply` e `RITMIKA_DB_WRITE_CONFIRM=yes`. Nenhum runner novo executa
+alteração por padrão.
 
-## Fonte de verdade
+## Evidência de manutenção
 
-O Supabase do Ritmika e o unico alvo mutavel. O Konclui e referencia autorizada
-somente leitura para paridade funcional e de dados.
+Depois de alterar scripts, rodar `npm run supabase:typecheck` e registrar o
+resultado no handoff operacional do projeto. Não usar `@ts-nocheck` para
+esconder incompatibilidades de contrato.

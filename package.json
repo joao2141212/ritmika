@@ -5,11 +5,20 @@
     "start": "concurrently \"npm run server\" \"npm run client\"",
     "server": "cd server && npm start",
     "client": "cd client && npm run dev",
-    "install:all": "npm install && cd client && npm install && cd server && npm install"
+    "install:all": "npm install && cd client && npm install && cd server && npm install",
+    "supabase:auth": "tsx supabase/scripts/auth/run.ts",
+    "supabase:auth:read": "tsx supabase/scripts/auth/read/run.ts",
+    "supabase:auth:write": "tsx supabase/scripts/auth/write/run.ts",
+    "supabase:db:read": "tsx supabase/scripts/db/read/run.ts",
+    "supabase:db:write": "tsx supabase/scripts/db/write/run.ts",
+    "supabase:typecheck": "tsc -p tsconfig.supabase-scripts.json --noEmit"
   },
   "devDependencies": {
+    "@types/node": "26.1.2",
     "concurrently": "^8.2.2",
-    "playwright": "^1.62.0"
+    "playwright": "^1.62.0",
+    "tsx": "4.23.1",
+    "typescript": "7.0.2"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.84.0",

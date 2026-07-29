@@ -6,7 +6,7 @@ import {
     fetchAllAuthUsers,
     logEvent,
     requireAdminEnvironment,
-} from '../lib/admin-api.mjs';
+} from '../lib/admin-api.ts';
 
 const TARGET_EMAIL = 'qa.e2e.operator.ritmika@example.com';
 const TARGET_NAME = 'Operador QA E2E';

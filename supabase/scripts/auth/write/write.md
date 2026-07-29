@@ -2,17 +2,17 @@
 
 Operações administrativas mutáveis. Nenhuma delas aplica mudanças sem `--apply`, confirmação exata e, para clientes, `--allow-customer`.
 
-- `reset-password.mjs`: redefine senha pelo Auth Admin; a senha entra somente em `RITMIKA_NEW_PASSWORD` e nunca aparece na saída.
-- `set-account-state.mjs`: bloqueia ou desbloqueia login via `ban_duration` oficial do Supabase Auth.
-- `set-access.mjs`: sincroniza role, ownership e unidades entre membership e profile; se o profile falhar, tenta restaurar o membership e registra falha parcial crítica se o rollback falhar.
-- `reconcile-workspace-emails.mjs`: troca logins técnicos pelos e-mails reais importados, preserva UUID e senha, atualiza o relatório privado e restaura os e-mails anteriores se a operação não fechar por completo.
-- `production-operation-e2e.mjs`: gate de produção restrito ao workspace QA. Em
+- `reset-password.ts`: redefine senha pelo Auth Admin; a senha entra somente em `RITMIKA_NEW_PASSWORD` e nunca aparece na saída.
+- `set-account-state.ts`: bloqueia ou desbloqueia login via `ban_duration` oficial do Supabase Auth.
+- `set-access.ts`: sincroniza role, ownership e unidades entre membership e profile; se o profile falhar, tenta restaurar o membership e registra falha parcial crítica se o rollback falhar.
+- `reconcile-workspace-emails.ts`: troca logins técnicos pelos e-mails reais importados, preserva UUID e senha, atualiza o relatório privado e restaura os e-mails anteriores se a operação não fechar por completo.
+- `production-operation-e2e.ts`: gate de produção restrito ao workspace QA. Em
   dry-run valida ambiente e identidades; com `--apply` cria e publica uma tarefa
   pelo portal, atribui ao operador, executa no `/app`, valida evidência,
   persistência, histórico, aviso, busca, autorização e logout. Também mantém
   uma fixture idempotente para comentário e data/hora. Salva prova em
   `evidence/` e nunca imprime credenciais.
-- `run.sh`: carrega o ambiente e impede execução de arquivo fora desta pasta.
+- `run.ts`: runner TypeScript canônico; `run.sh` permanece como compatibilidade e impede execução de arquivo fora desta pasta.
 
 Fluxo seguro:
 

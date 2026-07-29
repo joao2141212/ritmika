@@ -8,6 +8,13 @@ const publishableKey = String(
     || process.env.VITE_SUPABASE_ANON_KEY
     || '',
 );
+
+declare global {
+    interface Error {
+        statusCode?: number;
+        safePayload?: unknown;
+    }
+}
 const args = process.argv.slice(2);
 const hasFlag = (flag) => args.includes(flag);
 const confirmation = (() => {
@@ -15,13 +22,21 @@ const confirmation = (() => {
     return index >= 0 ? String(args[index + 1] || '') : '';
 })();
 
-const request = async (path, {
+type RequestOptions = {
+    method?: string;
+    body?: unknown;
+    key?: string;
+    authorization?: string;
+    correlationId?: string;
+};
+
+const request = async (path: string, {
     method = 'GET',
     body,
     key = secretKey,
     authorization = '',
     correlationId = '',
-} = {}) => {
+}: RequestOptions = {}) => {
     const response = await fetch(`${baseUrl}${path}`, {
         method,
         headers: {

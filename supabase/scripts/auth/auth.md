@@ -37,12 +37,12 @@ bash supabase/scripts/auth/run.sh reconcile-workspace-emails \
 O dry-run informa a confirmação literal. Em workspace de cliente, a aplicação exige também `--allow-customer`.
 ## Diagnóstico Auth consolidado
 
-- Leitura e validação de credenciais: `read/inspect-auth-user.mjs`.
+- Leitura e validação de credenciais: `read/inspect-auth-user.ts`.
 - Alteração de senha: `run.sh reset-password`, com dry-run, `--apply`, confirmação explícita e senha recebida por `RITMIKA_NEW_PASSWORD`.
 - Não usar sequências avulsas de `psql`, `curl` ou comandos Node para manutenção Auth quando esses dois fluxos cobrirem a operação.
 # Provisionamento em lote de acessos de um workspace
 
-`write/provision-workspace-logins.mjs` cria, sem enviar e-mail, uma conta Auth para cada perfil ainda não vinculado do workspace informado. O comando:
+`write/provision-workspace-logins.ts` cria, sem enviar e-mail, uma conta Auth para cada perfil ainda não vinculado do workspace informado. O comando:
 
 - é `dry-run` por padrão;
 - exige confirmação literal ligada ao workspace e à quantidade pendente;

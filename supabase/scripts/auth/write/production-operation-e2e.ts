@@ -16,18 +16,26 @@ const evidenceDir = process.env.RITMIKA_EVIDENCE_DIR || 'evidence';
 const evidenceFixturePath = fileURLToPath(new URL('../fixtures/qa-evidence.svg', import.meta.url));
 const apply = process.argv.includes('--apply');
 
+declare global {
+  interface Error {
+    safePayload?: unknown;
+  }
+}
+
 const safeError = (error) => ({
   name: error?.name || 'Error',
   message: String(error?.message || error),
   stack: String(error?.stack || '').split('\n').slice(0, 5),
 });
 
-const request = async (path, {
+type RequestOptions = { method?: string; body?: unknown; key?: string; prefer?: string };
+
+const request = async (path: string, {
   method = 'GET',
   body,
   key = secretKey,
   prefer = '',
-} = {}) => {
+}: RequestOptions = {}) => {
   const response = await fetch(`${baseUrl}${path}`, {
     method,
     headers: {
@@ -335,7 +343,7 @@ const run = async () => {
   const capabilityFixture = apply ? await ensureCapabilityFixture(identity) : null;
   const projectRef = new URL(baseUrl).hostname.split('.')[0];
   const storageKey = `sb-${projectRef}-auth-token`;
-  const result = {
+const result: Record<string, any> = {
     status: apply ? 'running' : 'dry_run',
     app_url: appUrl,
     qa_workspace_id: identity.workspaceId,

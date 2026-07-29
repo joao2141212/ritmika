@@ -8,6 +8,13 @@ const appUrl = process.env.RITMIKA_APP_URL || 'https://ritmikapp.netlify.app';
 const chromePath = process.env.CHROME_EXECUTABLE_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const evidenceDir = process.env.RITMIKA_EVIDENCE_DIR || 'evidence';
 
+declare global {
+  interface Error {
+    safePayload?: unknown;
+    detail?: unknown;
+  }
+}
+
 const managerRoutes = [
   '/',
   '/checklists',
@@ -43,12 +50,19 @@ const screenshotRoutes = new Set([
   '/app/profile',
 ]);
 
-const request = async (path, {
+type RequestOptions = {
+  method?: string;
+  body?: unknown;
+  key?: string;
+  authorization?: string;
+};
+
+const request = async (path: string, {
   method = 'GET',
   body,
   key = secretKey,
   authorization = '',
-} = {}) => {
+}: RequestOptions = {}) => {
   const response = await fetch(`${baseUrl}${path}`, {
     method,
     headers: {

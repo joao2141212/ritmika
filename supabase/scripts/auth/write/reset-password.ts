@@ -4,7 +4,7 @@ import {
     isQaRecord,
     logEvent,
     requireAdminEnvironment,
-} from '../lib/admin-api.mjs';
+} from '../lib/admin-api.ts';
 
 const argValue = (name) => {
     const index = process.argv.indexOf(name);

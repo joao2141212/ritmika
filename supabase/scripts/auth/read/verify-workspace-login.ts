@@ -1,12 +1,19 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-import { logEvent, requireAdminEnvironment } from '../lib/admin-api.mjs';
+import { logEvent, requireAdminEnvironment } from '../lib/admin-api.ts';
 
 const argValue = (name) => {
     const index = process.argv.indexOf(name);
     return index >= 0 ? process.argv[index + 1] : '';
 };
+
+declare global {
+    interface Error {
+        statusCode?: number;
+        payload?: unknown;
+    }
+}
 
 const requestJson = async (url, options = {}) => {
     const response = await fetch(url, options);

@@ -1,5 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 
+type RequestOptions = RequestInit & { headers?: HeadersInit };
+
 const baseUrl = String(process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '').replace(/\/+$/, '');
 const secretKey = String(process.env.SUPABASE_SECRET_KEY || '');
 
@@ -22,7 +24,7 @@ export const logEvent = (event) => {
     })}\n`);
 };
 
-const request = async (path, options = {}) => {
+const request = async (path: string, options: RequestOptions = {}) => {
     requireAdminEnvironment();
     const response = await fetch(`${baseUrl}${path}`, {
         ...options,
@@ -42,10 +44,10 @@ const request = async (path, options = {}) => {
         }
     }
     if (!response.ok) {
-        const error = new Error(`supabase_admin_http_${response.status}`);
-        error.statusCode = response.status;
-        error.payload = payload;
-        throw error;
+        throw Object.assign(new Error(`supabase_admin_http_${response.status}`), {
+            statusCode: response.status,
+            payload,
+        });
     }
     return payload;
 };
@@ -87,7 +89,7 @@ export const emailFingerprint = (email) => createHash('sha256')
 
 export const emailDomain = (email) => String(email || '').trim().toLowerCase().split('@')[1] || '';
 
-export const isQaRecord = (record = {}) => (
+export const isQaRecord = (record: Record<string, any> = {}) => (
     record?.metadata?.ritmika_qa === true
     || record?.metadata?.ritmika_qa === 'true'
     || record?.preferences?.ritmika_qa === true
