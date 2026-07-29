@@ -17,6 +17,7 @@ import {
 import { toast } from 'react-hot-toast';
 import { checklistProducaoService, evidenceService, executionService } from '../services/checklistProducaoService';
 import { logger } from '../lib/logger';
+import RouteSkeleton from './RouteSkeleton';
 import '../styles/checklist-workspace.css';
 
 const titleOf = (checklist) => checklist?.title || checklist?.nome || 'Checklist sem título';
@@ -306,7 +307,7 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
         return <textarea className="light-textarea" value={value || ''} onChange={(event) => setAnswer(item.id, event.target.value)} placeholder="Digite sua resposta" />;
     };
 
-    if (loading) return <section className="ritmika-light-mode"><div className="empty-state">Carregando execução remota…</div></section>;
+    if (loading) return <section className="ritmika-light-mode"><RouteSkeleton variant="form" label="Carregando execução" /></section>;
     if (error || !checklist) return <section className="ritmika-light-mode"><div className="error-state"><p>{error || 'Checklist não encontrado.'}</p><button type="button" className="light-button secondary" onClick={() => navigate(backPath)}>Voltar</button></div></section>;
 
     return (

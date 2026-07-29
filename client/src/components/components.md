@@ -5,6 +5,8 @@ Componentes de layout, construção, execução e detalhe de checklists.
 ## Arquivos
 
 - Layout.jsx: shell autenticado, navegação, estrutura visual e atalho de teclado para o conteúdo principal.
+- RouteSkeleton.jsx: skeleton acessível e reutilizável para carregamento de rotas, listas, formulários e áreas de gestão/operação.
+- route-skeleton.css: geometria responsiva, pulsação por opacidade e suporte a movimento reduzido do skeleton compartilhado.
 - ChecklistBuilder.jsx: fluxo local de criação/edição de checklist.
 - ChecklistBuilderWorkspace.jsx: workspace visual do builder.
 - ChecklistWorkspace.jsx: workspace de checklist e ações operacionais.

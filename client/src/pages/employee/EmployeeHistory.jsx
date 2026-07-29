@@ -4,6 +4,7 @@ import { CheckCircle2, Clock3, History, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { logger } from '../../lib/logger';
+import RouteSkeleton from '../../components/RouteSkeleton';
 import '../../components/employee/employee.css';
 
 const dateTime = new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
@@ -71,7 +72,7 @@ export default function EmployeeHistory() {
         <article><strong>{summary.open}</strong><span>Em andamento</span></article>
       </div>
 
-      {query.isLoading && <div className="employee-state">Carregando seu histórico…</div>}
+      {query.isLoading && <RouteSkeleton variant="list" label="Carregando seu histórico" />}
       {query.isError && <div className="employee-state employee-state-error" role="alert"><strong>Histórico indisponível</strong><p>Tente novamente sem sair da sua conta.</p><button type="button" onClick={() => query.refetch()}>Tentar novamente</button><small>Código: {query.error?.correlationId}</small></div>}
       {!query.isLoading && !query.isError && summary.total === 0 && <div className="employee-state"><History size={30} /><strong>Seu histórico começa na primeira execução</strong><p>Checklists iniciados e concluídos por você aparecerão aqui.</p></div>}
 

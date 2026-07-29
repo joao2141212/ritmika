@@ -1,11 +1,29 @@
+import { Suspense, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { Bell, History, Home, LogOut, Sparkles, UserRound } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import RouteSkeleton from '../RouteSkeleton';
 import './employee.css';
 
 export default function EmployeeLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const preload = () => Promise.allSettled([
+      import('../../pages/employee/EmployeeHome'),
+      import('../../pages/employee/EmployeeHistory'),
+      import('../../pages/employee/EmployeeNotifications'),
+      import('../../pages/employee/EmployeeProfile'),
+      import('../ChecklistExecutionWorkspace'),
+    ]);
+    if ('requestIdleCallback' in window) {
+      const idleId = window.requestIdleCallback(preload, { timeout: 1200 });
+      return () => window.cancelIdleCallback(idleId);
+    }
+    const timerId = window.setTimeout(preload, 120);
+    return () => window.clearTimeout(timerId);
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -36,7 +54,9 @@ export default function EmployeeLayout() {
           <Sparkles size={15} aria-hidden="true" />
           Suas atividades e rotinas
         </div>
-        <Outlet />
+        <Suspense fallback={<RouteSkeleton variant="operation" label="Carregando sua área de operação" />}>
+          <Outlet />
+        </Suspense>
       </main>
 
       <nav className="employee-nav" aria-label="Navegação principal do App de Operação">

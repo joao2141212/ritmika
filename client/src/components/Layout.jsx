@@ -1,4 +1,4 @@
-import { createElement, useEffect, useState } from 'react';
+import { createElement, Suspense, useEffect, useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import '../styles/layout.css';
 import { usePlatformAdmin } from '../hooks/usePlatformAdmin';
+import RouteSkeleton from './RouteSkeleton';
 
 const SidebarItem = ({ to, icon, label, active }) => (
     <Link to={to} className={`sidebar-item ${active ? 'active' : ''}`}>
@@ -107,7 +108,9 @@ const Layout = () => {
             )}
 
             <main id="main-content" className="main-content" tabIndex="-1">
-                <Outlet />
+                <Suspense fallback={<RouteSkeleton variant="manager" label="Carregando área de gestão" />}>
+                    <Outlet />
+                </Suspense>
             </main>
         </div>
     );
