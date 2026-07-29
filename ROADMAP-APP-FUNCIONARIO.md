@@ -9,6 +9,14 @@
 - A seleção do produto será determinada por conta, papel e permissões.
 - Os dois produtos usarão o mesmo Supabase e o mesmo modelo multiempresa.
 
+## Vocabulário canônico de produto
+
+- `Portal do Gestor`: produto administrativo atual, responsivo, mantido em `https://ritmikapp.netlify.app/`.
+- `App do Funcionário`: produto operacional separado, também responsivo; “app” identifica a função do produto, não o tamanho da tela.
+- `Master da Plataforma`: produto interno da Ritmika para administrar clientes, acessos, publicação de novidades e operação global.
+- `desktop`, `tablet` e `celular`: apenas viewports suportadas por cada produto. Nunca determinam papel, permissão ou destino do usuário.
+- A conta autenticada e suas capacidades escolhem o produto permitido. CSS responsivo nunca substitui autorização.
+
 ## Estado comprovado em 2026-07-28
 
 - Existem 17 perfis no banco.
@@ -34,6 +42,17 @@
 - Responsabilidades: tarefas atribuídas, execução, evidências, histórico próprio, notificações e perfil.
 - Interface mobile-first, mas totalmente funcional em desktop.
 - PWA própria, com nome, ícone, `start_url`, cache e atualização independentes.
+
+### Direção de experiência do funcionário
+
+- A página inicial deve responder imediatamente: o que preciso fazer agora, o que está atrasado e como iniciar.
+- Usar cards de resumo para tarefas totais, concluídas, em andamento e pendentes, sempre derivados de dados reais do usuário autenticado.
+- Exibir progresso semanal, próximos prazos, lembretes e sequência de tarefas com ações diretas; não copiar métricas de projetos que não pertencem ao domínio Ritmika.
+- Priorizar uma ação principal por card, áreas de toque confortáveis e leitura rápida durante a operação em campo.
+- No celular, usar navegação operacional compacta e conteúdo em uma coluna. No desktop, aproveitar a largura com grade, painel lateral e análises sem transformar o produto no Portal do Gestor.
+- O funcionário vê apenas o próprio escopo e as unidades/setores autorizados. Controles administrativos permanecem fora deste produto.
+- Estados obrigatórios: carregando, vazio, offline, sincronizando, concluído, atrasado, bloqueado, erro recuperável e conflito de atualização.
+- A identidade visual pode reutilizar os cards limpos, verde institucional, gráficos orgânicos e hierarquia da referência, mantendo contraste, acessibilidade e whitemode.
 
 ## Fase 0: proteção do gestor
 
