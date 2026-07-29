@@ -1184,14 +1184,31 @@ export const remoteChecklistRepository = {
         metadata = {},
     } = {}) {
         const context = await getWorkspaceContext();
-        const profile = recipientProfileId
-            ? null
-            : await getProfileForUser(context.workspaceId, context.userId);
-        const result = await requireSupabase()
+        const profile = await getProfileForUser(context.workspaceId, context.userId);
+        const targetProfileId = recipientProfileId || profile?.id || null;
+        const client = requireSupabase();
+        if (profile?.id && targetProfileId === profile.id) {
+            const selfResult = await client.rpc('ritmika_notify_self', {
+                p_workspace_id: context.workspaceId,
+                p_source_id: sourceId || makeClientId('ritmika-notification'),
+                p_kind: kind,
+                p_title: title || 'Atualização do workspace',
+                p_body: body || null,
+                p_route: route,
+                p_entity_type: entityType,
+                p_entity_id: entityId ? String(entityId) : null,
+                p_metadata: metadata,
+            });
+            return mapNotification(unwrap('createNotification.self', selfResult, {
+                workspaceId: context.workspaceId,
+                recipientProfileId: profile.id,
+            }));
+        }
+        const result = await client
             .from('ritmika_notifications')
             .insert({
                 workspace_id: context.workspaceId,
-                recipient_profile_id: recipientProfileId || profile?.id || null,
+                recipient_profile_id: targetProfileId,
                 source_id: sourceId || makeClientId('ritmika-notification'),
                 kind,
                 title: title || 'Atualização do workspace',

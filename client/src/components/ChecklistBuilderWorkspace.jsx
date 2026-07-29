@@ -50,6 +50,7 @@ const emptyItem = () => ({
     allow_not_applicable: false,
     rule: '',
     evidenceLabel: '',
+    evidenceRequired: false,
     optionsCsv: 'Opção 1, Opção 2',
     config: {},
 });
@@ -66,6 +67,11 @@ const itemFromSource = (item, index) => ({
     is_required: item.is_required ?? item.required ?? item.obrigatorio !== false,
     allow_not_applicable: Boolean(item.allow_not_applicable),
     evidenceLabel: item.evidenceLabel || item.evidences?.[0]?.name || item.evidences?.[0]?.label || '',
+    evidenceRequired: Boolean(
+        item.evidenceRequired
+        ?? item.evidence_required
+        ?? item.evidences?.some((evidence) => evidence?.is_required),
+    ),
     optionsCsv: Array.isArray(item.config?.options) ? item.config.options.join(', ') : 'Opção 1, Opção 2',
 });
 
@@ -242,7 +248,11 @@ const ChecklistBuilderWorkspace = ({ checklistId, embedded = false, onClose, onS
                     : {}),
             },
             evidences: item.evidenceLabel.trim()
-                ? [{ name: item.evidenceLabel.trim(), type: 'text', is_required: false }]
+                ? [{
+                    name: item.evidenceLabel.trim(),
+                    type: 'file',
+                    is_required: Boolean(item.evidenceRequired),
+                }]
                 : [],
         }));
 
@@ -419,6 +429,15 @@ const ChecklistBuilderWorkspace = ({ checklistId, embedded = false, onClose, onS
                                         <div className="field-grid">
                                             <label className="checkbox-row"><input type="checkbox" checked={item.required} onChange={(event) => updateItem(item.id, 'required', event.target.checked)} /> Obrigatório</label>
                                             <label className="checkbox-row"><input type="checkbox" checked={item.allow_not_applicable} onChange={(event) => updateItem(item.id, 'allow_not_applicable', event.target.checked)} /> Permitir não se aplica</label>
+                                            <label className="checkbox-row">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={item.evidenceRequired}
+                                                    disabled={!item.evidenceLabel.trim()}
+                                                    onChange={(event) => updateItem(item.id, 'evidenceRequired', event.target.checked)}
+                                                />
+                                                Exigir evidência
+                                            </label>
                                             <label className="field-label">Regra de visibilidade
                                                 <select className="light-select" value={item.rule} onChange={(event) => updateItem(item.id, 'rule', event.target.value)}>
                                                     <option value="">Sempre visível</option>

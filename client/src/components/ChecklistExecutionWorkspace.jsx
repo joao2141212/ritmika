@@ -45,6 +45,13 @@ const executionItemsOf = (checklist) => {
 };
 
 const isAnswered = (value) => value !== undefined && value !== null && value !== '';
+const NOT_APPLICABLE = '__not_applicable__';
+
+const requiresEvidence = (item) => Boolean(
+    item.evidenceRequired
+    ?? item.evidence_required
+    ?? item.evidences?.some((evidence) => evidence?.is_required),
+);
 
 const groupEvidence = (rows = []) => rows.reduce((groups, evidence) => {
     const key = evidence.metadata?.item_source_id || evidence.checklist_item_id || 'general';
@@ -63,6 +70,7 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
     const [execution, setExecution] = useState(null);
     const [answers, setAnswers] = useState({});
     const [missingItems, setMissingItems] = useState([]);
+    const [missingEvidenceItems, setMissingEvidenceItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [completed, setCompleted] = useState(false);
@@ -138,6 +146,9 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
     const setAnswer = (itemId, value) => {
         setAnswers((current) => ({ ...current, [itemId]: value }));
         setMissingItems((current) => current.filter((missingId) => missingId !== itemId));
+        if (value === NOT_APPLICABLE) {
+            setMissingEvidenceItems((current) => current.filter((missingId) => missingId !== itemId));
+        }
     };
 
     const saveProgress = async () => {
@@ -173,6 +184,18 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
             toast.error('Preencha os itens obrigatórios antes de concluir.');
             return;
         }
+        const missingEvidence = answerableItems
+            .filter((item) => (
+                requiresEvidence(item)
+                && answers[item.id] !== NOT_APPLICABLE
+                && (evidenceByItem[item.id] || []).length === 0
+            ))
+            .map((item) => item.id);
+        if (missingEvidence.length > 0) {
+            setMissingEvidenceItems(missingEvidence);
+            toast.error('Anexe as evidências obrigatórias antes de concluir.');
+            return;
+        }
         if (!execution) return;
         try {
             setSaving(true);
@@ -200,6 +223,7 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
             setExecution(retried || execution);
             setAnswers({});
             setMissingItems([]);
+            setMissingEvidenceItems([]);
             setCompleted(false);
             toast.success('Execução reiniciada.');
         } catch (retryError) {
@@ -230,6 +254,7 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
                 ...current,
                 [item.id]: [uploaded, ...(current[item.id] || [])],
             }));
+            setMissingEvidenceItems((current) => current.filter((missingId) => missingId !== item.id));
             toast.success('Evidência anexada.');
         } catch (uploadError) {
             logger.error({
@@ -250,7 +275,10 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
         return (
             <div className="execution-evidence">
                 <div className="execution-evidence-head">
-                    <span><Paperclip size={14} /> Evidências ({evidence.length})</span>
+                    <span>
+                        <Paperclip size={14} /> Evidências ({evidence.length})
+                        {requiresEvidence(item) && answers[item.id] !== NOT_APPLICABLE && ' · obrigatória'}
+                    </span>
                     <label className="evidence-upload-button" htmlFor={'evidence-' + item.id}>
                         <Upload size={14} />
                         {evidenceBusy[item.id] ? 'Enviando…' : 'Anexar'}
@@ -290,6 +318,15 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
                 <div className="answer-segment">
                     <button type="button" className={value === false ? 'selected' : ''} onClick={() => setAnswer(item.id, false)}>Não Feito</button>
                     <button type="button" className={value === true ? 'selected' : ''} onClick={() => setAnswer(item.id, true)}>Feito</button>
+                    {item.allow_not_applicable && (
+                        <button
+                            type="button"
+                            className={value === NOT_APPLICABLE ? 'selected' : ''}
+                            onClick={() => setAnswer(item.id, NOT_APPLICABLE)}
+                        >
+                            Não se aplica
+                        </button>
+                    )}
                 </div>
             );
         }
@@ -345,7 +382,10 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
                                 {items.map((item, index) => {
                                     if (item.type === 'separator') return <div className="preview-item" key={item.id}><strong>{item.title || `Etapa ${index + 1}`}</strong></div>;
                                     return (
-                                        <article className={`execution-item ${missingItems.includes(item.id) ? 'missing' : ''}`} key={item.id}>
+                                        <article
+                                            className={`execution-item ${missingItems.includes(item.id) || missingEvidenceItems.includes(item.id) ? 'missing' : ''}`}
+                                            key={item.id}
+                                        >
                                             <div><h3>{index + 1}. {item.title}{item.required ? <span className="required-mark"> *</span> : null}</h3>{item.description && <p>{item.description}</p>}</div>
                                              {renderAnswer(item)}
                                              {item.allow_not_applicable && <label className="checkbox-row"><input type="checkbox" checked={answers[item.id] === '__not_applicable__'} onChange={(event) => setAnswer(item.id, event.target.checked ? '__not_applicable__' : '')} /> Não se aplica</label>}
