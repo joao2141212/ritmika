@@ -1,6 +1,7 @@
 import { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { logger } from '../lib/logger';
+import { clearServerState } from '../lib/serverState';
 import { resolveWorkspaceMembership } from '../data/workspaceIdentity';
 
 const AuthContext = createContext();
@@ -104,10 +105,11 @@ export const AuthProvider = ({ children }) => {
             }
         });
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             if (session?.user) {
                 loadUserProfile(session.user.id);
             } else {
+                if (event === 'SIGNED_OUT') clearServerState('auth.signed_out');
                 setUser(null);
                 setWorkspaceSelection(null);
                 setLoading(false);
@@ -122,6 +124,7 @@ export const AuthProvider = ({ children }) => {
             return { success: false, error: 'Não há uma seleção de empresa pendente.' };
         }
         try {
+            clearServerState('workspace.changed');
             resolveWorkspaceMembership({
                 userId: workspaceSelection.userId,
                 memberships: workspaceSelection.memberships,

@@ -1,5 +1,8 @@
 // Checklists de Produção
-import { remoteChecklistRepository } from '../data/remoteChecklistRepository';
+import { remoteChecklistRepository as rawRemoteChecklistRepository } from '../data/remoteChecklistRepository';
+import { createCachedRepository } from '../lib/serverState';
+
+const remoteChecklistRepository = createCachedRepository(rawRemoteChecklistRepository, 'workspace');
 
 export const checklistProducaoService = {
     async getAll() {

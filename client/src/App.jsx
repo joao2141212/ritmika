@@ -1,7 +1,10 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AppErrorBoundary from './components/AppErrorBoundary';
+import RealtimeSync from './components/RealtimeSync';
+import { serverState } from './lib/serverState';
 
 const Layout = lazy(() => import('./components/Layout'));
 const Login = lazy(() => import('./pages/Login'));
@@ -64,10 +67,12 @@ import OfflineSync from './components/OfflineSync';
 
 function App() {
   return (
-    <AuthProvider>
-      <AppErrorBoundary>
+    <QueryClientProvider client={serverState}>
+      <AuthProvider>
+        <AppErrorBoundary>
         <Router>
         <OfflineSync />
+        <RealtimeSync />
         <Toaster position="top-right" toastOptions={{
           style: {
             background: '#ffffff',
@@ -109,8 +114,9 @@ function App() {
         </Routes>
         </Suspense>
         </Router>
-      </AppErrorBoundary>
-    </AuthProvider>
+        </AppErrorBoundary>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
