@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
     ArrowLeft,
+    ArrowRight,
     Barcode,
     Check,
     CheckCircle2,
@@ -21,9 +22,6 @@ import { toast } from 'react-hot-toast';
 import { checklistProducaoService, evidenceService, executionService } from '../services/checklistProducaoService';
 import { logger } from '../lib/logger';
 import RouteSkeleton from './RouteSkeleton';
-import '../styles/checklist-workspace.css';
-import '../styles/execution-delight.css';
-import '../styles/execution-focus.css';
 
 const titleOf = (checklist) => checklist?.title || checklist?.nome || 'Checklist sem título';
 
@@ -164,18 +162,22 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
     const isLastItem = activeItemIndex === answerableItems.length - 1;
 
     const setAnswer = (itemId, value) => {
-        setAnswers((current) => ({ ...current, [itemId]: value }));
+        const isDeselecting = answers[itemId] === value;
+        const nextValue = isDeselecting ? undefined : value;
+        setAnswers((current) => ({ ...current, [itemId]: nextValue }));
         setMissingItems((current) => current.filter((missingId) => missingId !== itemId));
         setStepFeedback(
-            value === true
-                ? 'Boa. Este item está concluído.'
-                : value === false
-                    ? 'Registrado. Este ponto precisa de atenção.'
-                    : value === NOT_APPLICABLE
-                        ? 'Tudo certo. Este item não se aplica agora.'
-                        : 'Resposta registrada neste item.',
+            isDeselecting
+                ? 'Resposta desmarcada.'
+                : nextValue === true
+                    ? 'Boa. Este item está concluído.'
+                    : nextValue === false
+                        ? 'Registrado. Este ponto precisa de atenção.'
+                        : nextValue === NOT_APPLICABLE
+                            ? 'Tudo certo. Este item não se aplica agora.'
+                            : 'Resposta registrada neste item.',
         );
-        if (value === NOT_APPLICABLE) {
+        if (nextValue === NOT_APPLICABLE || isDeselecting) {
             setMissingEvidenceItems((current) => current.filter((missingId) => missingId !== itemId));
         }
     };
@@ -339,13 +341,19 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
     const renderEvidence = (item) => {
         const evidence = evidenceByItem[item.id] || [];
         return (
-            <div className="execution-evidence">
-                <div className="execution-evidence-head">
-                    <span>
-                        <Paperclip size={14} /> Evidências ({evidence.length})
-                        {requiresEvidence(item) && answers[item.id] !== NOT_APPLICABLE && ' · obrigatória'}
+            <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/80 p-3.5">
+                <div className="flex items-center justify-between gap-3 text-xs text-slate-600">
+                    <span className="flex items-center gap-1.5 font-medium">
+                        <Paperclip size={14} className="text-slate-400" />
+                        Evidências ({evidence.length})
+                        {requiresEvidence(item) && answers[item.id] !== NOT_APPLICABLE && (
+                            <span className="font-bold text-red-500">· obrigatória</span>
+                        )}
                     </span>
-                    <label className="evidence-upload-button" htmlFor={'evidence-' + item.id}>
+                    <label
+                        className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-teal-700 active:scale-95"
+                        htmlFor={'evidence-' + item.id}
+                    >
                         <Upload size={14} />
                         {evidenceBusy[item.id] ? 'Enviando…' : 'Anexar'}
                     </label>
@@ -353,21 +361,23 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
                         id={'evidence-' + item.id}
                         type="file"
                         accept="image/*,application/pdf,video/*"
+                        className="hidden"
                         onChange={(event) => uploadEvidence(item, event)}
                         disabled={Boolean(evidenceBusy[item.id])}
                     />
                 </div>
                 {evidence.length > 0 && (
-                    <div className="execution-evidence-list">
+                    <div className="mt-3 grid gap-2">
                         {evidence.map((itemEvidence) => (
                             <a
+                                className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-teal-700 shadow-sm transition hover:bg-teal-50"
                                 href={itemEvidence.url || '#'}
                                 target="_blank"
                                 rel="noreferrer"
                                 key={itemEvidence.id || itemEvidence.storage_path}
                             >
-                                {itemEvidence.title || 'Abrir evidência'}
-                                {itemEvidence.isHistorical && <small>Histórica</small>}
+                                <span className="truncate">{itemEvidence.title || 'Abrir evidência'}</span>
+                                {itemEvidence.isHistorical && <small className="text-slate-400">Histórica</small>}
                             </a>
                         ))}
                     </div>
@@ -381,25 +391,54 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
         const type = item.type === 'boolean' ? 'check' : item.type;
         if (type === 'check') {
             return (
-                <div className="answer-segment" role="group" aria-label="Resultado da atividade">
-                    <button type="button" data-answer="not-done" aria-pressed={value === false} className={value === false ? 'selected not-done' : 'not-done'} onClick={() => setAnswer(item.id, false)}>
-                        <span className="answer-choice-icon"><X size={23} /></span>
-                        <span className="answer-choice-copy"><strong>Não concluí</strong><small>Registrar pendência</small></span>
+                <div className="grid gap-2.5 sm:grid-cols-3" role="group" aria-label="Resultado da atividade">
+                    <button
+                        type="button"
+                        data-answer="not-done"
+                        aria-pressed={value === false}
+                        className={`flex min-h-[72px] items-center gap-3 rounded-xl border p-3 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 active:scale-[0.98] ${value === false ? 'border-red-500 bg-red-50/90 text-red-900 shadow-sm' : 'border-slate-200 bg-white text-slate-700 hover:border-red-200 hover:bg-red-50/40'}`}
+                        onClick={() => setAnswer(item.id, false)}
+                    >
+                        <span className={`grid size-9 shrink-0 place-items-center rounded-lg ${value === false ? 'bg-red-600 text-white' : 'bg-red-100 text-red-600'}`}>
+                            <X size={20} aria-hidden="true" />
+                        </span>
+                        <span className="grid min-w-0">
+                            <strong className="text-sm font-bold leading-tight">Não concluí</strong>
+                            <small className="truncate text-xs font-normal opacity-75">Registrar pendência</small>
+                        </span>
                     </button>
-                    <button type="button" data-answer="done" aria-pressed={value === true} className={value === true ? 'selected done' : 'done'} onClick={() => setAnswer(item.id, true)}>
-                        <span className="answer-choice-icon"><Check size={23} /></span>
-                        <span className="answer-choice-copy"><strong>Concluído</strong><small>Tudo certo por aqui</small></span>
+
+                    <button
+                        type="button"
+                        data-answer="done"
+                        aria-pressed={value === true}
+                        className={`flex min-h-[72px] items-center gap-3 rounded-xl border p-3 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 active:scale-[0.98] ${value === true ? 'border-teal-600 bg-teal-50/90 text-teal-900 shadow-sm' : 'border-slate-200 bg-white text-slate-700 hover:border-teal-200 hover:bg-teal-50/40'}`}
+                        onClick={() => setAnswer(item.id, true)}
+                    >
+                        <span className={`grid size-9 shrink-0 place-items-center rounded-lg ${value === true ? 'bg-teal-600 text-white' : 'bg-teal-100 text-teal-700'}`}>
+                            <Check size={20} aria-hidden="true" />
+                        </span>
+                        <span className="grid min-w-0">
+                            <strong className="text-sm font-bold leading-tight">Concluído</strong>
+                            <small className="truncate text-xs font-normal opacity-75">Tudo certo por aqui</small>
+                        </span>
                     </button>
+
                     {item.allow_not_applicable && (
                         <button
                             type="button"
                             data-answer="not-applicable"
                             aria-pressed={value === NOT_APPLICABLE}
-                            className={value === NOT_APPLICABLE ? 'selected not-applicable' : 'not-applicable'}
+                            className={`flex min-h-[72px] items-center gap-3 rounded-xl border p-3 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 active:scale-[0.98] ${value === NOT_APPLICABLE ? 'border-slate-500 bg-slate-100 text-slate-900 shadow-sm' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'}`}
                             onClick={() => setAnswer(item.id, NOT_APPLICABLE)}
                         >
-                            <span className="answer-choice-icon"><Minus size={22} /></span>
-                            <span className="answer-choice-copy"><strong>Não se aplica</strong><small>Fora do contexto atual</small></span>
+                            <span className={`grid size-9 shrink-0 place-items-center rounded-lg ${value === NOT_APPLICABLE ? 'bg-slate-700 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                                <Minus size={20} aria-hidden="true" />
+                            </span>
+                            <span className="grid min-w-0">
+                                <strong className="text-sm font-bold leading-tight">Não se aplica</strong>
+                                <small className="truncate text-xs font-normal opacity-75">Fora de contexto</small>
+                            </span>
                         </button>
                     )}
                 </div>
@@ -409,12 +448,12 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
             const options = Array.isArray(item.config?.options) && item.config.options.length > 0
                 ? item.config.options
                 : ['Opção 1', 'Opção 2'];
-            return <select className="light-select" value={value || ''} onChange={(event) => setAnswer(item.id, event.target.value)}><option value="">Selecione uma opção</option>{options.map((option) => <option key={option} value={option}>{option}</option>)}</select>;
+            return <select className="min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm text-slate-900 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15" value={value || ''} onChange={(event) => setAnswer(item.id, event.target.value)}><option value="">Selecione uma opção</option>{options.map((option) => <option key={option} value={option}>{option}</option>)}</select>;
         }
         if (type === 'numeric') {
             return (
                 <input
-                    className="light-input"
+                    className="min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm text-slate-900 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15"
                     type="number"
                     inputMode="decimal"
                     step="0.001"
@@ -425,141 +464,163 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
                 />
             );
         }
-        if (type === 'date_time' || type === 'datetime') return <input className="light-input" type="datetime-local" value={value || ''} onChange={(event) => setAnswer(item.id, event.target.value)} />;
-        if (type === 'gps') return <div className="search-field"><MapPin size={16} /><input value={value || ''} onChange={(event) => setAnswer(item.id, event.target.value)} placeholder="Latitude, longitude" /></div>;
-        if (type === 'barcode') return <div className="search-field"><Barcode size={16} /><input value={value || ''} onChange={(event) => setAnswer(item.id, event.target.value)} placeholder="Código de barras ou QR" /></div>;
-        if (type === 'signature') return <div className="search-field"><Signature size={16} /><input value={value || ''} onChange={(event) => setAnswer(item.id, event.target.value)} placeholder="Nome para assinatura local" /></div>;
-        return <textarea className="light-textarea" value={value || ''} onChange={(event) => setAnswer(item.id, event.target.value)} placeholder="Digite sua resposta" />;
+        if (type === 'date_time' || type === 'datetime') return <input className="min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm text-slate-900 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15" type="datetime-local" value={value || ''} onChange={(event) => setAnswer(item.id, event.target.value)} aria-label={item.title || 'Data e hora'} />;
+        if (type === 'gps') return <div className="flex items-center gap-2"><MapPin size={16} aria-hidden="true" /><input className="min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm text-slate-900 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15" value={value || ''} onChange={(event) => setAnswer(item.id, event.target.value)} placeholder="Latitude, longitude" aria-label={item.title || 'Latitude e longitude'} /></div>;
+        if (type === 'barcode') return <div className="flex items-center gap-2"><Barcode size={16} aria-hidden="true" /><input className="min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm text-slate-900 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15" value={value || ''} onChange={(event) => setAnswer(item.id, event.target.value)} placeholder="Código de barras ou QR" aria-label={item.title || 'Código de barras ou QR'} /></div>;
+        if (type === 'signature') return <div className="flex items-center gap-2"><Signature size={16} aria-hidden="true" /><input className="min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm text-slate-900 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15" value={value || ''} onChange={(event) => setAnswer(item.id, event.target.value)} placeholder="Nome para assinatura local" aria-label={item.title || 'Nome para assinatura local'} /></div>;
+        return <textarea className="min-h-28 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-900 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15" value={value || ''} onChange={(event) => setAnswer(item.id, event.target.value)} placeholder="Digite sua resposta" />;
     };
 
-    if (loading) return <section className="ritmika-light-mode"><RouteSkeleton variant="form" label="Carregando execução" /></section>;
-    if (error || !checklist) return <section className="ritmika-light-mode"><div className="error-state"><p>{error || 'Checklist não encontrado.'}</p><button type="button" className="light-button secondary" onClick={() => navigate(backPath)}>Voltar</button></div></section>;
+    if (loading) return <section className="grid min-h-screen place-items-center bg-slate-50 p-4"><RouteSkeleton variant="form" label="Carregando execução" /></section>;
+    if (error || !checklist) return <section className="grid min-h-screen place-items-center bg-slate-50 p-4"><div className="grid gap-4 rounded-2xl border border-red-200 bg-red-50 p-6 text-red-800" role="alert"><p>{error || 'Checklist não encontrado.'}</p><button type="button" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 font-bold text-slate-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600" onClick={() => navigate(backPath)}>Voltar</button></div></section>;
 
     return (
-        <section className="ritmika-light-mode operation-execution">
-            <header className="execution-topbar">
-                <div>
-                    <button type="button" className="light-button secondary" onClick={() => navigate(backPath)}><ArrowLeft size={16} /> {backPath === '/app' ? 'Minhas atividades' : 'Checklists'}</button>
-                    <p className="execution-eyebrow">Execução · Workspace Ritmika</p>
-                    <h1>{titleOf(checklist)}</h1>
-                    <p className="execution-subtitle">Avance uma etapa por vez. Seu progresso fica salvo durante toda a atividade.</p>
+        <section className="w-full text-slate-900">
+            {/* Header limpo para mobile */}
+            <div className="mb-4 flex items-center justify-between gap-3">
+                <button
+                    type="button"
+                    className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50"
+                    onClick={() => navigate(backPath)}
+                >
+                    <ArrowLeft size={15} aria-hidden="true" /> Voltar
+                </button>
+                <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+                    <CheckCircle2 size={15} className="text-teal-600" />
+                    <span>{answeredCount}/{answerableItems.length} respondidos</span>
                 </div>
-                <div className="execution-meta"><span><Clock3 size={14} /> {execution?.status === 'completed' ? 'Concluída' : 'Em andamento'}</span><span><CheckCircle2 size={14} /> {answeredCount}/{answerableItems.length} respondidos</span></div>
-            </header>
-
-            <div className="execution-shell">
-                <div className="execution-column">
-                    {completed ? (
-                        <section className="completion-state">
-                            <div className="completion-hero-icon"><Sparkles size={22} /><CheckCircle2 size={42} /></div>
-                            <h2>Execução concluída</h2>
-                            <p>Ótimo trabalho. Todas as informações foram salvas no histórico.</p>
-                            <div className="execution-meta"><span>Pontuação</span><strong>{execution?.score ?? 100}%</strong><span>Atividade concluída</span></div>
-                            <div className="builder-actions"><button type="button" className="light-button secondary" onClick={() => navigate(backPath)}>Voltar à lista</button><button type="button" className="light-button primary" onClick={retry}><RotateCcw size={16} /> Executar novamente</button></div>
-                        </section>
-                    ) : (
-                        <section className="execution-panel execution-guided" data-testid="execution-guided-flow">
-                            <div className="execution-guided-progress">
-                                <div><strong>{progress}%</strong><span> concluído</span></div>
-                                <span>{answeredCount}/{answerableItems.length} respondidos</span>
-                                <div className="execution-progress" role="progressbar" aria-label="Progresso da execução" aria-valuemin="0" aria-valuemax="100" aria-valuenow={progress}><span style={{ width: `${progress}%` }} /></div>
-                                <p className="execution-progress-message">
-                                    {progress === 0 ? 'Vamos começar. Uma etapa de cada vez.' : progress === 100 ? 'Tudo preenchido. Revise e conclua.' : `Bom ritmo. Faltam ${answerableItems.length - answeredCount} ${answerableItems.length - answeredCount === 1 ? 'etapa' : 'etapas'}.`}
-                                </p>
-                            </div>
-                            <nav className="execution-step-trail" aria-label="Itens da execução">
-                                {answerableItems.map((item, index) => {
-                                    const hasIssue = missingItems.includes(item.id) || missingEvidenceItems.includes(item.id);
-                                    const state = hasIssue ? 'attention' : isAnswered(answers[item.id]) ? 'answered' : 'pending';
-                                    return (
-                                        <button
-                                            type="button"
-                                            className="execution-step-dot"
-                                            data-state={state}
-                                            aria-current={index === activeItemIndex ? 'step' : undefined}
-                                            aria-label={`Item ${index + 1}: ${item.title || 'Sem título'} · ${state === 'answered' ? 'respondido' : state === 'attention' ? 'requer atenção' : 'pendente'}`}
-                                            key={item.id}
-                                            onClick={() => focusItem(index)}
-                                        >
-                                            {index + 1}
-                                        </button>
-                                    );
-                                })}
-                            </nav>
-
-                            {activeItem ? (
-                                <article
-                                    className={`execution-current-item ${missingItems.includes(activeItem.id) || missingEvidenceItems.includes(activeItem.id) ? 'missing' : ''}`}
-                                    data-testid="execution-current-item"
-                                    data-answer-state={
-                                        answers[activeItem.id] === true
-                                            ? 'done'
-                                            : answers[activeItem.id] === false
-                                                ? 'not-done'
-                                                : answers[activeItem.id] === NOT_APPLICABLE
-                                                    ? 'not-applicable'
-                                                    : 'pending'
-                                    }
-                                >
-                                    <div className="execution-current-head">
-                                        <div>
-                                            <p className="execution-item-position">Item {activeItemIndex + 1} de {answerableItems.length}</p>
-                                            <h2>{activeItem.title || 'Atividade sem título'}{activeItem.required ? <span className="required-mark"> *</span> : null}</h2>
-                                        </div>
-                                        <span className={`execution-answer-status ${isAnswered(answers[activeItem.id]) ? 'answered' : ''}`}>
-                                            {answers[activeItem.id] === true
-                                                ? <><Check size={14} /> Concluído</>
-                                                : answers[activeItem.id] === false
-                                                    ? <><X size={14} /> Atenção</>
-                                                    : answers[activeItem.id] === NOT_APPLICABLE
-                                                        ? <><Minus size={14} /> Não se aplica</>
-                                                        : activeItem.required ? 'Obrigatório' : 'Opcional'}
-                                        </span>
-                                    </div>
-                                    {activeItem.description && <p className="execution-item-description">{activeItem.description}</p>}
-                                    <div className="execution-answer-block">
-                                        <p className="execution-answer-label">Como ficou este item?</p>
-                                        {renderAnswer(activeItem)}
-                                    </div>
-                                    {renderEvidence(activeItem)}
-                                    {stepFeedback && (
-                                        <p
-                                            className={`execution-step-feedback ${missingItems.includes(activeItem.id) || missingEvidenceItems.includes(activeItem.id) ? 'error' : ''}`}
-                                            role="status"
-                                            aria-live="polite"
-                                        >
-                                            {stepFeedback}
-                                        </p>
-                                    )}
-                                </article>
-                            ) : (
-                                <div className="execution-empty-items" role="status">Este checklist ainda não possui itens executáveis.</div>
-                            )}
-
-                            <div className="execution-action-dock">
-                                <button type="button" className="light-button secondary" disabled={isFirstItem || saving} onClick={() => focusItem(activeItemIndex - 1)}><ArrowLeft size={16} /> Anterior</button>
-                                <button type="button" className="light-button secondary save-progress" disabled={saving || !execution} onClick={saveProgress}><Save size={16} /> Salvar</button>
-                                {isLastItem ? (
-                                    <button type="button" className="light-button primary" disabled={saving || !activeItem} onClick={complete}><Send size={16} /> Concluir atividade</button>
-                                ) : (
-                                    <button type="button" className="light-button primary" disabled={saving || !activeItem} onClick={goToNextItem}>Próximo <span aria-hidden="true">→</span></button>
-                                )}
-                            </div>
-                        </section>
-                    )}
-                </div>
-
-                <aside className="execution-side">
-                    <section className="execution-panel">
-                        <h2>Resumo</h2>
-                        <div className="execution-kpi"><span>Status</span><strong>{completed ? 'Concluído' : 'Em andamento'}</strong></div>
-                        <div className="execution-kpi"><span>Obrigatórios</span><strong>{answerableItems.filter((item) => item.required).length}</strong></div>
-                        <div className="execution-kpi"><span>Respondidos</span><strong>{answeredCount}</strong></div>
-                        {completed && <div className="execution-kpi"><span>Pontuação</span><strong>{execution?.score ?? 100}%</strong></div>}
-                    </section>
-                    <section className="execution-panel execution-tip-panel"><h2>Dica rápida</h2><p>Registre o resultado real. Se algo precisar de atenção, escolha “Não concluí” e anexe uma evidência quando solicitado.</p></section>
-                </aside>
             </div>
+
+            <div className="mb-4">
+                <h1 className="m-0 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">{titleOf(checklist)}</h1>
+                {/* Barra de progresso discreta */}
+                <div className="mt-2.5 flex items-center gap-3">
+                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-valuenow={progress}>
+                        <div className="h-full rounded-full bg-teal-600 transition-all duration-300" style={{ width: `${progress}%` }} />
+                    </div>
+                    <span className="text-xs font-bold text-teal-700">{progress}%</span>
+                </div>
+            </div>
+
+            {completed ? (
+                <section className="rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+                    <div className="mx-auto mb-3 grid size-14 place-items-center rounded-full bg-teal-50 text-teal-600">
+                        <CheckCircle2 size={36} />
+                    </div>
+                    <h2 className="m-0 text-xl font-bold">Execução concluída</h2>
+                    <p className="mt-1.5 text-xs text-slate-500">Ótimo trabalho. Todas as informações foram salvas.</p>
+                    <div className="my-4 flex justify-center gap-4 text-xs text-slate-600">
+                        <span>Pontuação: <strong className="text-slate-900">{execution?.score ?? 100}%</strong></span>
+                    </div>
+                    <div className="flex justify-center gap-2">
+                        <button type="button" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700" onClick={() => navigate(backPath)}>Voltar à lista</button>
+                        <button type="button" className="inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-2 text-xs font-bold text-white" onClick={retry}><RotateCcw size={15} /> Executar novamente</button>
+                    </div>
+                </section>
+            ) : (
+                <div className="grid gap-4">
+                    {/* Navegador por Pílulas (Stepper) */}
+                    <nav className="flex gap-1.5 overflow-x-auto py-1" aria-label="Itens da execução">
+                        {answerableItems.map((item, index) => {
+                            const hasIssue = missingItems.includes(item.id) || missingEvidenceItems.includes(item.id);
+                            const state = hasIssue ? 'attention' : isAnswered(answers[item.id]) ? 'answered' : 'pending';
+                            return (
+                                <button
+                                    type="button"
+                                    className={`grid size-8 shrink-0 place-items-center rounded-full text-xs font-bold transition-all ${index === activeItemIndex ? 'bg-teal-600 text-white shadow-sm ring-2 ring-teal-600/30' : state === 'attention' ? 'bg-red-100 text-red-600 border border-red-300' : state === 'answered' ? 'bg-teal-50 text-teal-700 border border-teal-200' : 'bg-slate-100 text-slate-500 border border-slate-200'}`}
+                                    aria-current={index === activeItemIndex ? 'step' : undefined}
+                                    key={item.id}
+                                    onClick={() => focusItem(index)}
+                                >
+                                    {index + 1}
+                                </button>
+                            );
+                        })}
+                    </nav>
+
+                    {activeItem ? (
+                        <div
+                            className={`rounded-2xl border p-4 sm:p-5 ${missingItems.includes(activeItem.id) || missingEvidenceItems.includes(activeItem.id) ? 'border-red-300 bg-red-50/50' : 'border-slate-200 bg-white shadow-sm'}`}
+                        >
+                            <div className="flex items-center justify-between gap-2">
+                                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Item {activeItemIndex + 1} de {answerableItems.length}</span>
+                                <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold ${isAnswered(answers[activeItem.id]) ? 'bg-teal-50 text-teal-700' : 'bg-slate-100 text-slate-600'}`}>
+                                    {answers[activeItem.id] === true
+                                        ? <><Check size={13} /> Concluído</>
+                                        : answers[activeItem.id] === false
+                                            ? <><X size={13} /> Atenção</>
+                                            : answers[activeItem.id] === NOT_APPLICABLE
+                                                ? <><Minus size={13} /> Não se aplica</>
+                                                : activeItem.required ? 'Obrigatório' : 'Opcional'}
+                                </span>
+                            </div>
+
+                            <h2 className="mt-2 mb-1 text-lg font-bold text-slate-900 sm:text-xl">{activeItem.title || 'Atividade sem título'}{activeItem.required ? <span className="text-red-500"> *</span> : null}</h2>
+                            {activeItem.description && <p className="mt-1 mb-0 text-xs leading-relaxed text-slate-500">{activeItem.description}</p>}
+
+                            {/* Área de Resposta Direta sem Card Aninhado */}
+                            <div className="mt-4 pt-4 border-t border-slate-100">
+                                <p className="mb-2.5 text-xs font-bold uppercase tracking-wider text-slate-500">Como ficou este item?</p>
+                                {renderAnswer(activeItem)}
+                            </div>
+
+                            {renderEvidence(activeItem)}
+
+                            {stepFeedback && (
+                                <p className={`mt-3 mb-0 rounded-lg px-3 py-2 text-xs font-bold ${missingItems.includes(activeItem.id) || missingEvidenceItems.includes(activeItem.id) ? 'bg-red-100 text-red-700' : 'bg-teal-50 text-teal-700'}`} role="status">
+                                    {stepFeedback}
+                                </p>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-xs text-slate-500">Este checklist não possui itens.</div>
+                    )}
+
+                    {/* Action Bar Única e Ajustada */}
+                    <div className="sticky bottom-[calc(72px+env(safe-area-inset-bottom,0px))] sm:bottom-4 z-10 flex items-center gap-2 rounded-2xl border border-slate-200/90 bg-white/95 p-2 shadow-lg backdrop-blur-md">
+                        <button
+                            type="button"
+                            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-3.5 font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40"
+                            disabled={isFirstItem || saving}
+                            onClick={() => focusItem(activeItemIndex - 1)}
+                            aria-label="Item anterior"
+                        >
+                            <ArrowLeft size={18} />
+                        </button>
+
+                        <button
+                            type="button"
+                            className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3.5 font-bold text-slate-700 hover:bg-slate-100 disabled:opacity-40"
+                            disabled={saving || !execution}
+                            onClick={saveProgress}
+                            aria-label="Salvar progresso"
+                        >
+                            <Save size={18} />
+                            <span className="hidden sm:inline text-xs">Salvar</span>
+                        </button>
+
+                        {isLastItem ? (
+                            <button
+                                type="button"
+                                className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-teal-600 px-4 text-xs font-bold text-white shadow-sm hover:bg-teal-700 active:scale-[0.98] disabled:opacity-50"
+                                disabled={saving || !activeItem}
+                                onClick={complete}
+                            >
+                                <Send size={16} /> Concluir atividade
+                            </button>
+                        ) : (
+                            <button
+                                type="button"
+                                className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-teal-600 px-4 text-xs font-bold text-white shadow-sm hover:bg-teal-700 active:scale-[0.98] disabled:opacity-50"
+                                disabled={saving || !activeItem}
+                                onClick={goToNextItem}
+                            >
+                                Próximo <ArrowRight size={16} />
+                            </button>
+                        )}
+                    </div>
+                </div>
+            )}
         </section>
     );
 };

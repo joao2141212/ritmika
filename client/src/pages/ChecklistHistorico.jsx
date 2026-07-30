@@ -7,7 +7,6 @@ import { ArrowLeft, Calendar, Filter, Download, ExternalLink, FileCheck2 } from 
 import { checklistProducaoService, contagemService, executionService } from '../services/checklistProducaoService';
 import { logger } from '../lib/logger';
 import toast from 'react-hot-toast';
-import '../styles/historico.css';
 
 const ChecklistHistorico = () => {
     const { id } = useParams();
@@ -22,13 +21,7 @@ const ChecklistHistorico = () => {
     const [dataInicio, setDataInicio] = useState('');
     const [dataFim, setDataFim] = useState('');
 
-    useEffect(() => {
-        loadData();
-    // The loader is intentionally tied to the route id and filter state.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [id]);
-
-    const loadData = async () => {
+    async function loadData() {
         try {
             setLoading(true);
             const checklistData = await checklistProducaoService.getById(id);
@@ -48,7 +41,7 @@ const ChecklistHistorico = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }
 
     const loadExecucoes = async () => {
         try {
@@ -122,18 +115,24 @@ const ChecklistHistorico = () => {
         toast.success('Histórico exportado!');
     };
 
+    useEffect(() => {
+        void Promise.resolve().then(loadData);
+    // The loader is intentionally tied to the route id and filter state.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [id]);
+
     if (loading) {
         return (
-            <div className="historico-container">
-                <div className="loading-state">Carregando histórico...</div>
+            <div className="mx-auto min-h-screen max-w-7xl bg-[#f6fafb] px-4 py-8 text-operation-ink sm:px-6 lg:px-8">
+                <div className="flex min-h-[400px] items-center justify-center text-lg text-operation-muted">Carregando histórico...</div>
             </div>
         );
     }
 
     if (!checklist) {
         return (
-            <div className="historico-container">
-                <div className="error-state">Checklist não encontrado</div>
+            <div className="mx-auto min-h-screen max-w-7xl bg-[#f6fafb] px-4 py-8 text-operation-ink sm:px-6 lg:px-8">
+                <div className="flex min-h-[400px] items-center justify-center text-lg text-operation-muted">Checklist não encontrado</div>
             </div>
         );
     }
@@ -155,67 +154,69 @@ const ChecklistHistorico = () => {
     }, {});
 
     return (
-        <div className="historico-container">
-            <header className="historico-header">
-                <button onClick={() => navigate('/checklists')} className="back-btn">
+        <div className="mx-auto min-h-screen max-w-7xl bg-[#f6fafb] px-4 py-8 text-operation-ink sm:px-6 lg:px-8">
+            <header className="mb-8 flex items-center gap-4">
+                <button aria-label="Voltar para checklists" onClick={() => navigate('/checklists')} className="rounded-xl border border-operation-line bg-white p-3 text-operation-ink transition-all hover:-translate-x-1 hover:border-operation-mint hover:bg-operation-soft">
                     <ArrowLeft size={20} />
                 </button>
-                <div className="header-info">
-                    <h1>Histórico: {checklist.nome}</h1>
-                    <p>{contagens.length} registros encontrados</p>
+                <div>
+                    <h1 className="text-2xl font-semibold tracking-[-0.035em] sm:text-3xl">Histórico: {checklist.nome}</h1>
+                    <p className="mt-2 text-sm text-operation-muted">{contagens.length} registros encontrados</p>
                 </div>
             </header>
 
             {/* Filtros */}
-            <div className="filters-panel glass-panel">
-                <div className="filters-row">
-                    <div className="filter-field">
-                        <label><Calendar size={16} /> Data Início</label>
+            <div className="mb-8 rounded-2xl border border-operation-line bg-white p-5 shadow-[0_12px_30px_rgba(23,49,58,0.06)]">
+                <div className="grid gap-4 md:grid-cols-[repeat(2,minmax(0,1fr))_auto_auto] md:items-end">
+                    <div className="grid gap-2">
+                        <label className="flex items-center gap-2 text-sm font-semibold"><Calendar size={16} /> Data Início</label>
                         <input
                             type="date"
                             value={dataInicio}
+                            className="rounded-xl border border-operation-line bg-white px-3 py-2.5 text-sm outline-none focus:border-operation-mint focus:ring-4 focus:ring-operation-mint/15"
                             onChange={(e) => setDataInicio(e.target.value)}
                         />
                     </div>
-                    <div className="filter-field">
-                        <label><Calendar size={16} /> Data Fim</label>
+                    <div className="grid gap-2">
+                        <label className="flex items-center gap-2 text-sm font-semibold"><Calendar size={16} /> Data Fim</label>
                         <input
                             type="date"
                             value={dataFim}
+                            className="rounded-xl border border-operation-line bg-white px-3 py-2.5 text-sm outline-none focus:border-operation-mint focus:ring-4 focus:ring-operation-mint/15"
                             onChange={(e) => setDataFim(e.target.value)}
                         />
                     </div>
-                    <button onClick={handleFilter} className="filter-btn">
+                    <button onClick={handleFilter} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-operation-ink px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-operation-mint-dark">
                         <Filter size={18} /> Filtrar
                     </button>
-                    <button onClick={exportToCSV} className="export-btn">
+                    <button onClick={exportToCSV} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-operation-line px-4 py-2.5 text-sm font-semibold text-operation-ink transition-colors hover:border-operation-mint hover:bg-operation-soft">
                         <Download size={18} /> Exportar CSV
                     </button>
                 </div>
             </div>
 
-            <section className="execution-history-panel glass-panel">
-                <div className="history-section-heading">
+            <section className="mb-8 rounded-2xl border border-operation-line bg-white p-5 shadow-[0_12px_30px_rgba(23,49,58,0.06)]">
+                <div className="mb-5 flex items-start justify-between gap-4">
                     <div>
-                        <h2><FileCheck2 size={18} /> Execuções do checklist</h2>
-                        <p>{execucoes.length} execuções encontradas</p>
+                        <h2 className="flex items-center gap-2 text-lg font-semibold"><FileCheck2 size={18} /> Execuções do checklist</h2>
+                        <p className="mt-1 text-sm text-operation-muted">{execucoes.length} execuções encontradas</p>
                     </div>
                 </div>
                 {execucoes.length === 0 ? (
-                    <p className="history-empty-inline">Nenhuma execução registrada para este período.</p>
+                    <p className="rounded-xl border border-dashed border-operation-line px-4 py-8 text-center text-sm text-operation-muted">Nenhuma execução registrada para este período.</p>
                 ) : (
-                    <div className="execution-history-list">
+                    <div className="grid gap-3">
                         {execucoes.map((execucao) => (
-                            <div className="execution-history-row" key={execucao.id}>
+                            <div className="flex flex-col gap-4 rounded-xl border border-operation-line p-4 sm:flex-row sm:items-center sm:justify-between" key={execucao.id}>
                                 <div>
-                                    <strong>{new Date(execucao.started_at || execucao.created_at).toLocaleString('pt-BR')}</strong>
-                                    <span>{execucao.user_name || 'Usuário'} · {execucao.progress || 0}% preenchido</span>
+                                    <strong className="block text-sm">{new Date(execucao.started_at || execucao.created_at).toLocaleString('pt-BR')}</strong>
+                                    <span className="mt-1 block text-xs text-operation-muted">{execucao.user_name || 'Usuário'} · {execucao.progress || 0}% preenchido</span>
                                 </div>
-                                <div className="execution-history-actions">
-                                    <span className={'execution-status ' + (execucao.status === 'completed' ? 'completed' : 'in-progress')}>
+                                <div className="flex items-center gap-3">
+                                    <span className={'rounded-full px-3 py-1 text-xs font-semibold ' + (execucao.status === 'completed' ? 'bg-operation-soft text-operation-mint-dark' : 'bg-amber-50 text-amber-700')}>
                                         {execucao.status === 'completed' ? 'Concluída' : 'Em andamento'}
                                     </span>
-                                    <button type="button" onClick={() => navigate('/checklists/' + id + '/details', { state: { executionId: execucao.id } })} aria-label="Abrir detalhes">
+                                    <button type="button" className="rounded-lg p-2 text-operation-muted transition-colors hover:bg-operation-soft hover:text-operation-ink" onClick={() => navigate('/checklists/' + id + '/details', { state: { executionId: execucao.id } })} aria-label="Abrir detalhes">
                                         <ExternalLink size={15} />
                                     </button>
                                 </div>
@@ -226,52 +227,52 @@ const ChecklistHistorico = () => {
             </section>
 
             {/* Lista de contagens */}
-            <div className="contagens-list">
+            <div className="grid gap-5">
                 {Object.values(contagensPorData).map((grupo, index) => (
                     <motion.div
                         key={`${grupo.data}_${grupo.turno}`}
-                        className="contagem-grupo glass-panel"
+                        className="overflow-hidden rounded-2xl border border-operation-line bg-white shadow-[0_12px_30px_rgba(23,49,58,0.06)]"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05 }}
                     >
-                        <div className="grupo-header">
-                            <div className="grupo-info">
-                                <h3>{new Date(grupo.data).toLocaleDateString('pt-BR')}</h3>
-                                <div className="grupo-meta">
-                                    <span className="badge">{grupo.dia_semana}</span>
+                        <div className="flex flex-col gap-4 border-b border-operation-line p-5 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <h3 className="text-lg font-semibold">{new Date(grupo.data).toLocaleDateString('pt-BR')}</h3>
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                    <span className="rounded-full bg-operation-soft px-3 py-1 text-xs font-semibold text-operation-mint-dark">{grupo.dia_semana}</span>
                                     {grupo.turno !== 'unico' && (
-                                        <span className="badge">{grupo.turno}</span>
+                                        <span className="rounded-full bg-operation-soft px-3 py-1 text-xs font-semibold text-operation-mint-dark">{grupo.turno}</span>
                                     )}
-                                    <span className="badge">👤 {grupo.retirado_por}</span>
+                                    <span className="rounded-full bg-operation-soft px-3 py-1 text-xs font-semibold text-operation-mint-dark">👤 {grupo.retirado_por}</span>
                                 </div>
                             </div>
-                            <div className="grupo-stats">
+                            <div className="text-sm font-semibold text-operation-muted">
                                 <span>{grupo.items.length} produtos</span>
                             </div>
                         </div>
 
-                        <div className="items-table">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Produto</th>
-                                        <th>Categoria</th>
-                                        <th>Contagem</th>
-                                        {checklist.tipo === 'bebidas' && <th>Pedido</th>}
-                                        <th>Observações</th>
+                        <div className="overflow-x-auto">
+                            <table className="min-w-[680px] w-full text-left text-sm">
+                                <thead className="bg-[#f6fafb] text-xs uppercase tracking-[0.08em] text-operation-muted">
+                                    <tr className="border-b border-operation-line">
+                                        <th className="px-5 py-3 font-semibold">Produto</th>
+                                        <th className="px-5 py-3 font-semibold">Categoria</th>
+                                        <th className="px-5 py-3 font-semibold">Contagem</th>
+                                        {checklist.tipo === 'bebidas' && <th className="px-5 py-3 font-semibold">Pedido</th>}
+                                        <th className="px-5 py-3 font-semibold">Observações</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {grupo.items.map((item) => (
                                         <tr key={item.id}>
-                                            <td>{item.produtos_checklist?.nome}</td>
-                                            <td><span className="cat-badge">{item.produtos_checklist?.categoria}</span></td>
-                                            <td className="qty">{item.quantidade_contada} {item.produtos_checklist?.unidade}</td>
+                                            <td className="border-b border-operation-line px-5 py-4 font-medium">{item.produtos_checklist?.nome}</td>
+                                            <td className="border-b border-operation-line px-5 py-4"><span className="rounded-full bg-operation-soft px-2.5 py-1 text-xs font-semibold text-operation-mint-dark">{item.produtos_checklist?.categoria}</span></td>
+                                            <td className="border-b border-operation-line px-5 py-4 font-semibold">{item.quantidade_contada} {item.produtos_checklist?.unidade}</td>
                                             {checklist.tipo === 'bebidas' && (
-                                                <td className="qty">{item.quantidade_pedida || '-'}</td>
+                                                <td className="border-b border-operation-line px-5 py-4 font-semibold">{item.quantidade_pedida || '-'}</td>
                                             )}
-                                            <td className="obs">{item.observacoes || '-'}</td>
+                                            <td className="border-b border-operation-line px-5 py-4 text-operation-muted">{item.observacoes || '-'}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -282,7 +283,7 @@ const ChecklistHistorico = () => {
             </div>
 
             {contagens.length === 0 && (
-                <div className="empty-state glass-panel">
+                <div className="rounded-2xl border border-dashed border-operation-line bg-white/70 px-6 py-16 text-center text-sm text-operation-muted">
                     <p>Nenhuma contagem registrada ainda.</p>
                 </div>
             )}

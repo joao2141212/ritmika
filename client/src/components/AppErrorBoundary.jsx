@@ -1,6 +1,5 @@
 import { Component } from 'react';
 import { logger } from '../lib/logger';
-import '../styles/app-error-boundary.css';
 
 const chunkFailurePattern = /Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module|Expected a JavaScript-or-Wasm module script/i;
 
@@ -89,18 +88,18 @@ class AppErrorBoundary extends Component {
         const checkingChunk = diagnosis === 'checking_chunk';
         const chunkLoadFailure = diagnosis === 'chunk_load_failure' || diagnosis === 'chunk_probe_failed';
         return (
-            <main className="app-recovery" role="alert" aria-live="assertive">
-                <section className="app-recovery-card">
-                    <div className="app-recovery-mark" aria-hidden="true">R</div>
-                    <p className="app-recovery-eyebrow">Recuperação do aplicativo</p>
-                    <h1>
+            <main className="flex min-h-screen items-center justify-center bg-[#f6fafb] px-5 py-10 text-operation-ink" role="alert" aria-live="assertive">
+                <section className="w-full max-w-xl rounded-3xl border border-operation-line bg-white p-7 text-center shadow-[0_24px_70px_rgba(23,49,58,0.12)] sm:p-10">
+                    <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-operation-ink text-xl font-bold text-white" aria-hidden="true">R</div>
+                    <p className="mt-6 text-xs font-bold uppercase tracking-[0.16em] text-operation-mint-dark">Recuperação do aplicativo</p>
+                    <h1 className="mt-3 text-2xl font-semibold tracking-[-0.035em] sm:text-3xl">
                         {staleChunk
                             ? 'Há uma atualização pronta'
                             : checkingChunk
                                 ? 'Verificando o carregamento desta tela'
                                 : 'Não foi possível abrir esta tela'}
                     </h1>
-                    <p>
+                    <p className="mt-4 text-sm leading-6 text-operation-muted">
                         {staleChunk
                             ? 'A versão aberta ficou desatualizada durante uma publicação. Seus dados continuam salvos.'
                             : checkingChunk
@@ -109,15 +108,15 @@ class AppErrorBoundary extends Component {
                                     ? 'O módulo não carregou, mas não há confirmação de uma atualização. O diagnóstico detalhado foi registrado no console.'
                                     : 'O Ritmika preservou sua sessão e interrompeu esta tela para evitar um estado incompleto.'}
                     </p>
-                    <div className="app-recovery-actions">
-                        <button type="button" className="app-recovery-primary" onClick={this.retry}>
+                    <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+                        <button type="button" className="inline-flex min-h-11 items-center justify-center rounded-xl bg-operation-ink px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-operation-mint-dark" onClick={this.retry}>
                             Recarregar e tentar novamente
                         </button>
-                        <button type="button" className="app-recovery-secondary" onClick={this.returnToLogin}>
+                        <button type="button" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-operation-line px-4 py-3 text-sm font-semibold transition-colors hover:border-operation-mint hover:bg-operation-soft" onClick={this.returnToLogin}>
                             Voltar ao login
                         </button>
                     </div>
-                    <small>
+                    <small className="mt-7 block text-xs text-operation-muted">
                         Código: {staleChunk
                             ? 'STALE_CHUNK_CONFIRMED'
                             : checkingChunk

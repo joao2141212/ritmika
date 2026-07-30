@@ -18,7 +18,6 @@ import { toast } from 'react-hot-toast';
 import { checklistProducaoService } from '../services/checklistProducaoService';
 import { logger } from '../lib/logger';
 import { toPlainText } from '../lib/plainText';
-import '../styles/checklist-workspace.css';
 
 const typeOptions = [
     ['check', 'Check'],
@@ -332,105 +331,105 @@ const ChecklistBuilderWorkspace = ({ checklistId, embedded = false, onClose, onS
     const previewItems = useMemo(() => items.filter((item) => item.type !== 'separator'), [items]);
 
     if (loading) {
-        return <section className="ritmika-light-mode"><div className="empty-state">Abrindo checklist remoto…</div></section>;
+        return <section className="mx-auto grid min-h-[320px] max-w-6xl place-items-center p-6 text-slate-600"><div className="rounded-2xl border border-slate-200 bg-white px-6 py-8 shadow-sm">Abrindo checklist remoto…</div></section>;
     }
 
     if (error) {
         return (
-            <section className="ritmika-light-mode">
-                <div className="error-state"><p>{error}</p><button type="button" className="light-button secondary" onClick={() => embedded ? onClose?.() : navigate('/checklists')}>Voltar</button></div>
+            <section className="mx-auto grid min-h-[320px] max-w-6xl place-items-center p-6">
+                <div className="grid gap-4 rounded-2xl border border-red-200 bg-red-50 p-6 text-red-800"><p>{error}</p><button type="button" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 bg-white px-4 font-bold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600" onClick={() => embedded ? onClose?.() : navigate('/checklists')}>Voltar</button></div>
             </section>
         );
     }
 
     return (
-        <section className="ritmika-light-mode">
-            <header className="builder-topbar">
+        <section className="mx-auto grid max-w-7xl gap-6 p-4 text-slate-900 sm:p-6 lg:p-8">
+            <header className="flex flex-col gap-5 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-end sm:justify-between sm:p-7">
                 <div>
-                    <button type="button" className="light-button secondary" onClick={() => embedded ? onClose?.() : navigate('/checklists')}>
+                    <button type="button" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 font-bold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600" onClick={() => embedded ? onClose?.() : navigate('/checklists')}>
                         <ArrowLeft size={16} /> Checklists
                     </button>
-                    <p className="builder-eyebrow">{editing ? 'Editar modelo' : 'Novo modelo'}</p>
-                    <h1>{editing ? form.title || 'Editar checklist' : 'Novo checklist'}</h1>
-                    <p className="builder-subtitle">Modele itens, evidências, agenda e origem da execução.</p>
+                    <p className="mt-5 text-xs font-extrabold uppercase tracking-[0.14em] text-teal-700">{editing ? 'Editar modelo' : 'Novo modelo'}</p>
+                    <h1 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">{editing ? form.title || 'Editar checklist' : 'Novo checklist'}</h1>
+                    <p className="mt-2 max-w-2xl text-slate-600">Modele itens, evidências, agenda e origem da execução.</p>
                 </div>
-                <div className="builder-actions">
-                    <button type="button" className="light-button secondary" disabled={saving} onClick={() => handleSave('inativo')}>
+                <div className="flex flex-wrap gap-3">
+                    <button type="button" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 font-bold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 disabled:cursor-wait disabled:opacity-60" disabled={saving} onClick={() => handleSave('inativo')}>
                         <Save size={16} /> Salvar rascunho
                     </button>
-                    <button type="button" className="light-button primary" disabled={saving} onClick={() => handleSave('ativo')}>
+                    <button type="button" className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-teal-700 px-4 font-bold text-white transition hover:bg-teal-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 disabled:cursor-wait disabled:opacity-60" disabled={saving} onClick={() => handleSave('ativo')}>
                         <Send size={16} /> Publicar
                     </button>
                 </div>
             </header>
 
-            <div className="builder-main-grid">
-                <div className="builder-column">
-                    <section className="builder-panel">
-                        <h2>Identidade do checklist</h2>
-                        <div className="field-grid">
-                            <label className="field-label full">Título
-                                <input className="light-input" value={form.title} onChange={(event) => updateForm('title', event.target.value)} placeholder="Ex.: Abertura da cozinha" />
+            <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+                <div className="grid min-w-0 gap-6">
+                    <section className="grid gap-5 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+                        <h2 className="text-xl font-extrabold">Identidade do checklist</h2>
+                        <div className="grid gap-4">
+                            <label className="grid gap-2 font-bold text-slate-700">Título
+                                <input className="min-h-11 rounded-xl border border-slate-300 px-3.5 text-slate-900 outline-none transition focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15" value={form.title} onChange={(event) => updateForm('title', event.target.value)} placeholder="Ex.: Abertura da cozinha" />
                             </label>
-                            <label className="field-label full">Descrição
-                                <textarea className="light-textarea" value={form.description} onChange={(event) => updateForm('description', event.target.value)} placeholder="Explique a finalidade e o processo de execução." />
+                            <label className="grid gap-2 font-bold text-slate-700">Descrição
+                                <textarea className="min-h-28 rounded-xl border border-slate-300 px-3.5 py-3 text-slate-900 outline-none transition focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15" value={form.description} onChange={(event) => updateForm('description', event.target.value)} placeholder="Explique a finalidade e o processo de execução." />
                             </label>
                         </div>
                     </section>
 
-                    <section className="builder-panel">
-                        <div className="item-editor-head">
+                    <section className="grid gap-5 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+                        <div className="flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-start sm:justify-between">
                             <div>
                                 <h2><ListChecks size={19} /> Itens do checklist</h2>
                                 <p>Use os tipos observados no Koncluí e mantenha a ordem da execução.</p>
                             </div>
-                            <button type="button" className="light-button ghost" onClick={() => setItems((current) => [...current, emptyItem()])}>
+                            <button type="button" className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-slate-300 bg-white px-3.5 font-bold text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600" onClick={() => setItems((current) => [...current, emptyItem()])}>
                                 <Plus size={16} /> Adicionar item
                             </button>
                         </div>
-                        <div className="item-list">
+                        <div className="grid gap-4">
                             {items.map((item, index) => (
-                                <article className="item-editor" key={item.id}>
-                                    <div className="item-editor-head">
-                                        <h2><span className="item-number">{index + 1}</span>{item.title || 'Item sem título'}</h2>
-                                        <div className="item-editor-tools">
+                                <article className="grid gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:p-5" key={item.id}>
+                                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                        <h2 className="flex min-w-0 items-center gap-2 text-lg font-extrabold"><span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-teal-100 text-sm text-teal-800">{index + 1}</span><span className="truncate">{item.title || 'Item sem título'}</span></h2>
+                                        <div className="flex items-center gap-2">
                                             <GripVertical size={17} aria-hidden="true" />
-                                            <button type="button" className="light-icon-button" aria-label={`Mover item ${index + 1} para cima`} disabled={index === 0} onClick={() => moveItem(index, -1)}><ChevronUp size={16} /></button>
-                                            <button type="button" className="light-icon-button" aria-label={`Mover item ${index + 1} para baixo`} disabled={index === items.length - 1} onClick={() => moveItem(index, 1)}><ChevronDown size={16} /></button>
-                                            <button type="button" className="light-icon-button" aria-label={`Remover item ${index + 1}`} onClick={() => removeItem(item.id)}><Trash2 size={16} /></button>
+                                            <button type="button" className="grid h-10 w-10 place-items-center rounded-lg border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 disabled:cursor-not-allowed disabled:opacity-40" aria-label={`Mover item ${index + 1} para cima`} disabled={index === 0} onClick={() => moveItem(index, -1)}><ChevronUp size={16} aria-hidden="true" /></button>
+                                            <button type="button" className="grid h-10 w-10 place-items-center rounded-lg border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 disabled:cursor-not-allowed disabled:opacity-40" aria-label={`Mover item ${index + 1} para baixo`} disabled={index === items.length - 1} onClick={() => moveItem(index, 1)}><ChevronDown size={16} aria-hidden="true" /></button>
+                                            <button type="button" className="grid h-10 w-10 place-items-center rounded-lg border border-slate-300 bg-white text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600" aria-label={`Remover item ${index + 1}`} onClick={() => removeItem(item.id)}><Trash2 size={16} /></button>
                                         </div>
                                     </div>
-                                    <div className="item-editor-body">
-                                        <div className="field-grid">
-                                            <label className="field-label">Título do item
-                                                <input className="light-input" value={item.title} onChange={(event) => updateItem(item.id, 'title', event.target.value)} placeholder="Descreva a atividade" />
+                                    <div className="grid gap-4">
+                                        <div className="grid gap-4 sm:grid-cols-2">
+                                            <label className="grid gap-2 font-bold text-slate-700">Título do item
+                                                <input className="min-h-11 rounded-xl border border-slate-300 bg-white px-3.5 text-slate-900 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15" value={item.title} onChange={(event) => updateItem(item.id, 'title', event.target.value)} placeholder="Descreva a atividade" />
                                             </label>
-                                            <label className="field-label">Tipo de item
-                                                <select className="light-select" value={item.type} onChange={(event) => updateItem(item.id, 'type', event.target.value)}>
+                                            <label className="grid gap-2 font-bold text-slate-700">Tipo de item
+                                                <select className="min-h-11 rounded-xl border border-slate-300 bg-white px-3.5 text-slate-900 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15" value={item.type} onChange={(event) => updateItem(item.id, 'type', event.target.value)}>
                                                     {typeOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
                                                 </select>
                                             </label>
-                                            <label className="field-label full">Descrição da atividade
-                                                <textarea className="light-textarea" value={item.description} onChange={(event) => updateItem(item.id, 'description', event.target.value)} placeholder="Instruções adicionais para o operador" />
+                                            <label className="grid gap-2 font-bold text-slate-700 sm:col-span-2">Descrição da atividade
+                                                <textarea className="min-h-24 rounded-xl border border-slate-300 px-3.5 py-3 text-slate-900 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15" value={item.description} onChange={(event) => updateItem(item.id, 'description', event.target.value)} placeholder="Instruções adicionais para o operador" />
                                             </label>
                                         </div>
                                         {item.type === 'selection' && (
-                                            <label className="field-label">Opções separadas por vírgula
-                                                <input className="light-input" value={item.optionsCsv} onChange={(event) => updateItem(item.id, 'optionsCsv', event.target.value)} />
+                                            <label className="grid gap-2 font-bold text-slate-700">Opções separadas por vírgula
+                                                <input className="min-h-11 rounded-xl border border-slate-300 bg-white px-3.5 text-slate-900 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15" value={item.optionsCsv} onChange={(event) => updateItem(item.id, 'optionsCsv', event.target.value)} />
                                             </label>
                                         )}
-                                        <div className="item-options">
-                                            <label className="field-label">Evidência
-                                                <input className="light-input" value={item.evidenceLabel} onChange={(event) => updateItem(item.id, 'evidenceLabel', event.target.value)} placeholder="Ex.: Foto do equipamento" />
+                                        <div className="grid gap-4 sm:grid-cols-2">
+                                            <label className="grid gap-2 font-bold text-slate-700">Evidência
+                                                <input className="min-h-11 rounded-xl border border-slate-300 bg-white px-3.5 text-slate-900 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15" value={item.evidenceLabel} onChange={(event) => updateItem(item.id, 'evidenceLabel', event.target.value)} placeholder="Ex.: Foto do equipamento" />
                                             </label>
-                                            <label className="field-label">Peso
-                                                <input className="light-input" type="number" min="0" step="0.5" value={item.weight} onChange={(event) => updateItem(item.id, 'weight', event.target.value)} />
+                                            <label className="grid gap-2 font-bold text-slate-700">Peso
+                                                <input className="min-h-11 rounded-xl border border-slate-300 bg-white px-3.5 text-slate-900 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15" type="number" min="0" step="0.5" value={item.weight} onChange={(event) => updateItem(item.id, 'weight', event.target.value)} />
                                             </label>
                                         </div>
-                                        <div className="field-grid">
-                                            <label className="checkbox-row"><input type="checkbox" checked={item.required} onChange={(event) => updateItem(item.id, 'required', event.target.checked)} /> Obrigatório</label>
-                                            <label className="checkbox-row"><input type="checkbox" checked={item.allow_not_applicable} onChange={(event) => updateItem(item.id, 'allow_not_applicable', event.target.checked)} /> Permitir não se aplica</label>
-                                            <label className="checkbox-row">
+                                        <div className="grid gap-3 sm:grid-cols-2">
+                                            <label className="flex min-h-11 items-center gap-2 font-semibold text-slate-700"><input type="checkbox" checked={item.required} onChange={(event) => updateItem(item.id, 'required', event.target.checked)} /> Obrigatório</label>
+                                            <label className="flex min-h-11 items-center gap-2 font-semibold text-slate-700"><input type="checkbox" checked={item.allow_not_applicable} onChange={(event) => updateItem(item.id, 'allow_not_applicable', event.target.checked)} /> Permitir não se aplica</label>
+                                            <label className="flex min-h-11 items-center gap-2 font-semibold text-slate-700">
                                                 <input
                                                     type="checkbox"
                                                     checked={item.evidenceRequired}
@@ -439,8 +438,8 @@ const ChecklistBuilderWorkspace = ({ checklistId, embedded = false, onClose, onS
                                                 />
                                                 Exigir evidência
                                             </label>
-                                            <label className="field-label">Regra de visibilidade
-                                                <select className="light-select" value={item.rule} onChange={(event) => updateItem(item.id, 'rule', event.target.value)}>
+                                            <label className="grid gap-2 font-bold text-slate-700">Regra de visibilidade
+                                                <select className="min-h-11 rounded-xl border border-slate-300 bg-white px-3.5 text-slate-900 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15" value={item.rule} onChange={(event) => updateItem(item.id, 'rule', event.target.value)}>
                                                     <option value="">Sempre visível</option>
                                                     <option value="show_if_yes">Se anterior = SIM</option>
                                                     <option value="show_if_no">Se anterior = NÃO</option>
@@ -453,81 +452,81 @@ const ChecklistBuilderWorkspace = ({ checklistId, embedded = false, onClose, onS
                         </div>
                     </section>
 
-                    <section className="builder-panel">
+                    <section className="grid gap-5 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
                         <h2><CalendarDays size={19} /> Agenda do operador</h2>
-                        <div className="field-grid three">
-                            <label className="field-label">Modo
-                                <select className="light-select" value={form.scheduleMode} onChange={(event) => updateForm('scheduleMode', event.target.value)}>
+                        <div className="grid gap-4 md:grid-cols-3">
+                            <label className="grid gap-2 font-bold text-slate-700">Modo
+                                <select className="min-h-11 rounded-xl border border-slate-300 bg-white px-3.5 text-slate-900 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15" value={form.scheduleMode} onChange={(event) => updateForm('scheduleMode', event.target.value)}>
                                     <option value="recorrente">Recorrente</option>
                                     <option value="unica">Execução única</option>
                                     <option value="pontual">Apenas pontual</option>
                                 </select>
                             </label>
-                            <label className="field-label">Frequência
-                                <select className="light-select" value={form.frequency} onChange={(event) => updateForm('frequency', event.target.value)}>
+                            <label className="grid gap-2 font-bold text-slate-700">Frequência
+                                <select className="min-h-11 rounded-xl border border-slate-300 bg-white px-3.5 text-slate-900 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15" value={form.frequency} onChange={(event) => updateForm('frequency', event.target.value)}>
                                     <option value="diaria">Diária</option>
                                     <option value="semanal">Semanal</option>
                                     <option value="mensal">Mensal</option>
                                 </select>
                             </label>
-                            <label className="field-label">Repetir a cada
-                                <input className="light-input" type="number" min="1" value={form.interval} onChange={(event) => updateForm('interval', event.target.value)} />
+                            <label className="grid gap-2 font-bold text-slate-700">Repetir a cada
+                                <input className="min-h-11 rounded-xl border border-slate-300 bg-white px-3.5 text-slate-900 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15" type="number" min="1" value={form.interval} onChange={(event) => updateForm('interval', event.target.value)} />
                             </label>
-                            <label className="field-label">Data de início
-                                <input className="light-input" type="date" value={form.startDate} onChange={(event) => updateForm('startDate', event.target.value)} />
+                            <label className="grid gap-2 font-bold text-slate-700">Data de início
+                                <input className="min-h-11 rounded-xl border border-slate-300 bg-white px-3.5 text-slate-900 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15" type="date" value={form.startDate} onChange={(event) => updateForm('startDate', event.target.value)} />
                             </label>
-                            <label className="field-label">Horário limite
-                                <input className="light-input" type="time" value={form.time} onChange={(event) => updateForm('time', event.target.value)} />
+                            <label className="grid gap-2 font-bold text-slate-700">Horário limite
+                                <input className="min-h-11 rounded-xl border border-slate-300 bg-white px-3.5 text-slate-900 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15" type="time" value={form.time} onChange={(event) => updateForm('time', event.target.value)} />
                             </label>
-                            <label className="field-label">Data de término
-                                <input className="light-input" type="date" value={form.endDate} onChange={(event) => updateForm('endDate', event.target.value)} />
+                            <label className="grid gap-2 font-bold text-slate-700">Data de término
+                                <input className="min-h-11 rounded-xl border border-slate-300 bg-white px-3.5 text-slate-900 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15" type="date" value={form.endDate} onChange={(event) => updateForm('endDate', event.target.value)} />
                             </label>
                         </div>
-                        <div className="builder-meta-row" style={{ marginTop: 16 }}>
+                        <div className="mt-4 flex flex-wrap gap-3">
                             {[['D', 0], ['S', 1], ['T', 2], ['Q', 3], ['Q', 4], ['S', 5], ['S', 6]].map(([label, value]) => (
-                                <label className="checkbox-row" key={`${label}-${value}`}><input type="checkbox" checked={form.weekdays.includes(value)} onChange={(event) => updateForm('weekdays', event.target.checked ? [...new Set([...form.weekdays, value])] : form.weekdays.filter((day) => day !== value))} /> {label}</label>
+                                <label className="flex min-h-11 items-center gap-2 rounded-lg border border-slate-200 px-3 font-semibold text-slate-700" key={`${label}-${value}`}><input type="checkbox" checked={form.weekdays.includes(value)} onChange={(event) => updateForm('weekdays', event.target.checked ? [...new Set([...form.weekdays, value])] : form.weekdays.filter((day) => day !== value))} /> {label}</label>
                             ))}
                         </div>
                     </section>
 
-                    <section className="builder-panel">
-                        <h2><Layers3 size={19} /> Contexto e atribuição</h2>
-                        {referencesLoading && <p className="builder-subtitle">Carregando referências do workspace…</p>}
-                        <div className="field-grid three">
-                            <label className="field-label">Unidade
-                                <select className="light-select" value={form.unitId} disabled={referencesLoading} onChange={(event) => updateReference('unitId', 'unit', references.units, event.target.value)}>
+                    <section className="grid gap-5 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+                        <h2 className="flex items-center gap-2 text-xl font-extrabold"><Layers3 size={19} aria-hidden="true" /> Contexto e atribuição</h2>
+                        {referencesLoading && <p className="text-sm text-slate-600">Carregando referências do workspace…</p>}
+                        <div className="grid gap-4 md:grid-cols-3">
+                            <label className="grid gap-2 font-bold text-slate-700">Unidade
+                                <select className="min-h-11 rounded-xl border border-slate-300 bg-white px-3.5 text-slate-900 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15 disabled:cursor-wait disabled:opacity-60" value={form.unitId} disabled={referencesLoading} onChange={(event) => updateReference('unitId', 'unit', references.units, event.target.value)}>
                                     <option value="">Selecione uma unidade</option>
                                     {references.units.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}
                                 </select>
                             </label>
-                            <label className="field-label">Setor
-                                <select className="light-select" value={form.sectorId} disabled={referencesLoading} onChange={(event) => updateReference('sectorId', 'sector', references.sectors, event.target.value)}>
+                            <label className="grid gap-2 font-bold text-slate-700">Setor
+                                <select className="min-h-11 rounded-xl border border-slate-300 bg-white px-3.5 text-slate-900 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15 disabled:cursor-wait disabled:opacity-60" value={form.sectorId} disabled={referencesLoading} onChange={(event) => updateReference('sectorId', 'sector', references.sectors, event.target.value)}>
                                     <option value="">Selecione um setor</option>
                                     {references.sectors.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}
                                 </select>
                             </label>
-                            <label className="field-label">Momento
-                                <select className="light-select" value={form.momentId} disabled={referencesLoading} onChange={(event) => updateReference('momentId', 'moment', references.moments, event.target.value)}>
+                            <label className="grid gap-2 font-bold text-slate-700">Momento
+                                <select className="min-h-11 rounded-xl border border-slate-300 bg-white px-3.5 text-slate-900 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15 disabled:cursor-wait disabled:opacity-60" value={form.momentId} disabled={referencesLoading} onChange={(event) => updateReference('momentId', 'moment', references.moments, event.target.value)}>
                                     <option value="">Selecione um momento</option>
                                     {references.moments.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}
                                 </select>
                             </label>
-                            <label className="field-label"><span><UserRound size={14} /> Responsável padrão</span>
-                                <select className="light-select" value={form.responsibleProfileId} disabled={referencesLoading} onChange={(event) => updateReference('responsibleProfileId', 'responsible', references.profiles, event.target.value)}>
+                            <label className="grid gap-2 font-bold text-slate-700"><span className="flex items-center gap-2"><UserRound size={14} aria-hidden="true" /> Responsável padrão</span>
+                                <select className="min-h-11 rounded-xl border border-slate-300 bg-white px-3.5 text-slate-900 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15 disabled:cursor-wait disabled:opacity-60" value={form.responsibleProfileId} disabled={referencesLoading} onChange={(event) => updateReference('responsibleProfileId', 'responsible', references.profiles, event.target.value)}>
                                     <option value="">Selecione um responsável</option>
                                     {references.profiles.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}
                                 </select>
                             </label>
-                            <label className="field-label">Execução pontual
-                                <select className="light-select" value={form.adhocMode} onChange={(event) => updateForm('adhocMode', event.target.value)}>
+                            <label className="grid gap-2 font-bold text-slate-700">Execução pontual
+                                <select className="min-h-11 rounded-xl border border-slate-300 bg-white px-3.5 text-slate-900 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15" value={form.adhocMode} onChange={(event) => updateForm('adhocMode', event.target.value)}>
                                     <option value="disabled">Não usar</option>
                                     <option value="panel">Somente pelo painel</option>
                                     <option value="app">Somente pelo app</option>
                                     <option value="both">Painel e app</option>
                                 </select>
                             </label>
-                            <label className="field-label">Status inicial
-                                <select className="light-select" value={form.status} onChange={(event) => updateForm('status', event.target.value)}>
+                            <label className="grid gap-2 font-bold text-slate-700">Status inicial
+                                <select className="min-h-11 rounded-xl border border-slate-300 bg-white px-3.5 text-slate-900 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15" value={form.status} onChange={(event) => updateForm('status', event.target.value)}>
                                     <option value="inativo">Rascunho</option>
                                     <option value="ativo">Publicado</option>
                                 </select>
@@ -536,19 +535,19 @@ const ChecklistBuilderWorkspace = ({ checklistId, embedded = false, onClose, onS
                     </section>
                 </div>
 
-                <aside className="builder-column">
-                    <div className="preview-phone" aria-label="Prévia da execução">
-                        <div className="preview-phone-bar"><span>Ritmika operador</span><span>09:41</span></div>
-                        <div className="preview-phone-content">
-                            <p className="builder-eyebrow">Prévia</p>
-                            <h2>{form.title || 'Novo checklist'}</h2>
-                            <div className="preview-progress"><span style={{ width: '0%' }} /></div>
+                <aside className="grid min-w-0">
+                    <div className="grid gap-4 rounded-3xl border border-slate-200 bg-slate-900 p-4 text-white shadow-sm" aria-label="Prévia da execução">
+                        <div className="flex items-center justify-between text-xs text-slate-300"><span>Ritmika operador</span><span>09:41</span></div>
+                        <div className="grid gap-4 rounded-2xl bg-white p-4 text-slate-900">
+                            <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-teal-700">Prévia</p>
+                            <h2 className="text-xl font-extrabold">{form.title || 'Novo checklist'}</h2>
+                            <div className="h-2 overflow-hidden rounded-full bg-slate-200"><span className="block h-full w-0 bg-teal-600" /></div>
                             {previewItems.length === 0 && <p>Nenhum item no checklist.</p>}
                             {previewItems.map((item, index) => (
-                                <div className="preview-item" key={item.id}>
-                                    <strong>{index + 1}. {item.title || 'Sem título'}{item.required ? <span className="required-mark"> *</span> : null}</strong>
-                                    {item.description && <small>{item.description}</small>}
-                                    <div className="preview-answer">{typeOptions.find(([value]) => value === item.type)?.[1] || 'Resposta'}</div>
+                                <div className="grid gap-2 rounded-xl border border-slate-200 p-3" key={item.id}>
+                                    <strong>{index + 1}. {item.title || 'Sem título'}{item.required ? <span className="text-red-600"> *</span> : null}</strong>
+                                    {item.description && <small className="text-slate-600">{item.description}</small>}
+                                    <div className="rounded-lg bg-slate-100 px-3 py-2 text-sm text-slate-600">{typeOptions.find(([value]) => value === item.type)?.[1] || 'Resposta'}</div>
                                 </div>
                             ))}
                         </div>

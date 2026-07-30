@@ -16,36 +16,35 @@ import {
     Settings as SettingsIcon
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import '../styles/settings.css';
 
 const SettingsSection = ({ title, icon: SectionIcon, children }) => (
     <div
-        className="settings-section glass-panel"
+        className="rounded-2xl border border-operation-line bg-white p-5 shadow-[0_12px_30px_rgba(23,49,58,0.06)]"
     >
-        <div className="section-header">
-            <div className="section-icon">
+        <div className="mb-6 flex items-center gap-3">
+            <div className="grid h-10 w-10 place-items-center rounded-xl bg-operation-soft text-operation-mint-dark">
                 {createElement(SectionIcon, { size: 20 })}
             </div>
-            <h2>{title}</h2>
+            <h2 className="font-semibold">{title}</h2>
         </div>
-        <div className="section-content">
+        <div className="grid gap-4">
             {children}
         </div>
     </div>
 );
 
 const Toggle = ({ label, checked, onChange }) => (
-    <label className="setting-row toggle-row">
-        <span className="setting-label">{label}</span>
-        <div className="toggle-wrapper">
+    <label className="flex cursor-pointer items-center justify-between gap-4 border-b border-operation-line py-4 first:pt-0 last:border-b-0">
+        <span className="text-sm font-semibold">{label}</span>
+        <div className="relative">
             <input
                 type="checkbox"
                 checked={checked}
                 onChange={(e) => onChange(e.target.checked)}
-                className="toggle-input"
+                className="peer sr-only"
             />
-            <div className="toggle-track">
-                <div className="toggle-thumb" />
+            <div className="h-6 w-11 rounded-full bg-slate-200 transition-colors peer-checked:bg-operation-mint-dark peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-operation-mint">
+                <div className="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-checked:translate-x-5" />
             </div>
         </div>
     </label>
@@ -191,58 +190,58 @@ const Settings = () => {
     };
 
     return (
-        <div className="settings-container">
-            <header className="page-header">
-                <h1>Configurações</h1>
-                <p>Gerencie sua conta e preferências do aplicativo</p>
+        <div className="min-h-screen bg-[#f6fafb] px-4 py-8 text-operation-ink sm:px-6 lg:px-8">
+            <header className="mx-auto mb-8 max-w-5xl">
+                <h1 className="text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">Configurações</h1>
+                <p className="mt-2 text-sm text-operation-muted">Gerencie sua conta e preferências do aplicativo</p>
             </header>
 
-            <div className="settings-grid">
+            <div className="mx-auto grid max-w-5xl gap-5 md:grid-cols-2">
                 {/* Profile Section */}
                 <SettingsSection title="Perfil" icon={User}>
-                    <div className="profile-header">
-                        <div className="avatar-large">
+                    <div className="mb-6 flex items-center gap-4">
+                        <div className="relative grid h-16 w-16 place-items-center rounded-2xl bg-operation-ink text-xl font-bold text-white">
                             {profile.name.charAt(0)}
-                            <div className="avatar-edit-badge">
+                            <div className="absolute -bottom-1 -right-1 grid h-6 w-6 place-items-center rounded-full bg-operation-mint text-operation-ink">
                                 <User size={14} />
                             </div>
                         </div>
-                        <div className="profile-info-display">
-                            <h3>{profile.name}</h3>
-                            <span className="role-badge"><Shield size={12} /> {user?.role || 'Admin'}</span>
+                        <div>
+                            <h3 className="font-semibold">{profile.name}</h3>
+                            <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-operation-soft px-2.5 py-1 text-xs font-semibold text-operation-mint-dark"><Shield size={12} /> {user?.role || 'Admin'}</span>
                         </div>
                     </div>
 
-                    <div className="form-group">
+                    <div className="grid gap-2 text-sm font-semibold">
                         <label>Nome Completo</label>
                         <input
                             type="text"
                             value={profile.name}
                             onChange={e => setProfile({ ...profile, name: e.target.value })}
-                            className="input-field"
+                            className="rounded-xl border border-operation-line px-3 py-2.5 text-sm font-normal outline-none focus:border-operation-mint focus:ring-4 focus:ring-operation-mint/15"
                         />
                     </div>
-                    <div className="form-group">
+                    <div className="grid gap-2 text-sm font-semibold">
                         <label>Email</label>
                         <input
                             type="email"
                             value={profile.email}
                             onChange={e => setProfile({ ...profile, email: e.target.value })}
-                            className="input-field"
+                            className="rounded-xl border border-operation-line px-3 py-2.5 text-sm font-normal outline-none focus:border-operation-mint focus:ring-4 focus:ring-operation-mint/15"
                         />
                     </div>
-                    <div className="form-group">
+                    <div className="grid gap-2 text-sm font-semibold">
                         <label>Telefone</label>
                         <input
                             type="tel"
                             value={profile.phone}
                             onChange={e => setProfile({ ...profile, phone: e.target.value })}
-                            className="input-field"
+                            className="rounded-xl border border-operation-line px-3 py-2.5 text-sm font-normal outline-none focus:border-operation-mint focus:ring-4 focus:ring-operation-mint/15"
                         />
                     </div>
 
                     <button
-                        className="btn-primary full-width"
+                        className="mt-2 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-operation-ink px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-operation-mint-dark disabled:cursor-wait disabled:opacity-60"
                         onClick={handleSaveProfile}
                         disabled={loading}
                     >
@@ -251,7 +250,7 @@ const Settings = () => {
                 </SettingsSection>
 
                 {/* Preferences Section */}
-                <div className="right-column">
+                <div className="grid gap-5">
                     <SettingsSection title="Preferências" icon={SettingsIcon}>
                         <Toggle
                             label="Notificações Push"
@@ -271,24 +270,24 @@ const Settings = () => {
                     </SettingsSection>
 
                     <SettingsSection title="Dados e Sistema" icon={Smartphone}>
-                        <div className="setting-row" onClick={handleSync}>
-                            <div className="row-info">
-                                <span className="setting-label">Sincronização</span>
-                                <span className="setting-desc">Última sync: Há 2 min</span>
+                        <div className="flex cursor-pointer items-center justify-between gap-4 border-b border-operation-line py-4" onClick={handleSync}>
+                            <div>
+                                <span className="block text-sm font-semibold">Sincronização</span>
+                                <span className="mt-1 block text-xs text-operation-muted">Última sync: Há 2 min</span>
                             </div>
-                            <button className="icon-action-btn"><RefreshCw size={18} /></button>
+                            <button type="button" className="rounded-lg border border-operation-line p-2 text-operation-muted transition-colors hover:border-operation-mint hover:bg-operation-soft" aria-label="Sincronizar"><RefreshCw size={18} /></button>
                         </div>
 
-                        <div className="setting-row danger" onClick={handleClearCache}>
-                            <div className="row-info">
-                                <span className="setting-label">Limpar Cache</span>
-                                <span className="setting-desc">Corrige problemas de carregamento</span>
+                        <div className="flex cursor-pointer items-center justify-between gap-4 py-4 text-red-700" onClick={handleClearCache}>
+                            <div>
+                                <span className="block text-sm font-semibold">Limpar Cache</span>
+                                <span className="mt-1 block text-xs text-red-600/70">Corrige problemas de carregamento</span>
                             </div>
-                            <button className="icon-action-btn danger"><Trash2 size={18} /></button>
+                            <button type="button" className="rounded-lg border border-red-200 p-2 text-red-700" aria-label="Limpar cache"><Trash2 size={18} /></button>
                         </div>
                     </SettingsSection>
 
-                    <button className="logout-button-large" onClick={logout}>
+                    <button type="button" className="inline-flex items-center justify-center gap-2 rounded-xl border border-operation-line px-4 py-3 text-sm font-semibold transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-700" onClick={logout}>
                         <LogOut size={20} />
                         Sair da Conta
                     </button>

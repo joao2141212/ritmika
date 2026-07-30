@@ -1,3 +1,52 @@
+@import "tailwindcss";
+
+/*
+ * Tailwind foundation. The existing aliases remain temporarily so legacy
+ * slices can migrate without changing their visual contract in one pass.
+ */
+@theme {
+  --color-bg-app: #05060B;
+  --color-bg-card: #14141A;
+  --color-bg-secondary: #1E1E24;
+  --color-text-primary: #FDF2E9;
+  --color-text-secondary: #C7C1B8;
+  --color-text-muted: #8B847F;
+  --color-accent-primary: #F97316;
+  --color-accent-secondary: #FDBA74;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-border-subtle: #1E1E24;
+  --color-border-highlight: #2A2A32;
+  --color-workspace: #f7f9fc;
+  --color-workspace-ink: #14212b;
+  --color-workspace-muted: #71808c;
+  --color-workspace-border: #e1e9ee;
+  --color-workspace-border-soft: #e8eef1;
+  --color-workspace-accent: #0c8c7d;
+  --color-workspace-accent-strong: #087d70;
+  --color-workspace-accent-soft: #eff9f7;
+  --color-workspace-avatar: #dff4ef;
+  --color-workspace-avatar-border: #c7e8e2;
+  --color-skeleton: #e5eeee;
+  --color-skeleton-border: #e1ebeb;
+  --color-operation-ink: #17313a;
+  --color-operation-muted: #667b84;
+  --color-operation-line: #dbe7e8;
+  --color-operation-accent: #11a18d;
+  --color-operation-accent-dark: #0b6f65;
+  --color-operation-mint: #119886;
+  --color-operation-mint-dark: #087568;
+  --color-operation-soft: #eef8f5;
+  --color-operation-warm: #f3c968;
+  --color-operation-bg: #f4f8f8;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-glow: 0 0 20px rgba(249, 115, 22, 0.5);
+}
+
 :root {
   /* Premium Dark Theme Palette */
   --bg-app: #05060B;

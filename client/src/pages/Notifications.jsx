@@ -3,7 +3,6 @@ import { ArrowLeft, Bell, Check, CheckCheck, ChevronLeft, ChevronRight, External
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { notificationService } from '../services/checklistProducaoService';
-import '../styles/notifications.css';
 
 const EMPTY_GRID = {
     rows: [],
@@ -16,7 +15,6 @@ const EMPTY_GRID = {
     types: [],
 };
 
-import '../styles/notifications-inbox.css';
 
 const formatDate = (value) => value ? new Date(value).toLocaleString('pt-BR') : '-';
 
@@ -69,7 +67,7 @@ const Notifications = () => {
     };
 
     useEffect(() => {
-        loadGrid(filters, pageIndex);
+        void Promise.resolve().then(() => loadGrid(filters, pageIndex));
         // Filters and pagination are the remote query contract for this screen.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filters, pageIndex]);
@@ -132,46 +130,46 @@ const Notifications = () => {
     const to = Math.min((pageIndex + 1) * grid.pageSize, grid.total);
 
     return (
-        <div className="notifications-page ritmika-light-mode">
-            <header className="notifications-header">
-                <div className="notifications-title">
-                    <button type="button" className="notifications-back" aria-label="Voltar" onClick={() => navigate('/')}>
+        <div className="min-h-screen bg-[#f6fafb] px-4 py-8 text-operation-ink sm:px-6 lg:px-8">
+            <header className="mx-auto mb-8 flex max-w-7xl flex-col gap-5 md:flex-row md:items-end md:justify-between">
+                <div className="flex items-center gap-4">
+                    <button type="button" className="rounded-xl border border-operation-line bg-white p-3 text-operation-ink transition-all hover:-translate-x-1 hover:border-operation-mint hover:bg-operation-soft" aria-label="Voltar" onClick={() => navigate('/')}>
                         <ArrowLeft size={18} />
                     </button>
                     <div>
-                        <p className="remote-eyebrow">Central do workspace</p>
-                        <h1>Notificações</h1>
-                        <p>{grid.stats.unread ? grid.stats.unread + ' não lidas' : 'Tudo atualizado'}</p>
+                        <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-operation-mint-dark">Central do workspace</p>
+                        <h1 className="text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">Notificações</h1>
+                        <p className="mt-2 text-sm text-operation-muted">{grid.stats.unread ? grid.stats.unread + ' não lidas' : 'Tudo atualizado'}</p>
                     </div>
                 </div>
-                <div className="notifications-actions">
-                    <button type="button" className="notifications-action" onClick={() => loadGrid(filters, pageIndex)} disabled={loading}>
+                <div className="flex flex-wrap gap-2">
+                    <button type="button" className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-operation-line bg-white px-3.5 py-2 text-sm font-semibold transition-colors hover:border-operation-mint hover:bg-operation-soft disabled:cursor-wait disabled:opacity-60" onClick={() => loadGrid(filters, pageIndex)} disabled={loading}>
                         <RefreshCw size={16} /> Atualizar
                     </button>
-                    <button type="button" className="notifications-action primary" onClick={markAllRead} disabled={working || grid.stats.unread === 0}>
+                    <button type="button" className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-operation-ink px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-operation-mint-dark disabled:cursor-not-allowed disabled:opacity-50" onClick={markAllRead} disabled={working || grid.stats.unread === 0}>
                         <CheckCheck size={16} /> Marcar todas como lidas
                     </button>
                 </div>
             </header>
 
-            <main className="notifications-panel">
-                <div className="notifications-stat-grid">
-                    <div><span>Minhas notificações</span><strong>{grid.stats.mine}</strong><small>WhatsApp {grid.stats.whatsapp}</small></div>
-                    <div><span>Notificações da equipe</span><strong>{grid.stats.team}</strong><small>Push {grid.stats.push}</small></div>
-                    <div><span>Não lidas</span><strong>{grid.stats.unread}</strong><small>Na consulta atual</small></div>
-                    <div><span>Total filtrado</span><strong>{grid.stats.total}</strong><small>Registros remotos</small></div>
+            <main className="mx-auto max-w-7xl">
+                <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4" role="list" aria-label="Resumo das notificações">
+                    <div className="rounded-2xl border border-operation-line bg-white p-5 shadow-[0_10px_26px_rgba(23,49,58,0.05)]" role="listitem"><span className="text-sm text-operation-muted">Minhas notificações</span><strong className="mt-3 block text-3xl font-semibold">{grid.stats.mine}</strong><small className="mt-1 block text-xs text-operation-muted">WhatsApp {grid.stats.whatsapp}</small></div>
+                    <div className="rounded-2xl border border-operation-line bg-white p-5 shadow-[0_10px_26px_rgba(23,49,58,0.05)]" role="listitem"><span className="text-sm text-operation-muted">Notificações da equipe</span><strong className="mt-3 block text-3xl font-semibold">{grid.stats.team}</strong><small className="mt-1 block text-xs text-operation-muted">Push {grid.stats.push}</small></div>
+                    <div className="rounded-2xl border border-operation-line bg-white p-5 shadow-[0_10px_26px_rgba(23,49,58,0.05)]" role="listitem"><span className="text-sm text-operation-muted">Não lidas</span><strong className="mt-3 block text-3xl font-semibold">{grid.stats.unread}</strong><small className="mt-1 block text-xs text-operation-muted">Na consulta atual</small></div>
+                    <div className="rounded-2xl border border-operation-line bg-white p-5 shadow-[0_10px_26px_rgba(23,49,58,0.05)]" role="listitem"><span className="text-sm text-operation-muted">Total filtrado</span><strong className="mt-3 block text-3xl font-semibold">{grid.stats.total}</strong><small className="mt-1 block text-xs text-operation-muted">Registros remotos</small></div>
                 </div>
 
-                <form className="notifications-filters" onSubmit={submitSearch}>
-                    <div className="notifications-search">
+                <form className="mb-6 rounded-2xl border border-operation-line bg-white p-5 shadow-[0_10px_26px_rgba(23,49,58,0.05)]" onSubmit={submitSearch}>
+                    <div className="flex items-center gap-3 rounded-xl border border-operation-line px-4 py-3 focus-within:border-operation-mint focus-within:ring-4 focus-within:ring-operation-mint/15">
                         <Search size={17} />
-                        <input value={draftSearch} onChange={(event) => setDraftSearch(event.target.value)} placeholder="Buscar por nome ou telefone..." />
+                        <input className="min-w-0 flex-1 border-0 bg-transparent text-sm outline-none placeholder:text-operation-muted/70" value={draftSearch} onChange={(event) => setDraftSearch(event.target.value)} placeholder="Buscar por nome ou telefone..." />
                     </div>
-                    <div className="notifications-filter-actions">
-                        <button type="submit" className="notifications-action primary"><Search size={16} /> Buscar</button>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                        <button type="submit" className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-operation-ink px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-operation-mint-dark"><Search size={16} /> Buscar</button>
                         <button
                             type="button"
-                            className="notifications-action"
+                            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-operation-line px-3.5 py-2 text-sm font-semibold transition-colors hover:border-operation-mint hover:bg-operation-soft"
                             onClick={() => setFiltersOpen((current) => !current)}
                             aria-expanded={filtersOpen}
                         >
@@ -180,26 +178,26 @@ const Notifications = () => {
                             {activeFilterCount > 0 ? ' (' + activeFilterCount + ')' : ''}
                         </button>
                         {activeFilterCount > 0 && (
-                            <button type="button" className="notifications-action" onClick={clearFilters}>
+                            <button type="button" className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-operation-line px-3.5 py-2 text-sm font-semibold transition-colors hover:border-operation-mint hover:bg-operation-soft" onClick={clearFilters}>
                                 Limpar filtros
                             </button>
                         )}
                     </div>
                     {filtersOpen && (
-                        <div className="notifications-filter-controls" aria-label="Filtros avançados">
-                            <select value={filters.unitId} onChange={(event) => updateFilter('unitId', event.target.value)} aria-label="Filtrar por unidade">
+                        <div className="mt-4 grid gap-3 border-t border-operation-line pt-4 sm:grid-cols-2 lg:grid-cols-4" aria-label="Filtros avançados">
+                            <select className="rounded-xl border border-operation-line bg-white px-3 py-2.5 text-sm outline-none focus:border-operation-mint" value={filters.unitId} onChange={(event) => updateFilter('unitId', event.target.value)} aria-label="Filtrar por unidade">
                                 <option value="">Todas as unidades</option>
                                 {grid.units.map((unit) => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
                             </select>
-                            <select value={filters.channel} onChange={(event) => updateFilter('channel', event.target.value)} aria-label="Filtrar por canal">
+                            <select className="rounded-xl border border-operation-line bg-white px-3 py-2.5 text-sm outline-none focus:border-operation-mint" value={filters.channel} onChange={(event) => updateFilter('channel', event.target.value)} aria-label="Filtrar por canal">
                                 <option value="">Todos os canais</option>
                                 {grid.channels.map((channel) => <option key={channel} value={channel.toLocaleLowerCase('pt-BR')}>{notificationLabel(channel)}</option>)}
                             </select>
-                            <select value={filters.type} onChange={(event) => updateFilter('type', event.target.value)} aria-label="Filtrar por tipo">
+                            <select className="rounded-xl border border-operation-line bg-white px-3 py-2.5 text-sm outline-none focus:border-operation-mint" value={filters.type} onChange={(event) => updateFilter('type', event.target.value)} aria-label="Filtrar por tipo">
                                 <option value="">Todos os tipos</option>
                                 {grid.types.map((type) => <option key={type} value={type.toLocaleLowerCase('pt-BR')}>{notificationLabel(type)}</option>)}
                             </select>
-                            <select value={filters.readState} onChange={(event) => updateFilter('readState', event.target.value)} aria-label="Filtrar por leitura">
+                            <select className="rounded-xl border border-operation-line bg-white px-3 py-2.5 text-sm outline-none focus:border-operation-mint" value={filters.readState} onChange={(event) => updateFilter('readState', event.target.value)} aria-label="Filtrar por leitura">
                                 <option value="">Todas</option>
                                 <option value="unread">Não lidas</option>
                                 <option value="read">Lidas</option>
@@ -209,46 +207,46 @@ const Notifications = () => {
                 </form>
 
                 {loading ? (
-                    <div className="notifications-state"><LoaderCircle size={22} className="is-spinning" /> Carregando notificações remotas…</div>
+                    <div className="flex items-center justify-center gap-3 rounded-2xl border border-operation-line bg-white px-6 py-16 text-sm text-operation-muted"><LoaderCircle size={22} className="animate-spin" /> Carregando notificações remotas…</div>
                 ) : error ? (
-                    <div className="notifications-state notifications-error"><span>{error}</span><button type="button" className="notifications-action" onClick={() => loadGrid(filters, pageIndex)}>Tentar novamente</button></div>
+                    <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-red-200 bg-red-50 px-6 py-16 text-center text-sm text-red-700" role="alert"><span>{error}</span><button type="button" className="inline-flex min-h-10 items-center rounded-xl border border-red-200 bg-white px-3.5 py-2 font-semibold text-red-700 transition-colors hover:bg-red-100" onClick={() => loadGrid(filters, pageIndex)}>Tentar novamente</button></div>
                 ) : grid.rows.length === 0 ? (
-                    <div className="notifications-state notifications-empty">
+                    <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-operation-line bg-white px-6 py-16 text-center text-sm text-operation-muted">
                         <Bell size={28} />
                         <strong>Nenhuma notificação encontrada</strong>
                         <span>{activeFilterCount > 0 ? 'Nenhum evento corresponde aos filtros aplicados.' : 'Aguarde novos eventos do workspace.'}</span>
-                        {activeFilterCount > 0 && <button type="button" className="notifications-action" onClick={clearFilters}>Limpar filtros</button>}
+                        {activeFilterCount > 0 && <button type="button" className="inline-flex min-h-10 items-center rounded-xl border border-operation-line px-3.5 py-2 font-semibold text-operation-ink transition-colors hover:border-operation-mint hover:bg-operation-soft" onClick={clearFilters}>Limpar filtros</button>}
                     </div>
                 ) : (
-                    <div className="notifications-grid-wrap">
-                        <div className="notifications-grid-table">
-                            <div className="notifications-grid-head"><span>Notificação</span><span>Contexto</span><span>Quando</span><span>Estado</span><span>Ações</span></div>
+                    <div className="overflow-hidden rounded-2xl border border-operation-line bg-white shadow-[0_12px_30px_rgba(23,49,58,0.06)]">
+                    <div className="w-full overflow-x-auto">
+                            <div className="grid grid-cols-[minmax(230px,1.5fr)_minmax(160px,1fr)_minmax(150px,0.8fr)_minmax(100px,0.6fr)_minmax(190px,1fr)] gap-4 border-b border-operation-line bg-[#f6fafb] px-5 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-operation-muted"><span>Notificação</span><span>Contexto</span><span>Quando</span><span>Estado</span><span>Ações</span></div>
                             {grid.rows.map((notification) => (
-                                <div className={'notifications-grid-row ' + (notification.read ? 'is-read' : 'is-unread')} key={notification.id}>
-                                    <div className="notifications-event-cell">
-                                        <strong>{notification.name || notification.phone || 'Notificação'}</strong>
-                                        <span className="notifications-event-message" title={notification.message}>{notification.message || 'Sem mensagem disponível.'}</span>
+                                <div className={'grid grid-cols-[minmax(230px,1.5fr)_minmax(160px,1fr)_minmax(150px,0.8fr)_minmax(100px,0.6fr)_minmax(190px,1fr)] items-center gap-4 border-b border-operation-line px-5 py-4 text-sm last:border-b-0 ' + (notification.read ? 'bg-white' : 'bg-operation-soft/40')} key={notification.id}>
+                                    <div className="min-w-0">
+                                        <strong className="block truncate">{notification.name || notification.phone || 'Notificação'}</strong>
+                                        <span className="mt-1 block truncate text-xs text-operation-muted" title={notification.message}>{notification.message || 'Sem mensagem disponível.'}</span>
                                     </div>
-                                    <div className="notifications-context-cell">
-                                        <span>{notification.unit_name || 'Sem unidade'}</span>
-                                        <small>{notificationLabel(notification.channel, 'Canal não informado')} · {notificationLabel(notification.type, 'Tipo não informado')}</small>
+                                    <div className="min-w-0">
+                                        <span className="block truncate">{notification.unit_name || 'Sem unidade'}</span>
+                                        <small className="mt-1 block truncate text-xs text-operation-muted">{notificationLabel(notification.channel, 'Canal não informado')} · {notificationLabel(notification.type, 'Tipo não informado')}</small>
                                     </div>
-                                    <time className="notifications-when-cell" dateTime={notification.created_at || undefined}>{formatDate(notification.created_at)}</time>
-                                    <span className={'notifications-read-state ' + (notification.read ? 'is-read' : 'is-unread')}>{notification.read ? 'Lida' : 'Não lida'}</span>
-                                    <span className="notifications-row-actions">
-                                        {!notification.read && <button type="button" className="notifications-action notifications-row-action" onClick={() => markRead(notification)}><Check size={15} /> Marcar como lida</button>}
-                                        {notification.route && <button type="button" className="notifications-action primary notifications-row-action" onClick={() => openNotification(notification)}><ExternalLink size={15} /> Abrir</button>}
-                                        {notification.read && !notification.route && <span className="notifications-no-action">Sem ação pendente</span>}
+                                    <time className="text-xs text-operation-muted" dateTime={notification.created_at || undefined}>{formatDate(notification.created_at)}</time>
+                                    <span className={'w-fit rounded-full px-2.5 py-1 text-xs font-semibold ' + (notification.read ? 'bg-slate-100 text-slate-600' : 'bg-operation-soft text-operation-mint-dark')}>{notification.read ? 'Lida' : 'Não lida'}</span>
+                                    <span className="flex flex-wrap gap-2">
+                                        {!notification.read && <button type="button" className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-operation-line px-2.5 py-1.5 text-xs font-semibold transition-colors hover:border-operation-mint hover:bg-operation-soft" onClick={() => markRead(notification)}><Check size={15} /> Marcar como lida</button>}
+                                        {notification.route && <button type="button" className="inline-flex min-h-9 items-center gap-1.5 rounded-lg bg-operation-ink px-2.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-operation-mint-dark" onClick={() => openNotification(notification)}><ExternalLink size={15} /> Abrir</button>}
+                                        {notification.read && !notification.route && <span className="text-xs text-operation-muted">Sem ação pendente</span>}
                                     </span>
                                 </div>
                             ))}
                         </div>
-                        <footer className="notifications-pagination">
+                        <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-operation-line px-5 py-4 text-xs text-operation-muted">
                             <span>{from}–{to} de {grid.total}</span>
                             <span>Página {pageIndex + 1} de {pageCount}</span>
-                            <div>
-                                <button type="button" className="notifications-icon-action" onClick={() => setPageIndex((current) => Math.max(current - 1, 0))} disabled={pageIndex === 0}><ChevronLeft size={16} /></button>
-                                <button type="button" className="notifications-icon-action" onClick={() => setPageIndex((current) => Math.min(current + 1, pageCount - 1))} disabled={pageIndex >= pageCount - 1}><ChevronRight size={16} /></button>
+                            <div className="flex gap-2">
+                                <button type="button" className="rounded-lg border border-operation-line p-2 transition-colors hover:border-operation-mint hover:bg-operation-soft disabled:cursor-not-allowed disabled:opacity-40" onClick={() => setPageIndex((current) => Math.max(current - 1, 0))} disabled={pageIndex === 0} aria-label="Página anterior"><ChevronLeft size={16} /></button>
+                                <button type="button" className="rounded-lg border border-operation-line p-2 transition-colors hover:border-operation-mint hover:bg-operation-soft disabled:cursor-not-allowed disabled:opacity-40" onClick={() => setPageIndex((current) => Math.min(current + 1, pageCount - 1))} disabled={pageIndex >= pageCount - 1} aria-label="Próxima página"><ChevronRight size={16} /></button>
                             </div>
                         </footer>
                     </div>

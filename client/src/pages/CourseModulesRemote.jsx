@@ -2,8 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, BookOpen, CheckCircle2, ChevronDown, ChevronRight, Clock3, LoaderCircle, RefreshCw } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { parityService } from '../services/checklistProducaoService';
-import '../styles/parity-pages.css';
-import '../styles/course-parity.css';
 
 const lessonContentToText = (content) => {
     if (content == null) return '';
@@ -77,7 +75,7 @@ const CourseModulesRemote = () => {
     };
 
     useEffect(() => {
-        loadContent();
+        void Promise.resolve().then(loadContent);
         // Course id is the remote content key.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
@@ -103,33 +101,35 @@ const CourseModulesRemote = () => {
         }
     };
 
-    if (loading) return <div className="parity-page ritmika-light-mode"><div className="parity-state"><LoaderCircle size={22} className="is-spinning" /> Carregando conteúdo remoto…</div></div>;
-    if (error) return <div className="parity-page ritmika-light-mode"><div className="parity-state parity-error">{error}<button type="button" className="parity-button" onClick={loadContent}>Tentar novamente</button></div></div>;
+    if (loading) return <div className="min-h-screen bg-[#f6fafb] px-4 py-8 text-operation-ink sm:px-6 lg:px-8"><div className="flex min-h-[300px] items-center justify-center gap-3 text-sm text-operation-muted"><LoaderCircle size={22} className="animate-spin" /> Carregando conteúdo remoto…</div></div>;
+    if (error) return <div className="min-h-screen bg-[#f6fafb] px-4 py-8 text-operation-ink sm:px-6 lg:px-8"><div className="flex min-h-[300px] flex-col items-center justify-center gap-4 rounded-2xl border border-red-200 bg-red-50 px-6 py-16 text-center text-sm text-red-700" role="alert">{error}<button type="button" className="rounded-xl border border-red-200 bg-white px-3.5 py-2 font-semibold text-red-700 hover:bg-red-100" onClick={loadContent}>Tentar novamente</button></div></div>;
 
     return (
-        <div className="parity-page ritmika-light-mode">
-            <header className="parity-header"><div><button type="button" className="parity-link-button" onClick={() => navigate('/courses')}><ArrowLeft size={16} /> Cursos</button><p className="remote-eyebrow">Conteúdo do curso</p><h1>{course?.title || 'Curso'}</h1><p>{modules.length} módulos · {allLessons.length} aulas · {completion}% concluído</p></div><button type="button" className="parity-button" onClick={loadContent}><RefreshCw size={16} /> Atualizar</button></header>
-            {modules.length === 0 ? <section className="parity-panel"><div className="parity-state"><BookOpen size={30} /><strong>Este curso ainda não tem módulos publicados</strong><span>O conteúdo será exibido quando for carregado no workspace.</span></div></section> : <div className="parity-module-list">{modules.map((module) => { const isOpen = Boolean(openModules[String(module.id)]); const lessons = module.lessons || []; return <section className="parity-module" key={module.id}><button type="button" className="parity-module-head" onClick={() => setOpenModules((current) => ({ ...current, [String(module.id)]: !isOpen }))}><span>{isOpen ? <ChevronDown size={18} /> : <ChevronRight size={18} />}<span><strong>{module.title}</strong><small>{lessons.length} aulas</small></span></span><span>{lessons.filter((lesson) => Number(lesson.progress?.progress_percent || 0) >= 100).length}/{lessons.length}</span></button>{isOpen && <div className="parity-lesson-list">{lessons.map((lesson) => { const complete = Number(lesson.progress?.progress_percent || 0) >= 100; return <button type="button" className={'parity-lesson ' + (complete ? 'is-complete' : '')} key={lesson.id} onClick={() => setSelectedLesson(lesson)} disabled={workingLesson === String(lesson.id)}><span>{complete ? <CheckCircle2 size={17} /> : <BookOpen size={17} />}<span><strong>{lesson.title}</strong><small>{lesson.description || 'Abrir conteúdo'}{lesson.duration_seconds ? ` · ${Math.ceil(lesson.duration_seconds / 60)} min` : ''}</small></span></span><span>{workingLesson === String(lesson.id) ? <LoaderCircle size={16} className="is-spinning" /> : <Clock3 size={16} />}</span></button>; })}</div>}</section>; })}</div>}
-            {selectedLesson && <section className="parity-panel parity-lesson-detail" aria-label="Conteúdo da aula">
-                <div className="parity-lesson-detail-head">
+        <div className="min-h-screen bg-[#f6fafb] px-4 py-8 text-operation-ink sm:px-6 lg:px-8">
+            <header className="mx-auto mb-8 flex max-w-7xl flex-col gap-5 md:flex-row md:items-end md:justify-between"><div><button type="button" className="mb-4 inline-flex items-center gap-2 rounded-lg px-2 py-1 text-sm font-semibold text-operation-mint-dark transition-colors hover:bg-operation-soft" onClick={() => navigate('/courses')}><ArrowLeft size={16} /> Cursos</button><p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-operation-mint-dark">Conteúdo do curso</p><h1 className="text-3xl font-semibold tracking-[-0.04em] sm:text-4xl">{course?.title || 'Curso'}</h1><p className="mt-2 text-sm text-operation-muted">{modules.length} módulos · {allLessons.length} aulas · {completion}% concluído</p></div><button type="button" className="inline-flex min-h-10 items-center gap-2 self-start rounded-xl border border-operation-line bg-white px-3.5 py-2 text-sm font-semibold transition-colors hover:border-operation-mint hover:bg-operation-soft md:self-auto" onClick={loadContent}><RefreshCw size={16} /> Atualizar</button></header>
+            <main className="mx-auto max-w-7xl">
+            {modules.length === 0 ? <section className="rounded-2xl border border-dashed border-operation-line bg-white px-6 py-16"><div className="flex flex-col items-center justify-center gap-3 text-center text-sm text-operation-muted"><BookOpen size={30} /><strong className="text-base text-operation-ink">Este curso ainda não tem módulos publicados</strong><span>O conteúdo será exibido quando for carregado no workspace.</span></div></section> : <div className="grid gap-4">{modules.map((module) => { const isOpen = Boolean(openModules[String(module.id)]); const lessons = module.lessons || []; return <section className="overflow-hidden rounded-2xl border border-operation-line bg-white shadow-[0_12px_30px_rgba(23,49,58,0.06)]" key={module.id}><button type="button" className="flex w-full items-center justify-between gap-4 p-5 text-left transition-colors hover:bg-operation-soft/40" onClick={() => setOpenModules((current) => ({ ...current, [String(module.id)]: !isOpen }))}><span className="flex min-w-0 items-center gap-3">{isOpen ? <ChevronDown size={18} /> : <ChevronRight size={18} />}<span className="grid min-w-0 gap-1"><strong className="truncate">{module.title}</strong><small className="text-xs text-operation-muted">{lessons.length} aulas</small></span></span><span className="shrink-0 text-sm font-semibold text-operation-muted">{lessons.filter((lesson) => Number(lesson.progress?.progress_percent || 0) >= 100).length}/{lessons.length}</span></button>{isOpen && <div className="grid gap-2 border-t border-operation-line p-3">{lessons.map((lesson) => { const complete = Number(lesson.progress?.progress_percent || 0) >= 100; return <button type="button" className={'flex w-full items-center justify-between gap-4 rounded-xl p-3 text-left transition-colors hover:bg-operation-soft disabled:cursor-wait disabled:opacity-60 ' + (complete ? 'bg-operation-soft' : '')} key={lesson.id} onClick={() => setSelectedLesson(lesson)} disabled={workingLesson === String(lesson.id)}><span className="flex min-w-0 items-center gap-3">{complete ? <CheckCircle2 size={17} className="shrink-0 text-operation-mint-dark" /> : <BookOpen size={17} className="shrink-0 text-operation-muted" />}<span className="grid min-w-0 gap-1"><strong className="truncate text-sm">{lesson.title}</strong><small className="truncate text-xs text-operation-muted">{lesson.description || 'Abrir conteúdo'}{lesson.duration_seconds ? ` · ${Math.ceil(lesson.duration_seconds / 60)} min` : ''}</small></span></span><span className="shrink-0 text-operation-muted">{workingLesson === String(lesson.id) ? <LoaderCircle size={16} className="animate-spin" /> : <Clock3 size={16} />}</span></button>; })}</div>}</section>; })}</div>}
+            {selectedLesson && <section className="mt-6 rounded-2xl border border-operation-line bg-white p-5 shadow-[0_12px_30px_rgba(23,49,58,0.06)]" aria-label="Conteúdo da aula">
+                <div className="flex flex-col gap-5 border-b border-operation-line pb-5 md:flex-row md:items-start md:justify-between">
                     <div>
-                        <p className="remote-eyebrow">Aula selecionada</p>
-                        <h2>{selectedLesson.title}</h2>
-                        <p>{selectedLesson.description || 'Sem descrição cadastrada.'}</p>
+                        <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-operation-mint-dark">Aula selecionada</p>
+                        <h2 className="text-2xl font-semibold tracking-[-0.035em]">{selectedLesson.title}</h2>
+                        <p className="mt-2 text-sm leading-6 text-operation-muted">{selectedLesson.description || 'Sem descrição cadastrada.'}</p>
                     </div>
                     {Number(selectedLesson.progress?.progress_percent || 0) >= 100
-                        ? <span className="parity-status success"><CheckCircle2 size={15} /> Concluída</span>
-                        : <button type="button" className="parity-button" onClick={() => completeLesson(selectedLesson)} disabled={workingLesson === String(selectedLesson.id)}>
-                            {workingLesson === String(selectedLesson.id) ? <LoaderCircle size={16} className="is-spinning" /> : <CheckCircle2 size={16} />}
+                        ? <span className="inline-flex items-center gap-2 rounded-full bg-operation-soft px-3 py-1.5 text-xs font-semibold text-operation-mint-dark"><CheckCircle2 size={15} /> Concluída</span>
+                        : <button type="button" className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-operation-ink px-3.5 py-2 text-sm font-semibold text-white transition-colors hover:bg-operation-mint-dark disabled:cursor-wait disabled:opacity-60" onClick={() => completeLesson(selectedLesson)} disabled={workingLesson === String(selectedLesson.id)}>
+                            {workingLesson === String(selectedLesson.id) ? <LoaderCircle size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
                             Marcar como concluída
                         </button>}
                 </div>
                 {selectedLesson.content
-                    ? <div className="parity-lesson-content" style={{ whiteSpace: 'pre-wrap' }}>
+                    ? <div className="mt-5 whitespace-pre-wrap rounded-xl bg-[#f6fafb] p-5 text-sm leading-7 text-operation-ink">
                         {lessonContentToText(selectedLesson.content) || 'Este conteúdo ainda não possui um formato de leitura disponível.'}
                     </div>
-                    : <div className="parity-state-inline">O conteúdo desta aula ainda não foi carregado no workspace.</div>}
+                    : <div className="mt-5 rounded-xl border border-dashed border-operation-line px-4 py-8 text-center text-sm text-operation-muted">O conteúdo desta aula ainda não foi carregado no workspace.</div>}
             </section>}
+            </main>
         </div>
     );
 };

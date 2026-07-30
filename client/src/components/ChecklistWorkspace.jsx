@@ -28,8 +28,6 @@ import {
 import { toast } from 'react-hot-toast';
 import { checklistProducaoService } from '../services/checklistProducaoService';
 import { logger } from '../lib/logger';
-import '../styles/checklist-workspace.css';
-import '../styles/checklist-parity.css';
 
 const ChecklistBuilderWorkspace = lazy(() => import('./ChecklistBuilderWorkspace'));
 
@@ -195,7 +193,7 @@ const ChecklistWorkspace = () => {
     }, []);
 
     useEffect(() => {
-        loadChecklists();
+        void Promise.resolve().then(loadChecklists);
     }, [loadChecklists]);
 
     const filteredChecklists = useMemo(() => {
@@ -243,11 +241,11 @@ const ChecklistWorkspace = () => {
     }, [filteredChecklists, pageSize, safePage]);
 
     useEffect(() => {
-        setPage(1);
+        void Promise.resolve().then(() => setPage(1));
     }, [columnFilters, filter, folderFilter, momentFilter, query, sectorFilter, unitFilter, pageSize]);
 
     useEffect(() => {
-        if (page > pageCount) setPage(pageCount);
+        if (page > pageCount) void Promise.resolve().then(() => setPage(pageCount));
     }, [page, pageCount]);
 
     const publishedCount = checklists.filter(isPublished).length;
@@ -446,18 +444,18 @@ const ChecklistWorkspace = () => {
     };
 
     return (
-        <section className="ritmika-light-mode">
-            <header className="checklist-topbar">
+        <section className="min-h-screen bg-[#f4f8f8] p-5 text-[#17363d] sm:p-8">
+            <header className="mx-auto mb-6 flex max-w-7xl items-start justify-between gap-5 max-[760px]:flex-col">
                 <div>
-                    <p className="checklist-eyebrow">Operação · Checklists</p>
-                    <h1>Modelos de checklist</h1>
-                    <p className="checklist-subtitle">
+                    <p className="mb-1 text-xs font-bold uppercase tracking-[0.12em] text-[#08766c]">Operação · Checklists</p>
+                    <h1 className="m-0 text-[clamp(28px,4vw,42px)] font-extrabold">Modelos de checklist</h1>
+                    <p className="mt-2 max-w-2xl text-sm text-[#6c8187]">
                         Crie, publique, atribua e acompanhe execuções no workspace remoto.
                     </p>
                 </div>
                 <button
                     type="button"
-                    className="light-button primary"
+                    className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#08766c] px-3 text-xs font-bold text-white"
                     onClick={() => navigate('/checklists/new')}
                 >
                     <Plus size={17} />
@@ -465,17 +463,18 @@ const ChecklistWorkspace = () => {
                 </button>
             </header>
 
-            <div className="checklist-toolbar">
-                <label className="search-field">
+            <div className="mx-auto mb-4 flex max-w-7xl flex-wrap items-center gap-3">
+                <label className="flex min-h-10 min-w-60 flex-1 items-center gap-2 rounded-lg border border-[#dce8e9] bg-white px-3 text-[#6c8187]">
                     <Search size={17} aria-hidden="true" />
                     <input
                         value={query}
                         onChange={(event) => setQuery(event.target.value)}
                         placeholder="Buscar checklist"
                         aria-label="Buscar checklist"
+                        className="min-w-0 flex-1 border-0 bg-transparent text-sm outline-none"
                     />
                 </label>
-                <div className="checklist-filters" aria-label="Filtro de status">
+                <div className="flex flex-wrap gap-1 rounded-lg bg-white p-1" aria-label="Filtro de status">
                     {[
                         ['all', 'Todos'],
                         ['published', 'Publicados'],
@@ -485,17 +484,17 @@ const ChecklistWorkspace = () => {
                         <button
                             key={value}
                             type="button"
-                            className={`filter-chip ${filter === value ? 'active' : ''}`}
+                            className={`rounded-lg px-3 py-2 text-xs font-bold transition-colors ${filter === value ? 'bg-[#e8f8f3] text-[#08766c]' : 'text-[#6c8187]'}`}
                             onClick={() => setFilter(value)}
                         >
                             {label}
                         </button>
                     ))}
                 </div>
-                <div className="checklist-toolbar-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <div className="flex flex-wrap items-center gap-2">
                     <button
                         type="button"
-                        className="light-button secondary"
+                        className="inline-flex min-h-10 items-center rounded-lg border border-[#dce8e9] bg-white px-3 text-xs font-bold text-[#38515f]"
                         onClick={() => setFiltersOpen((current) => !current)}
                         aria-expanded={filtersOpen}
                     >
@@ -503,7 +502,7 @@ const ChecklistWorkspace = () => {
                         {activeAdvancedFilters > 0 ? ' (' + activeAdvancedFilters + ')' : ''}
                     </button>
                     {hasActiveFilters && (
-                        <button type="button" className="light-button ghost" onClick={clearFilters}>
+                        <button type="button" className="inline-flex min-h-10 items-center rounded-lg px-3 text-xs font-bold text-[#08766c]" onClick={clearFilters}>
                             Limpar filtros
                         </button>
                     )}
@@ -511,19 +510,19 @@ const ChecklistWorkspace = () => {
             </div>
 
             {filtersOpen && (
-                <div className="checklist-filter-selects" aria-label="Filtros avançados">
-                    <label>
+                <div className="mx-auto mb-4 grid max-w-7xl grid-cols-4 gap-3 rounded-xl border border-[#dce8e9] bg-white p-4 max-[800px]:grid-cols-2 max-[560px]:grid-cols-1" aria-label="Filtros avançados">
+                    <label className="grid gap-1 text-xs font-bold text-[#38515f]">
                         <span>Unidade</span>
-                        <select value={unitFilter} onChange={(event) => setUnitFilter(event.target.value)}>
+                        <select className="min-h-10 rounded-lg border border-[#dce8e9] bg-white px-2 text-sm font-normal" value={unitFilter} onChange={(event) => setUnitFilter(event.target.value)}>
                             <option value="">Todas</option>
                             {references.units.map((unit) => (
                                 <option key={unit.id} value={unit.id}>{unit.name}</option>
                             ))}
                         </select>
                     </label>
-                    <label>
+                    <label className="grid gap-1 text-xs font-bold text-[#38515f]">
                         <span>Setor</span>
-                        <select value={sectorFilter} onChange={(event) => setSectorFilter(event.target.value)}>
+                        <select className="min-h-10 rounded-lg border border-[#dce8e9] bg-white px-2 text-sm font-normal" value={sectorFilter} onChange={(event) => setSectorFilter(event.target.value)}>
                             <option value="">Todos</option>
                             {references.sectors.map((sector) => (
                                 <option key={sector.id} value={sector.id}>{sector.name}</option>
@@ -551,19 +550,19 @@ const ChecklistWorkspace = () => {
                 </div>
             )}
 
-            <div className="checklist-parity-toolbar" aria-label="Controles da tabela de checklists">
+            <div className="mx-auto mb-4 flex max-w-7xl flex-wrap items-center gap-3" aria-label="Controles da tabela de checklists">
                 <button
                     type="button"
-                    className="light-button secondary"
+                    className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#dce8e9] bg-white px-3 text-xs font-bold text-[#38515f]"
                     onClick={() => setFolderDialogOpen(true)}
                 >
                     <FolderPlus size={15} /> Nova pasta
                 </button>
-                <div className="checklist-parity-spacer" />
-                <div className="checklist-view-toggle" aria-label="Modo de visualização">
+                <div className="flex-1" />
+                <div className="flex gap-1 rounded-lg bg-white p-1" aria-label="Modo de visualização">
                     <button
                         type="button"
-                        className={viewMode === 'table' ? 'active' : ''}
+                        className={`rounded-lg px-3 py-2 text-xs font-bold ${viewMode === 'table' ? 'bg-[#e8f8f3] text-[#08766c]' : 'text-[#6c8187]'}`}
                         onClick={() => setViewMode('table')}
                         aria-label="Visualização em tabela"
                     >
@@ -571,17 +570,17 @@ const ChecklistWorkspace = () => {
                     </button>
                     <button
                         type="button"
-                        className={viewMode === 'cards' ? 'active' : ''}
+                        className={`rounded-lg px-3 py-2 text-xs font-bold ${viewMode === 'cards' ? 'bg-[#e8f8f3] text-[#08766c]' : 'text-[#6c8187]'}`}
                         onClick={() => setViewMode('cards')}
                         aria-label="Visualização em cartões"
                     >
                         <LayoutGrid size={15} /> Cartões
                     </button>
                 </div>
-                <div className="checklist-menu-anchor">
+                <div className="relative">
                     <button
                         type="button"
-                        className="light-button ghost"
+                        className="inline-flex min-h-10 items-center gap-2 rounded-lg px-3 text-xs font-bold text-[#08766c]"
                         onClick={() => {
                             setColumnsOpen((current) => !current);
                             setBulkMenuOpen(false);
@@ -591,7 +590,7 @@ const ChecklistWorkspace = () => {
                         <Columns3 size={15} /> Colunas
                     </button>
                     {columnsOpen && (
-                        <div className="checklist-popover checklist-columns-menu" role="menu">
+                        <div className="absolute right-0 z-10 mt-2 grid min-w-48 gap-2 rounded-xl border border-[#dce8e9] bg-white p-3 text-xs shadow-xl" role="menu">
                             <strong>Mostrar colunas</strong>
                             {[
                                 ['checklist', 'Checklist'],
@@ -602,7 +601,7 @@ const ChecklistWorkspace = () => {
                                 ['execution', 'Execução'],
                                 ['time', 'Horário'],
                             ].map(([key, label]) => (
-                                <label key={key} className="checklist-menu-checkbox">
+                                <label key={key} className="flex items-center gap-2 text-[#38515f]">
                                     <input type="checkbox" checked={columns[key]} onChange={() => toggleColumn(key)} />
                                     {label}
                                 </label>
@@ -610,10 +609,10 @@ const ChecklistWorkspace = () => {
                         </div>
                     )}
                 </div>
-                <div className="checklist-menu-anchor">
+                <div className="relative">
                     <button
                         type="button"
-                        className="light-button ghost"
+                        className="inline-flex min-h-10 items-center gap-2 rounded-lg px-3 text-xs font-bold text-[#08766c]"
                         onClick={() => {
                             setBulkMenuOpen((current) => !current);
                             setColumnsOpen(false);
@@ -624,21 +623,21 @@ const ChecklistWorkspace = () => {
                         {selectedIds.length > 0 ? ` (${selectedIds.length})` : ''}
                     </button>
                     {bulkMenuOpen && (
-                        <div className="checklist-popover checklist-bulk-menu" role="menu">
+                        <div className="absolute right-0 z-10 mt-2 grid min-w-56 gap-1 rounded-xl border border-[#dce8e9] bg-white p-2 text-xs shadow-xl" role="menu">
                             <button type="button" onClick={() => setFolderDialogOpen(true)} disabled={selectedIds.length === 0}>
                                 <FolderPlus size={14} /> Nova pasta
                             </button>
                             <button type="button" onClick={() => setMoveFolderOpen(true)} disabled={selectedIds.length === 0 || folders.length === 0}>
                                 <Folder size={14} /> Mover para pasta
                             </button>
-                            <span className="checklist-menu-separator" />
+                            <span className="my-1 h-px bg-[#edf3f2]" />
                             <button type="button" onClick={() => runBulkStatus('ativo')} disabled={selectedIds.length === 0 || bulkBusy}>
                                 <CheckCircle2 size={14} /> Ativar
                             </button>
                             <button type="button" onClick={() => runBulkStatus('inativo')} disabled={selectedIds.length === 0 || bulkBusy}>
                                 <EyeOff size={14} /> Desativar
                             </button>
-                            <span className="checklist-menu-separator" />
+                            <span className="my-1 h-px bg-[#edf3f2]" />
                             <button type="button" onClick={exportChecklists} disabled={filteredChecklists.length === 0}>
                                 <Download size={14} /> Exportar selecionados
                             </button>
@@ -651,7 +650,7 @@ const ChecklistWorkspace = () => {
                             <button type="button" disabled title="A troca em lote exige vínculo de responsável por checklist no contrato remoto.">
                                 <UsersRound size={14} /> Trocar responsável
                             </button>
-                            <span className="checklist-menu-separator" />
+                            <span className="my-1 h-px bg-[#edf3f2]" />
                             <button type="button" onClick={archiveSelected} disabled={selectedIds.length === 0 || bulkBusy}>
                                 <Archive size={14} /> Arquivar
                             </button>
@@ -660,16 +659,16 @@ const ChecklistWorkspace = () => {
                 </div>
             </div>
 
-            <div className="manager-stats" aria-label="Resumo de checklists">
-                <div className="manager-stat"><span>Total</span><strong>{checklists.length}</strong></div>
-                <div className="manager-stat"><span>Publicados</span><strong>{publishedCount}</strong></div>
-                <div className="manager-stat"><span>Rascunhos</span><strong>{draftCount}</strong></div>
-                <div className="manager-stat"><span>Arquivados</span><strong>{archivedCount}</strong></div>
-                <div className="manager-stat"><span>Itens modelados</span><strong>{itemCount}</strong></div>
+            <div className="mx-auto mb-4 grid max-w-7xl grid-cols-5 gap-3 max-[800px]:grid-cols-3 max-[520px]:grid-cols-2" aria-label="Resumo de checklists">
+                <div className="rounded-xl border border-[#dce8e9] bg-white p-3"><span className="text-xs text-[#6c8187]">Total</span><strong className="mt-1 block text-xl">{checklists.length}</strong></div>
+                <div className="rounded-xl border border-[#dce8e9] bg-white p-3"><span className="text-xs text-[#6c8187]">Publicados</span><strong className="mt-1 block text-xl">{publishedCount}</strong></div>
+                <div className="rounded-xl border border-[#dce8e9] bg-white p-3"><span className="text-xs text-[#6c8187]">Rascunhos</span><strong className="mt-1 block text-xl">{draftCount}</strong></div>
+                <div className="rounded-xl border border-[#dce8e9] bg-white p-3"><span className="text-xs text-[#6c8187]">Arquivados</span><strong className="mt-1 block text-xl">{archivedCount}</strong></div>
+                <div className="rounded-xl border border-[#dce8e9] bg-white p-3"><span className="text-xs text-[#6c8187]">Itens modelados</span><strong className="mt-1 block text-xl">{itemCount}</strong></div>
             </div>
 
-            <div className="checklist-bulk-toolbar" aria-label="Ações em lote">
-                <label className="checklist-select-all">
+            <div className="mx-auto mb-4 flex max-w-7xl flex-wrap items-center justify-between gap-3 rounded-xl border border-[#dce8e9] bg-white p-3" aria-label="Ações em lote">
+                <label className="flex items-center gap-2 text-xs font-bold text-[#38515f]">
                     <input
                         type="checkbox"
                         checked={allVisibleSelected}
@@ -679,39 +678,39 @@ const ChecklistWorkspace = () => {
                     {allVisibleSelected ? <CheckSquare2 size={16} /> : <Square size={16} />}
                     <span>Selecionar visíveis ({selectedIds.length})</span>
                 </label>
-                <div className="checklist-bulk-actions">
-                    <button type="button" className="light-button ghost" onClick={exportChecklists} disabled={loading || filteredChecklists.length === 0}>
+                <div className="flex flex-wrap gap-2">
+                    <button type="button" className="inline-flex min-h-10 items-center gap-2 rounded-lg px-3 text-xs font-bold text-[#08766c] disabled:opacity-50" onClick={exportChecklists} disabled={loading || filteredChecklists.length === 0}>
                         <Download size={15} /> Exportar CSV
                     </button>
-                    <button type="button" className="light-button primary" onClick={() => runBulkStatus('ativo')} disabled={bulkBusy || selectedIds.length === 0}>
+                    <button type="button" className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#08766c] px-3 text-xs font-bold text-white disabled:opacity-50" onClick={() => runBulkStatus('ativo')} disabled={bulkBusy || selectedIds.length === 0}>
                         <CheckCircle2 size={15} /> Publicar selecionados
                     </button>
-                    <button type="button" className="light-button secondary" onClick={() => runBulkStatus('inativo')} disabled={bulkBusy || selectedIds.length === 0}>
+                    <button type="button" className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#dce8e9] bg-white px-3 text-xs font-bold text-[#38515f] disabled:opacity-50" onClick={() => runBulkStatus('inativo')} disabled={bulkBusy || selectedIds.length === 0}>
                         <EyeOff size={15} /> Rascunho
                     </button>
-                    <button type="button" className="light-button danger" onClick={archiveSelected} disabled={bulkBusy || selectedIds.length === 0}>
+                    <button type="button" className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#b42318] px-3 text-xs font-bold text-white disabled:opacity-50" onClick={archiveSelected} disabled={bulkBusy || selectedIds.length === 0}>
                         <Archive size={15} /> Arquivar
                     </button>
                 </div>
             </div>
 
-            {loading && <div className="empty-state">Carregando modelos remotos…</div>}
+            {loading && <div className="mx-auto flex min-h-48 max-w-7xl items-center justify-center rounded-xl border border-[#dce8e9] bg-white text-sm text-[#6c8187]">Carregando modelos remotos…</div>}
             {!loading && error && (
-                <div className="error-state">
+                <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 rounded-xl border border-[#f1c8c3] bg-white p-8 text-center text-[#b42318]">
                     <p>{error}</p>
-                    <button type="button" className="light-button secondary" onClick={loadChecklists}>Tentar novamente</button>
+                    <button type="button" className="rounded-lg border border-[#dce8e9] bg-white px-3 py-2 text-xs font-bold text-[#38515f]" onClick={loadChecklists}>Tentar novamente</button>
                 </div>
             )}
             {!loading && !error && filteredChecklists.length === 0 && (
-                <div className="empty-state">
+                <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 rounded-xl border border-[#dce8e9] bg-white p-8 text-center text-sm text-[#6c8187]">
                     <ClipboardCheck size={30} aria-hidden="true" />
                     <p>{hasActiveFilters ? 'Nenhum checklist corresponde aos filtros aplicados.' : 'Ainda não há checklists no workspace.'}</p>
                     {hasActiveFilters ? (
-                        <button type="button" className="light-button secondary" onClick={clearFilters}>
+                        <button type="button" className="rounded-lg border border-[#dce8e9] bg-white px-3 py-2 text-xs font-bold text-[#38515f]" onClick={clearFilters}>
                             Limpar filtros
                         </button>
                     ) : (
-                        <button type="button" className="light-button primary" onClick={() => navigate('/checklists/new')}>
+                        <button type="button" className="rounded-lg bg-[#08766c] px-3 py-2 text-xs font-bold text-white" onClick={() => navigate('/checklists/new')}>
                             <Plus size={16} /> Criar checklist
                         </button>
                     )}
@@ -719,12 +718,12 @@ const ChecklistWorkspace = () => {
             )}
 
             {!loading && !error && filteredChecklists.length > 0 && viewMode === 'table' && (
-                <div className="checklist-table-shell">
-                    <div className="checklist-table-scroll">
-                        <table className="checklist-parity-table">
+                <div className="mx-auto max-w-7xl overflow-hidden rounded-xl border border-[#dce8e9] bg-white">
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full border-collapse text-left text-xs">
                             <thead>
                                 <tr>
-                                    <th className="checklist-table-select">
+                                    <th className="border-b border-[#dce8e9] bg-[#f7fbfa] px-3 py-3">
                                         <input
                                             type="checkbox"
                                             checked={allVisibleSelected}
@@ -740,18 +739,18 @@ const ChecklistWorkspace = () => {
                                     {columns.moment && <th>Momento</th>}
                                     {columns.execution && <th>Execução</th>}
                                     {columns.time && <th>Horário</th>}
-                                    <th className="checklist-table-actions">Ações</th>
+                                    <th className="border-b border-[#dce8e9] bg-[#f7fbfa] px-3 py-3">Ações</th>
                                 </tr>
-                                <tr className="checklist-filter-row">
+                                <tr className="border-b border-[#dce8e9] bg-[#fbfdfd]">
                                     <th />
                                     {columns.checklist && (
-                                        <th><input value={columnFilters.checklist} onChange={(event) => updateColumnFilter('checklist', event.target.value)} placeholder="Filtrar" aria-label="Filtrar coluna Checklist" /></th>
+                                        <th className="px-2 py-2"><input className="w-full rounded border border-[#dce8e9] px-2 py-1 text-xs" value={columnFilters.checklist} onChange={(event) => updateColumnFilter('checklist', event.target.value)} placeholder="Filtrar" aria-label="Filtrar coluna Checklist" /></th>
                                     )}
                                     {columns.responsible && (
-                                        <th><input value={columnFilters.responsible} onChange={(event) => updateColumnFilter('responsible', event.target.value)} placeholder="Filtrar" aria-label="Filtrar coluna Responsável" /></th>
+                                        <th className="px-2 py-2"><input className="w-full rounded border border-[#dce8e9] px-2 py-1 text-xs" value={columnFilters.responsible} onChange={(event) => updateColumnFilter('responsible', event.target.value)} placeholder="Filtrar" aria-label="Filtrar coluna Responsável" /></th>
                                     )}
                                     {columns.sector && (
-                                        <th><input value={columnFilters.sector} onChange={(event) => updateColumnFilter('sector', event.target.value)} placeholder="Filtrar" aria-label="Filtrar coluna Setor" /></th>
+                                        <th className="px-2 py-2"><input className="w-full rounded border border-[#dce8e9] px-2 py-1 text-xs" value={columnFilters.sector} onChange={(event) => updateColumnFilter('sector', event.target.value)} placeholder="Filtrar" aria-label="Filtrar coluna Setor" /></th>
                                     )}
                                     {columns.status && (
                                         <th>
@@ -777,8 +776,8 @@ const ChecklistWorkspace = () => {
                                     const schedule = checklist.schedule || {};
                                     const responsible = checklist.user_name || checklist.responsaveis?.join(', ') || '—';
                                     return (
-                                        <tr key={checklist.id} className="checklist-data-row">
-                                            <td className="checklist-table-select" data-label="Selecionar">
+                                        <tr key={checklist.id} className="hover:bg-[#fbfdfd]">
+                                            <td className="border-b border-[#edf3f2] px-3 py-3" data-label="Selecionar">
                                                 <input
                                                     type="checkbox"
                                                     checked={selectedIds.includes(String(checklist.id))}
@@ -788,34 +787,34 @@ const ChecklistWorkspace = () => {
                                                 />
                                             </td>
                                             {columns.checklist && (
-                                                <td className="checklist-table-primary" data-label="Checklist">
-                                                    <button type="button" className="checklist-title-link" onClick={() => setEditingChecklistId(checklist.id)}>
+                                                <td className="border-b border-[#edf3f2] px-3 py-3" data-label="Checklist">
+                                                    <button type="button" className="font-bold text-[#08766c]" onClick={() => setEditingChecklistId(checklist.id)}>
                                                         {titleOf(checklist)}
                                                     </button>
-                                                    <small className="checklist-row-meta">{itemsOf(checklist).length} itens</small>
+                                                    <small className="ml-2 text-[11px] text-[#6c8187]">{itemsOf(checklist).length} itens</small>
                                                 </td>
                                             )}
                                             {columns.responsible && <td data-label="Responsável">{responsible}</td>}
                                             {columns.sector && <td data-label="Setor">{checklist.sector_name || '—'}</td>}
                                             {columns.status && (
-                                                <td data-label="Status"><span className={`status-pill ${published ? 'active' : 'inactive'}`}>{statusLabelOf(checklist)}</span></td>
+                                                <td className="border-b border-[#edf3f2] px-3 py-3" data-label="Status"><span className={`rounded-full px-2 py-1 text-[11px] font-bold ${published ? 'bg-[#e8f8f3] text-[#08766c]' : 'bg-[#f1f3f3] text-[#6c8187]'}`}>{statusLabelOf(checklist)}</span></td>
                                             )}
                                             {columns.moment && <td data-label="Momento">{checklist.moment_name || '—'}</td>}
                                             {columns.execution && <td data-label="Execução">{scheduleOf(checklist)}</td>}
                                             {columns.time && <td data-label="Horário">{checklist.schedule_time || schedule.schedule_time || '—'}</td>}
-                                            <td className="checklist-table-actions" data-label="Ações">
+                                            <td className="border-b border-[#edf3f2] px-3 py-3" data-label="Ações">
                                                 <button
                                                     type="button"
-                                                    className="checklist-run-button"
+                                                    className="inline-flex items-center gap-1 rounded-lg bg-[#e8f8f3] px-2 py-1.5 text-xs font-bold text-[#08766c]"
                                                     onClick={() => navigate(`/checklists/${encodeURIComponent(checklist.id)}/historico`)}
                                                     aria-label={`Acompanhar ${titleOf(checklist)}`}
                                                 >
                                                     <ClipboardCheck size={14} /> <span>Acompanhar</span>
                                                 </button>
-                                                <button type="button" className="icon-button" onClick={() => setEditingChecklistId(checklist.id)} aria-label={`Editar ${titleOf(checklist)}`} title="Editar">
+                                                <button type="button" className="grid size-8 place-items-center rounded-lg border border-[#dce8e9]" onClick={() => setEditingChecklistId(checklist.id)} aria-label={`Editar ${titleOf(checklist)}`} title="Editar">
                                                     <Pencil size={15} />
                                                 </button>
-                                                <button type="button" className="icon-button" onClick={() => togglePublication(checklist)} disabled={busyId === checklist.id} aria-label={published ? `Desativar ${titleOf(checklist)}` : `Ativar ${titleOf(checklist)}`} title={published ? 'Desativar' : 'Ativar'}>
+                                                <button type="button" className="grid size-8 place-items-center rounded-lg border border-[#dce8e9] disabled:opacity-50" onClick={() => togglePublication(checklist)} disabled={busyId === checklist.id} aria-label={published ? `Desativar ${titleOf(checklist)}` : `Ativar ${titleOf(checklist)}`} title={published ? 'Desativar' : 'Ativar'}>
                                                     {published ? <EyeOff size={15} /> : <Eye size={15} />}
                                                 </button>
                                             </td>
@@ -825,7 +824,7 @@ const ChecklistWorkspace = () => {
                             </tbody>
                         </table>
                     </div>
-                    <footer className="checklist-table-pagination">
+                    <footer className="flex flex-wrap items-center justify-end gap-3 border-t border-[#dce8e9] p-3 text-xs text-[#6c8187]">
                         <span>
                             {((safePage - 1) * pageSize) + 1}–{Math.min(safePage * pageSize, filteredChecklists.length)} de {filteredChecklists.length}
                         </span>
@@ -837,11 +836,11 @@ const ChecklistWorkspace = () => {
                                 <option value="100">100</option>
                             </select>
                         </label>
-                        <button type="button" className="icon-button" onClick={() => setPage((current) => Math.max(1, current - 1))} disabled={safePage <= 1} aria-label="Página anterior">
+                        <button type="button" className="grid size-9 place-items-center rounded-lg border border-[#dce8e9] disabled:opacity-50" onClick={() => setPage((current) => Math.max(1, current - 1))} disabled={safePage <= 1} aria-label="Página anterior">
                             <ChevronLeft size={16} />
                         </button>
                         <span>Página {safePage} de {pageCount}</span>
-                        <button type="button" className="icon-button" onClick={() => setPage((current) => Math.min(pageCount, current + 1))} disabled={safePage >= pageCount} aria-label="Próxima página">
+                        <button type="button" className="grid size-9 place-items-center rounded-lg border border-[#dce8e9] disabled:opacity-50" onClick={() => setPage((current) => Math.min(pageCount, current + 1))} disabled={safePage >= pageCount} aria-label="Próxima página">
                             <ChevronRight size={16} />
                         </button>
                     </footer>
@@ -849,17 +848,16 @@ const ChecklistWorkspace = () => {
             )}
 
             {!loading && !error && filteredChecklists.length > 0 && viewMode === 'cards' && (
-                <div className="checklist-card-grid" style={{ overflow: 'visible' }}>
+                <div className="mx-auto grid max-w-7xl grid-cols-3 gap-4 max-[900px]:grid-cols-2 max-[600px]:grid-cols-1">
                     {pagedChecklists.map((checklist) => {
                         const published = isPublished(checklist);
                         const items = itemsOf(checklist);
                         return (
                             <article
-                                className="checklist-card"
+                                className="rounded-xl border border-[#dce8e9] bg-white p-4 shadow-[0_8px_24px_rgba(24,48,64,0.05)]"
                                 key={checklist.id}
-                                style={{ height: 'auto', minHeight: 0, overflow: 'visible', paddingBottom: '1.5rem' }}
                             >
-                                <label className="checklist-card-select">
+                                <label className="mb-3 flex items-center gap-2 text-xs text-[#6c8187]">
                                     <input
                                         type="checkbox"
                                         checked={selectedIds.includes(String(checklist.id))}
@@ -868,40 +866,40 @@ const ChecklistWorkspace = () => {
                                     />
                                     <span>Selecionar</span>
                                 </label>
-                                <div className="checklist-card-head">
+                                <div className="mb-4 flex items-start justify-between gap-3">
                                     <div>
-                                        <p className="checklist-eyebrow">{checklist.tipo || 'Operacional'}</p>
-                                        <h2>{titleOf(checklist)}</h2>
+                                        <p className="mb-1 text-xs font-bold uppercase tracking-[0.1em] text-[#08766c]">{checklist.tipo || 'Operacional'}</p>
+                                        <h2 className="m-0 text-lg font-extrabold">{titleOf(checklist)}</h2>
                                     </div>
-                                    <span className={`status-pill ${published ? 'active' : 'inactive'}`}>
+                                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-bold ${published ? 'bg-[#e8f8f3] text-[#08766c]' : 'bg-[#f1f3f3] text-[#6c8187]'}`}>
                                         {published ? <CheckCircle2 size={13} /> : <EyeOff size={13} />}
                                         {published ? 'Publicado' : 'Rascunho'}
                                     </span>
                                 </div>
                                 <p>{checklist.description || checklist.descricao || 'Sem descrição cadastrada.'}</p>
-                                <div className="checklist-card-meta">
+                                <div className="my-4 grid gap-2 text-xs text-[#6c8187]">
                                     <span><ListChecks size={14} /> {items.length} itens</span>
                                     <span><CalendarDays size={14} /> {scheduleOf(checklist)}</span>
                                     <span><UsersRound size={14} /> {(checklist.responsaveis || []).length || 1} responsável(is)</span>
                                 </div>
-                                <div className="checklist-card-actions" style={{ flexWrap: 'wrap' }}>
+                                <div className="flex flex-wrap gap-2">
                                     <button
                                         type="button"
-                                        className="light-button primary"
+                                        className="inline-flex min-h-9 items-center gap-2 rounded-lg bg-[#08766c] px-3 text-xs font-bold text-white"
                                         onClick={() => navigate(`/checklists/${encodeURIComponent(checklist.id)}/historico`)}
                                     >
                                         <ClipboardCheck size={15} /> Acompanhar
                                     </button>
                                     <button
                                         type="button"
-                                        className="light-button secondary"
+                                        className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-[#dce8e9] bg-white px-3 text-xs font-bold text-[#38515f]"
                                         onClick={() => setEditingChecklistId(checklist.id)}
                                     >
                                         <Pencil size={15} /> Editar
                                     </button>
                                     <button
                                         type="button"
-                                        className="light-button ghost"
+                                        className="inline-flex min-h-9 items-center gap-2 rounded-lg px-3 text-xs font-bold text-[#08766c] disabled:opacity-50"
                                         disabled={busyId === checklist.id}
                                         onClick={() => togglePublication(checklist)}
                                     >
@@ -916,12 +914,12 @@ const ChecklistWorkspace = () => {
             )}
 
             {editingChecklistId && (
-                <div className="checklist-editor-backdrop">
-                    <section className="checklist-editor-dialog" role="dialog" aria-modal="true" aria-label="Editar checklist">
-                        <button type="button" className="checklist-editor-close" onClick={closeEditor} aria-label="Fechar editor" autoFocus>
+                <div className="fixed inset-0 z-30 grid place-items-center bg-[#17363d]/40 p-4">
+                    <section className="relative max-h-[90vh] w-full max-w-6xl overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl" role="dialog" aria-modal="true" aria-label="Editar checklist">
+                        <button type="button" className="absolute right-4 top-4 grid size-9 place-items-center rounded-lg border border-[#dce8e9] text-[#38515f]" onClick={closeEditor} aria-label="Fechar editor" autoFocus>
                             <X size={20} />
                         </button>
-                        <Suspense fallback={<div className="checklist-editor-loading" role="status">Abrindo editor…</div>}>
+                        <Suspense fallback={<div className="p-8 text-center text-sm text-[#6c8187]" role="status">Abrindo editor…</div>}>
                             <ChecklistBuilderWorkspace
                                 checklistId={editingChecklistId}
                                 embedded
@@ -934,49 +932,49 @@ const ChecklistWorkspace = () => {
             )}
 
             {folderDialogOpen && (
-                <div className="checklist-dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setFolderDialogOpen(false); }}>
-                    <form className="checklist-dialog" onSubmit={createFolder} role="dialog" aria-modal="true" aria-labelledby="new-folder-title">
-                        <div className="checklist-dialog-header">
+                <div className="fixed inset-0 z-30 grid place-items-center bg-[#17363d]/40 p-4" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setFolderDialogOpen(false); }}>
+                    <form className="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl" onSubmit={createFolder} role="dialog" aria-modal="true" aria-labelledby="new-folder-title">
+                        <div className="mb-5 flex items-start justify-between gap-3">
                             <div>
-                                <p className="checklist-eyebrow">Organização</p>
-                                <h2 id="new-folder-title">Nova pasta</h2>
+                                <p className="mb-1 text-xs font-bold uppercase tracking-[0.1em] text-[#08766c]">Organização</p>
+                                <h2 className="m-0 text-xl font-extrabold" id="new-folder-title">Nova pasta</h2>
                             </div>
-                            <button type="button" className="icon-button" onClick={() => setFolderDialogOpen(false)} aria-label="Fechar nova pasta">×</button>
+                            <button type="button" className="grid size-9 place-items-center rounded-lg border border-[#dce8e9]" onClick={() => setFolderDialogOpen(false)} aria-label="Fechar nova pasta">×</button>
                         </div>
-                        <label className="checklist-dialog-field">
+                        <label className="grid gap-1 text-xs font-bold text-[#38515f]">
                             Nome da pasta
-                            <input value={folderName} onChange={(event) => setFolderName(event.target.value)} placeholder="Ex.: Operação diária" autoFocus />
+                            <input className="min-h-10 rounded-lg border border-[#dce8e9] px-3 text-sm font-normal" value={folderName} onChange={(event) => setFolderName(event.target.value)} placeholder="Ex.: Operação diária" autoFocus />
                         </label>
-                        <p className="checklist-dialog-help">A pasta organiza checklists de todas as unidades que você pode acessar.</p>
-                        <div className="checklist-dialog-actions">
-                            <button type="button" className="light-button ghost" onClick={() => setFolderDialogOpen(false)}>Cancelar</button>
-                            <button type="submit" className="light-button primary" disabled={folderBusy || !folderName.trim()}>{folderBusy ? 'Criando…' : 'Criar'}</button>
+                        <p className="mt-2 text-xs text-[#6c8187]">A pasta organiza checklists de todas as unidades que você pode acessar.</p>
+                        <div className="mt-5 flex justify-end gap-2">
+                            <button type="button" className="rounded-lg px-3 py-2 text-xs font-bold text-[#08766c]" onClick={() => setFolderDialogOpen(false)}>Cancelar</button>
+                            <button type="submit" className="rounded-lg bg-[#08766c] px-3 py-2 text-xs font-bold text-white disabled:opacity-50" disabled={folderBusy || !folderName.trim()}>{folderBusy ? 'Criando…' : 'Criar'}</button>
                         </div>
                     </form>
                 </div>
             )}
 
             {moveFolderOpen && (
-                <div className="checklist-dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setMoveFolderOpen(false); }}>
-                    <form className="checklist-dialog" onSubmit={(event) => { event.preventDefault(); moveSelectedToFolder(); }} role="dialog" aria-modal="true" aria-labelledby="move-folder-title">
-                        <div className="checklist-dialog-header">
+                <div className="fixed inset-0 z-30 grid place-items-center bg-[#17363d]/40 p-4" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setMoveFolderOpen(false); }}>
+                    <form className="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl" onSubmit={(event) => { event.preventDefault(); moveSelectedToFolder(); }} role="dialog" aria-modal="true" aria-labelledby="move-folder-title">
+                        <div className="mb-5 flex items-start justify-between gap-3">
                             <div>
-                                <p className="checklist-eyebrow">Ação em massa</p>
-                                <h2 id="move-folder-title">Mover para pasta</h2>
+                                <p className="mb-1 text-xs font-bold uppercase tracking-[0.1em] text-[#08766c]">Ação em massa</p>
+                                <h2 className="m-0 text-xl font-extrabold" id="move-folder-title">Mover para pasta</h2>
                             </div>
-                            <button type="button" className="icon-button" onClick={() => setMoveFolderOpen(false)} aria-label="Fechar mover para pasta">×</button>
+                            <button type="button" className="grid size-9 place-items-center rounded-lg border border-[#dce8e9]" onClick={() => setMoveFolderOpen(false)} aria-label="Fechar mover para pasta">×</button>
                         </div>
-                        <label className="checklist-dialog-field">
+                        <label className="grid gap-1 text-xs font-bold text-[#38515f]">
                             Pasta de destino
-                            <select value={moveFolderId} onChange={(event) => setMoveFolderId(event.target.value)}>
+                            <select className="min-h-10 rounded-lg border border-[#dce8e9] px-3 text-sm font-normal" value={moveFolderId} onChange={(event) => setMoveFolderId(event.target.value)}>
                                 <option value="">Sem pasta</option>
                                 {folders.map((folder) => <option key={folder.id} value={folder.id}>{folder.name}</option>)}
                             </select>
                         </label>
-                        <p className="checklist-dialog-help">{selectedIds.length} checklist(s) serão atualizados no workspace remoto.</p>
-                        <div className="checklist-dialog-actions">
-                            <button type="button" className="light-button ghost" onClick={() => setMoveFolderOpen(false)}>Cancelar</button>
-                            <button type="submit" className="light-button primary" disabled={bulkBusy}>{bulkBusy ? 'Movendo…' : 'Mover'}</button>
+                        <p className="mt-2 text-xs text-[#6c8187]">{selectedIds.length} checklist(s) serão atualizados no workspace remoto.</p>
+                        <div className="mt-5 flex justify-end gap-2">
+                            <button type="button" className="rounded-lg px-3 py-2 text-xs font-bold text-[#08766c]" onClick={() => setMoveFolderOpen(false)}>Cancelar</button>
+                            <button type="submit" className="rounded-lg bg-[#08766c] px-3 py-2 text-xs font-bold text-white disabled:opacity-50" disabled={bulkBusy}>{bulkBusy ? 'Movendo…' : 'Mover'}</button>
                         </div>
                     </form>
                 </div>
