@@ -138,48 +138,84 @@ export default function EmployeeHome({ view = 'home' }) {
     <section className="grid w-full min-w-0 gap-6 text-operation-ink" aria-labelledby="employee-title">
       {!isActivitiesPage && (
         <>
-          <div className="relative flex items-end justify-between gap-6 overflow-hidden rounded-[30px] border border-[rgba(12,119,104,0.14)] bg-[radial-gradient(circle_at_92%_10%,rgba(243,201,104,0.42),transparent_34%),linear-gradient(135deg,#e9f8f4_0%,#fffdf5_100%)] p-[clamp(22px,5vw,36px)] shadow-[0_24px_60px_rgba(23,49,58,0.09)] max-[720px]:items-start max-[520px]:rounded-3xl max-[520px]:px-5 max-[520px]:py-6">
+          <div className="relative flex items-end justify-between gap-6 overflow-hidden rounded-3xl border border-teal-500/20 bg-[radial-gradient(circle_at_92%_10%,rgba(243,201,104,0.35),transparent_38%),linear-gradient(135deg,#e6f7f3_0%,#fffdf5_100%)] p-6 shadow-[0_20px_50px_-10px_rgba(15,118,104,0.18)] sm:p-8 max-[720px]:items-start max-[520px]:p-5">
             <div className="relative z-[1]">
-              <p className="mb-1.5 text-xs font-extrabold uppercase tracking-[0.13em] text-operation-mint-dark">Sua rotina de hoje</p>
-              <h1 id="employee-title" className="m-0 max-w-[720px] text-[clamp(36px,7vw,64px)] font-extrabold leading-[0.98] tracking-[-0.045em]">Olá, {String(user?.name || 'pessoa').split(' ')[0]}</h1>
-              <p className="mt-2.5 max-w-[590px] text-base text-operation-muted">Veja o que precisa de atenção e continue exatamente de onde parou.</p>
+              <p className="mb-1 text-xs font-bold uppercase tracking-wider text-operation-mint-dark">Sua rotina de hoje</p>
+              <h1 id="employee-title" className="m-0 max-w-[720px] text-2xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-4xl">Olá, {String(user?.name || 'pessoa').split(' ')[0]}</h1>
+              <p className="mt-1.5 max-w-[590px] text-xs text-operation-muted sm:text-sm">Veja o que precisa de atenção e continue exatamente de onde parou.</p>
             </div>
-            <button className="relative z-[1] inline-flex min-h-11 shrink-0 items-center gap-2 rounded-[14px] border border-operation-line bg-white px-4 font-extrabold text-operation-ink transition-colors hover:bg-operation-soft focus-visible:outline-3 focus-visible:outline-operation-accent/25 focus-visible:outline-offset-3 disabled:cursor-wait disabled:opacity-60 max-[720px]:w-11 max-[720px]:flex-[0_0_44px] max-[720px]:justify-center max-[720px]:gap-0 max-[720px]:p-0 max-[720px]:text-[0px]" type="button" onClick={() => query.refetch()} disabled={query.isFetching}>
-              <RefreshCw size={17} className={query.isFetching ? 'animate-spin [animation-duration:800ms]' : ''} aria-hidden="true" />
+            <button className="relative z-[1] inline-flex min-h-10 shrink-0 items-center gap-2 rounded-xl border border-slate-200/80 bg-white/90 px-3.5 text-xs font-bold text-slate-800 shadow-sm backdrop-blur transition-all hover:bg-white active:scale-95 disabled:cursor-wait disabled:opacity-60 max-[720px]:w-10 max-[720px]:flex-[0_0_40px] max-[720px]:justify-center max-[720px]:gap-0 max-[720px]:p-0 max-[720px]:text-[0px]" type="button" onClick={() => query.refetch()} disabled={query.isFetching}>
+              <RefreshCw size={16} className={query.isFetching ? 'animate-spin [animation-duration:800ms]' : ''} aria-hidden="true" />
               Atualizar
             </button>
           </div>
 
           <div className="grid grid-cols-4 gap-3.5 max-[520px]:grid-cols-2" aria-label="Resumo das atividades">
-            <article className="flex min-h-[116px] min-w-0 items-center gap-3.5 rounded-3xl bg-[linear-gradient(145deg,var(--color-operation-accent-dark),var(--color-operation-accent))] p-[18px] text-white shadow-[0_16px_42px_rgba(23,49,58,0.07)] max-[520px]:min-h-[104px] max-[520px]:p-4"><ClipboardCheck className="shrink-0" /><span className="grid"><strong className="text-[25px] leading-none">{metrics.total}</strong><small className="mt-1.5 text-white/80">Atribuídas</small></span></article>
-            <article className="flex min-h-[116px] min-w-0 items-center gap-3.5 rounded-3xl bg-[#fff9e9] p-[18px] shadow-[0_16px_42px_rgba(23,49,58,0.07)] max-[520px]:min-h-[104px] max-[520px]:p-4"><CircleDashed className="shrink-0 text-[#b37a00]" /><span className="grid"><strong className="text-[25px] leading-none">{metrics.pending}</strong><small className="mt-1.5 text-operation-muted">A iniciar</small></span></article>
-            <article className="flex min-h-[116px] min-w-0 items-center gap-3.5 rounded-3xl bg-[#eef6ff] p-[18px] shadow-[0_16px_42px_rgba(23,49,58,0.07)] max-[520px]:min-h-[104px] max-[520px]:p-4"><Clock3 className="shrink-0 text-[#2e79aa]" /><span className="grid"><strong className="text-[25px] leading-none">{metrics.in_progress}</strong><small className="mt-1.5 text-operation-muted">Em andamento</small></span></article>
-            <article className="flex min-h-[116px] min-w-0 items-center gap-3.5 rounded-3xl bg-[#eef9f5] p-[18px] shadow-[0_16px_42px_rgba(23,49,58,0.07)] max-[520px]:min-h-[104px] max-[520px]:p-4"><CheckCircle2 className="shrink-0 text-operation-mint-dark" /><span className="grid"><strong className="text-[25px] leading-none">{metrics.finished}</strong><small className="mt-1.5 text-operation-muted">Concluídas</small></span></article>
+            <article className="flex min-h-[104px] min-w-0 items-center gap-3.5 rounded-2xl border border-teal-500/20 bg-gradient-to-br from-teal-600 via-teal-700 to-teal-800 p-4 text-white shadow-[0_14px_30px_-6px_rgba(13,148,136,0.38)] transition-all hover:-translate-y-0.5 active:scale-[0.98]">
+              <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-white/15 text-white backdrop-blur-sm">
+                <ClipboardCheck size={20} />
+              </div>
+              <span className="grid min-w-0">
+                <strong className="text-2xl font-extrabold leading-none tracking-tight">{metrics.total}</strong>
+                <small className="mt-1.5 truncate text-xs font-semibold text-teal-100/90">Atribuídas</small>
+              </span>
+            </article>
+
+            <article className="flex min-h-[104px] min-w-0 items-center gap-3.5 rounded-2xl border border-amber-200/80 bg-gradient-to-br from-amber-50/90 via-orange-50/60 to-amber-100/40 p-4 text-amber-950 shadow-[0_12px_28px_-6px_rgba(245,158,11,0.18)] transition-all hover:-translate-y-0.5 active:scale-[0.98]">
+              <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-amber-500/15 text-amber-700">
+                <CircleDashed size={20} />
+              </div>
+              <span className="grid min-w-0">
+                <strong className="text-2xl font-extrabold leading-none tracking-tight text-amber-950">{metrics.pending}</strong>
+                <small className="mt-1.5 truncate text-xs font-bold text-amber-800/80">A iniciar</small>
+              </span>
+            </article>
+
+            <article className="flex min-h-[104px] min-w-0 items-center gap-3.5 rounded-2xl border border-sky-200/80 bg-gradient-to-br from-sky-50/90 via-blue-50/60 to-sky-100/40 p-4 text-sky-950 shadow-[0_12px_28px_-6px_rgba(14,165,233,0.18)] transition-all hover:-translate-y-0.5 active:scale-[0.98]">
+              <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-sky-500/15 text-sky-700">
+                <Clock3 size={20} />
+              </div>
+              <span className="grid min-w-0">
+                <strong className="text-2xl font-extrabold leading-none tracking-tight text-sky-950">{metrics.in_progress}</strong>
+                <small className="mt-1.5 truncate text-xs font-bold text-sky-800/80">Em andamento</small>
+              </span>
+            </article>
+
+            <article className="flex min-h-[104px] min-w-0 items-center gap-3.5 rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/90 via-teal-50/60 to-emerald-100/40 p-4 text-emerald-950 shadow-[0_12px_28px_-6px_rgba(16,185,129,0.18)] transition-all hover:-translate-y-0.5 active:scale-[0.98]">
+              <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-emerald-500/15 text-emerald-700">
+                <CheckCircle2 size={20} />
+              </div>
+              <span className="grid min-w-0">
+                <strong className="text-2xl font-extrabold leading-none tracking-tight text-emerald-950">{metrics.finished}</strong>
+                <small className="mt-1.5 truncate text-xs font-bold text-emerald-800/80">Concluídas</small>
+              </span>
+            </article>
           </div>
 
           <div className="grid grid-cols-[minmax(0,1.25fr)_minmax(280px,0.75fr)] gap-4 max-[760px]:grid-cols-1">
-            <article className="flex min-h-[220px] items-center justify-between gap-7 rounded-[28px] border border-[#dcebea] bg-white p-[clamp(22px,4vw,32px)] shadow-[0_18px_48px_rgba(23,49,58,0.07)] max-[520px]:items-start">
+            <article className="flex min-h-[190px] items-center justify-between gap-6 rounded-3xl border border-slate-200/80 bg-white/95 p-6 shadow-[0_18px_45px_-10px_rgba(15,118,104,0.12)] backdrop-blur-md max-[520px]:items-start max-[520px]:p-5">
               <div>
-                <p className="mb-1.5 text-xs font-extrabold uppercase tracking-[0.13em] text-operation-mint-dark">Progresso da rotina</p>
-                <h2 className="m-0 mt-1 text-[clamp(24px,4vw,36px)] font-extrabold tracking-[-0.035em]">{completionRate}% concluído</h2>
-                <p className="m-0 mt-2.5 text-operation-muted">{metrics.finished} de {metrics.total} atividades finalizadas.</p>
+                <p className="mb-1 text-xs font-extrabold uppercase tracking-wider text-operation-mint-dark">Progresso da rotina</p>
+                <h2 className="m-0 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">{completionRate}% concluído</h2>
+                <p className="m-0 mt-2 text-xs text-operation-muted sm:text-sm">{metrics.finished} de {metrics.total} atividades finalizadas.</p>
               </div>
-              <div className="grid h-[142px] w-[142px] flex-[0_0_142px] place-content-center rounded-full text-center max-[520px]:h-28 max-[520px]:w-28 max-[520px]:flex-[0_0_112px]" style={{ background: `radial-gradient(circle at center, #fff 61%, transparent 62%), conic-gradient(var(--color-operation-mint) ${completionRate * 3.6}deg, #e5efed 0)` }} aria-label={`${completionRate}% concluído`}>
-                <strong className="text-[30px] font-extrabold tracking-[-0.04em]">{completionRate}%</strong>
-                <span className="text-xs text-operation-muted">concluído</span>
+              <div className="grid size-32 flex-[0_0_128px] place-content-center rounded-full text-center shadow-inner max-[520px]:size-24 max-[520px]:flex-[0_0_96px]" style={{ background: `radial-gradient(circle at center, #fff 60%, transparent 61%), conic-gradient(var(--color-operation-mint) ${completionRate * 3.6}deg, #e2efec 0)` }} aria-label={`${completionRate}% concluído`}>
+                <strong className="text-2xl font-extrabold tracking-tight text-slate-900 max-[520px]:text-xl">{completionRate}%</strong>
+                <span className="text-[11px] font-medium text-operation-muted">concluído</span>
               </div>
             </article>
 
-            <article className="flex min-h-[220px] flex-col items-start justify-between gap-7 rounded-[28px] bg-[#20383e] p-[clamp(22px,4vw,32px)] text-white shadow-[0_20px_48px_rgba(23,49,58,0.18)] max-[760px]:min-h-[190px]" style={{ backgroundImage: 'radial-gradient(circle at 100% 0, rgba(243, 201, 104, 0.34), transparent 42%)' }}>
-              <div>
-                <p className="mb-1.5 text-xs font-extrabold uppercase tracking-[0.13em] text-[#bcd3d0]">Próximo passo</p>
-                <h2 className="m-0 mt-1 text-[clamp(24px,4vw,36px)] font-extrabold tracking-[-0.035em]">{priorityAssignment?.title || 'Rotina em dia'}</h2>
-                <p className="m-0 mt-2.5 text-[#bcd3d0]">{priorityAssignment ? 'Continue pela atividade mais importante agora.' : 'Não há nenhuma atividade pendente.'}</p>
+            <article className="relative flex min-h-[190px] flex-col items-start justify-between gap-6 overflow-hidden rounded-3xl border border-[#2a4d57] bg-gradient-to-br from-[#17313a] via-[#1c3a44] to-[#0f2830] p-6 text-white shadow-[0_20px_50px_-10px_rgba(23,49,58,0.32)] max-[760px]:min-h-[170px] max-[520px]:p-5">
+              <div className="absolute right-0 top-0 size-48 rounded-full bg-gradient-to-br from-amber-400/20 to-transparent blur-2xl pointer-events-none" />
+              <div className="relative z-[1]">
+                <p className="mb-1 text-xs font-bold uppercase tracking-wider text-[#bcd3d0]">Próximo passo</p>
+                <h2 className="m-0 text-xl font-extrabold tracking-tight sm:text-2xl">{priorityAssignment?.title || 'Rotina em dia'}</h2>
+                <p className="m-0 mt-1.5 text-xs text-[#bcd3d0]/90">{priorityAssignment ? 'Continue pela atividade mais importante agora.' : 'Não há nenhuma atividade pendente.'}</p>
               </div>
               {priorityAssignment && (
-                <button className="inline-flex min-h-[46px] items-center gap-2 rounded-[15px] border-0 bg-[#f3c968] px-[18px] font-extrabold text-operation-ink transition-colors hover:bg-[#f7d889] focus-visible:outline-3 focus-visible:outline-[#f3c968]/40 focus-visible:outline-offset-3" type="button" onClick={() => navigate(`/app/checklists/${priorityAssignment.id}/execute${priorityAssignment.latestResponse?.id ? `?executionId=${encodeURIComponent(priorityAssignment.latestResponse.id)}` : ''}`)}>
+                <button className="relative z-[1] inline-flex min-h-11 items-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 px-4 text-xs font-extrabold text-slate-950 shadow-[0_10px_25px_-5px_rgba(243,201,104,0.4)] transition-all hover:brightness-105 active:scale-[0.98]" type="button" onClick={() => navigate(`/app/checklists/${priorityAssignment.id}/execute${priorityAssignment.latestResponse?.id ? `?executionId=${encodeURIComponent(priorityAssignment.latestResponse.id)}` : ''}`)}>
                   {assignmentState(priorityAssignment.latestResponse) === 'finished' ? 'Revisar execução' : 'Abrir atividade'}
-                  <ArrowRight size={18} aria-hidden="true" />
+                  <ArrowRight size={16} aria-hidden="true" />
                 </button>
               )}
             </article>
