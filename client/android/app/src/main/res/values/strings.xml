@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Ritmika Operação</string>
+    <string name="title_activity_main">Ritmika Operação</string>
+    <string name="package_name">com.ritmika.operacao</string>
+    <string name="custom_url_scheme">com.ritmika.operacao</string>
+</resources>
