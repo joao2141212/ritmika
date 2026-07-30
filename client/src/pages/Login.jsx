@@ -100,7 +100,7 @@ const Login = () => {
                         <label className="text-sm font-semibold" htmlFor="login-email">Email</label>
                         <div className="flex items-center gap-3 rounded-xl border border-operation-line bg-white px-4 py-3 transition-colors focus-within:border-operation-mint focus-within:ring-4 focus-within:ring-operation-mint/15">
                             <Mail size={19} aria-hidden="true" />
-                            <input className="min-w-0 flex-1 border-0 bg-transparent text-sm text-operation-ink outline-none placeholder:text-operation-muted/70" id="login-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" placeholder="voce@empresa.com.br" required disabled={isSubmitting} />
+                            <input className="min-w-0 flex-1 !appearance-none !border-0 !bg-transparent p-0 text-sm text-operation-ink !outline-none !shadow-none focus:!border-0 focus:!outline-none focus:!ring-0 focus:!shadow-none focus-visible:!outline-none placeholder:text-operation-muted/70" id="login-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" placeholder="voce@empresa.com.br" required disabled={isSubmitting} />
                         </div>
                     </div>
 
@@ -108,7 +108,7 @@ const Login = () => {
                         <label className="text-sm font-semibold" htmlFor="login-password">Senha</label>
                         <div className="flex items-center gap-3 rounded-xl border border-operation-line bg-white px-4 py-3 transition-colors focus-within:border-operation-mint focus-within:ring-4 focus-within:ring-operation-mint/15">
                             <LockKeyhole size={19} aria-hidden="true" />
-                            <input className="min-w-0 flex-1 border-0 bg-transparent text-sm text-operation-ink outline-none placeholder:text-operation-muted/70" id="login-password" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" placeholder="Digite sua senha" required disabled={isSubmitting} />
+                            <input className="min-w-0 flex-1 !appearance-none !border-0 !bg-transparent p-0 text-sm text-operation-ink !outline-none !shadow-none focus:!border-0 focus:!outline-none focus:!ring-0 focus:!shadow-none focus-visible:!outline-none placeholder:text-operation-muted/70" id="login-password" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" placeholder="Digite sua senha" required disabled={isSubmitting} />
                             <button type="button" className="rounded-lg p-1 text-operation-muted transition-colors hover:bg-operation-soft hover:text-operation-ink" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'} aria-pressed={showPassword}>
                                 {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
                             </button>
