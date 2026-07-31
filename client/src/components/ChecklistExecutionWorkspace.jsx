@@ -295,6 +295,20 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
 
     const goToNextItem = () => {
         if (!validateCurrentItem()) return;
+        const nextPendingIndex = answerableItems.findIndex((item, index) => (
+            index > activeItemIndex && !isAnswered(answers[item.id])
+        ));
+        if (nextPendingIndex >= 0) {
+            focusItem(nextPendingIndex);
+            return;
+        }
+        const wrappedPendingIndex = answerableItems.findIndex((item, index) => (
+            index < activeItemIndex && !isAnswered(answers[item.id])
+        ));
+        if (wrappedPendingIndex >= 0) {
+            focusItem(wrappedPendingIndex);
+            return;
+        }
         if (!isLastItem) focusItem(activeItemIndex + 1);
     };
 
