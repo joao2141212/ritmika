@@ -41,7 +41,6 @@ const Layout = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(() => (
         typeof window === 'undefined' ? true : window.innerWidth > 760
     ));
-
     useEffect(() => {
         if (!isSidebarOpen) return undefined;
         const closeOnEscape = (event) => {
@@ -61,11 +60,16 @@ const Layout = () => {
             </a>
             <aside
                 className={`z-[70] flex h-full shrink-0 flex-col border-r border-workspace-border bg-white shadow-[8px_0_24px_rgba(24,48,64,0.04)] transition-[width] duration-200 ease-in-out max-[760px]:fixed max-[760px]:inset-x-0 max-[760px]:top-0 max-[760px]:block max-[760px]:h-16 max-[760px]:w-full max-[760px]:border-r-0 max-[760px]:border-b max-[760px]:shadow-[0_8px_24px_rgba(24,48,64,0.06)] ${isSidebarOpen ? 'w-[280px] max-[760px]:inset-0 max-[760px]:z-[80] max-[760px]:flex max-[760px]:h-dvh max-[760px]:w-[min(280px,calc(100vw-32px))] max-[760px]:shadow-[14px_0_30px_rgba(24,48,64,0.16)]' : 'w-24'}`}
-                aria-label="Navegação principal"
-            >
+                    aria-label="Navegação principal"
+                >
                 <div className={`flex h-20 items-center justify-between border-b border-workspace-border-soft px-6 ${!isSidebarOpen ? 'max-[760px]:h-16 max-[760px]:px-4' : ''}`}>
                     <div className={`flex items-center gap-3 ${!isSidebarOpen ? 'max-[760px]:flex-1' : ''}`}>
-                        <div className="flex size-9 items-center justify-center rounded-[10px] bg-workspace-accent shadow-none"><Zap size={24} fill="white" /></div>
+                        <img
+                            src="/ritmika-mark-square-final.png"
+                            alt="Ritmika"
+                            className="size-9 rounded-[10px] object-cover"
+                            fetchPriority="high"
+                        />
                         {isSidebarOpen ? (
                             <span className="text-xl font-bold tracking-[-0.5px] text-workspace-ink">Ritmika</span>
                         ) : (

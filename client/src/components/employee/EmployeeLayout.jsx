@@ -1,6 +1,7 @@
 import { Suspense, useEffect } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { Bell, ClipboardList, History, Home, Sparkles } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
+import { Bell, ClipboardList, Download, History, Home, Sparkles } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import RouteSkeleton from '../RouteSkeleton';
 
@@ -8,6 +9,8 @@ const employeeNavLinkClass = ({ isActive }) => `relative flex min-h-12 items-cen
 
 export default function EmployeeLayout() {
   const { user } = useAuth();
+  const androidDownloadUrl = import.meta.env.VITE_ANDROID_DOWNLOAD_URL || '/Ritmika.apk';
+  const showAndroidDownload = Boolean(androidDownloadUrl) && !Capacitor.isNativePlatform();
 
   useEffect(() => {
     const preload = () => Promise.allSettled([
@@ -30,19 +33,38 @@ export default function EmployeeLayout() {
     <div className="min-h-screen bg-[radial-gradient(circle_at_8%_0%,#ddf4ee_0,transparent_28rem),#f4f8f8] text-operation-ink">
       <header className="sticky top-0 z-20 flex min-h-[72px] items-center justify-between border-b border-[rgba(197,218,219,0.9)] bg-white/88 px-[clamp(18px,4vw,56px)] py-3 backdrop-blur-[18px] max-[720px]:min-h-16 max-[720px]:px-4 max-[720px]:py-2">
         <a className="inline-flex items-center gap-2.5 text-xl font-extrabold text-operation-ink no-underline" href="/app" aria-label="Início do aplicativo Ritmika">
-          <span className="grid size-[38px] place-items-center rounded-[13px] bg-[linear-gradient(145deg,#13aa94,#087468)] text-white shadow-[0_8px_22px_rgba(15,141,124,0.22)]">R</span>
+          <img
+            src="/ritmika-mark-square-final.png"
+            alt="Ritmika"
+            className="size-[38px] rounded-[13px] object-cover shadow-[0_8px_22px_rgba(15,141,124,0.22)]"
+            fetchPriority="high"
+          />
           <span>Ritmika</span>
         </a>
 
-        <NavLink className="inline-flex min-w-0 items-center gap-2.5 rounded-full border border-[rgba(24,63,68,0.12)] bg-white/86 px-3 py-1.5 text-[#183f44] no-underline transition duration-200 hover:-translate-y-px hover:border-[rgba(15,143,126,0.34)] hover:bg-white focus-visible:outline-3 focus-visible:outline-[rgba(15,143,126,0.24)] focus-visible:outline-offset-3 max-[720px]:border-transparent max-[720px]:bg-transparent max-[720px]:p-1" to="/app/profile" aria-label="Abrir meu perfil">
-          <span className="grid min-w-0 text-right max-[720px]:sr-only">
-            <strong className="max-w-40 truncate text-[13px]">{user?.name || 'Minha rotina'}</strong>
-            <small className="truncate text-[11px] text-[#718389]">Meu perfil</small>
-          </span>
-          <span className="grid size-[38px] shrink-0 place-items-center rounded-full bg-[linear-gradient(145deg,#143f43,#0f8f7e)] text-sm font-black text-white shadow-[0_7px_18px_rgba(20,63,67,0.18)] max-[720px]:size-[42px]" aria-hidden="true">
-            {String(user?.name || 'R').trim().charAt(0).toUpperCase()}
-          </span>
-        </NavLink>
+        <div className="flex items-center gap-2 max-[720px]:gap-1">
+          {showAndroidDownload ? (
+            <a
+              className="inline-flex items-center gap-2 rounded-full border border-[#cce9e3] bg-[#effaf7] px-3.5 py-2 text-[12px] font-extrabold text-[#087468] no-underline shadow-[0_5px_14px_rgba(15,143,126,0.08)] transition duration-200 hover:-translate-y-px hover:border-[#9dd9ce] hover:bg-[#e5f7f2] focus-visible:outline-3 focus-visible:outline-[rgba(15,143,126,0.24)] focus-visible:outline-offset-3 max-[720px]:size-10 max-[720px]:justify-center max-[720px]:rounded-full max-[720px]:p-0"
+              href={androidDownloadUrl}
+              download
+              aria-label="Baixar app Android"
+              title="Baixar app Android"
+            >
+              <Download size={16} aria-hidden="true" />
+              <span className="max-[720px]:sr-only">Baixar app</span>
+            </a>
+          ) : null}
+          <NavLink className="inline-flex min-w-0 items-center gap-2.5 rounded-full border border-[rgba(24,63,68,0.12)] bg-white/86 px-3 py-1.5 text-[#183f44] no-underline transition duration-200 hover:-translate-y-px hover:border-[rgba(15,143,126,0.34)] hover:bg-white focus-visible:outline-3 focus-visible:outline-[rgba(15,143,126,0.24)] focus-visible:outline-offset-3 max-[720px]:border-transparent max-[720px]:bg-transparent max-[720px]:p-1" to="/app/profile" aria-label="Abrir meu perfil">
+            <span className="grid min-w-0 text-right max-[720px]:sr-only">
+              <strong className="max-w-40 truncate text-[13px]">{user?.name || 'Minha rotina'}</strong>
+              <small className="truncate text-[11px] text-[#718389]">Meu perfil</small>
+            </span>
+            <span className="grid size-[38px] shrink-0 place-items-center rounded-full bg-[linear-gradient(145deg,#143f43,#0f8f7e)] text-sm font-black text-white shadow-[0_7px_18px_rgba(20,63,67,0.18)] max-[720px]:size-[42px]" aria-hidden="true">
+              {String(user?.name || 'R').trim().charAt(0).toUpperCase()}
+            </span>
+          </NavLink>
+        </div>
       </header>
 
       <main className="mx-auto w-[min(1120px,calc(100%_-_36px))] pb-[116px] pt-[26px] max-[720px]:w-[min(calc(100%_-_28px),560px)] max-[720px]:pb-[calc(104px_+_env(safe-area-inset-bottom,0px))] max-[720px]:pt-5">
