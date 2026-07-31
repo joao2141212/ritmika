@@ -124,13 +124,16 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
                 }
                 const evidence = await evidenceService.list(started.id);
                 if (!active) return;
+                const startedAnswers = started.answers || {};
+                const startedAnswerableItems = executionItemsOf(data).filter((item) => item.type !== 'separator');
+                const firstUnansweredIndex = startedAnswerableItems.findIndex((item) => !isAnswered(startedAnswers[item.id]));
                 setChecklist(data);
                 setExecution(started);
-                setAnswers(started.answers || {});
-                autosaveBaselineRef.current = JSON.stringify(started.answers || {});
+                setAnswers(startedAnswers);
+                autosaveBaselineRef.current = JSON.stringify(startedAnswers);
                 queuedAnswersRef.current = '';
-                latestAnswersRef.current = started.answers || {};
-                setActiveItemIndex(0);
+                latestAnswersRef.current = startedAnswers;
+                setActiveItemIndex(firstUnansweredIndex >= 0 ? firstUnansweredIndex : Math.max(startedAnswerableItems.length - 1, 0));
                 setStepFeedback('');
                 setCompleted(started.status === 'completed' || Boolean(started.completed_at));
                 setEvidenceByItem(groupEvidence(evidence));
