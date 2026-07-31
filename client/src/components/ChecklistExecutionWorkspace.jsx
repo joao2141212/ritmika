@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
     ArrowLeft,
@@ -84,6 +84,10 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
     const [evidenceBusy, setEvidenceBusy] = useState({});
     const [activeItemIndex, setActiveItemIndex] = useState(0);
     const [stepFeedback, setStepFeedback] = useState('');
+    const autosaveBaselineRef = useRef('');
+    const queuedAnswersRef = useRef('');
+    const saveQueueRef = useRef(Promise.resolve(true));
+    const latestAnswersRef = useRef({});
 
     useEffect(() => {
         let active = true;
@@ -123,6 +127,9 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
                 setChecklist(data);
                 setExecution(started);
                 setAnswers(started.answers || {});
+                autosaveBaselineRef.current = JSON.stringify(started.answers || {});
+                queuedAnswersRef.current = '';
+                latestAnswersRef.current = started.answers || {};
                 setActiveItemIndex(0);
                 setStepFeedback('');
                 setCompleted(started.status === 'completed' || Boolean(started.completed_at));
@@ -160,11 +167,84 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
     const activeItem = answerableItems[activeItemIndex] || null;
     const isFirstItem = activeItemIndex === 0;
     const isLastItem = activeItemIndex === answerableItems.length - 1;
+    latestAnswersRef.current = answers;
+
+    const persistAnswers = useCallback((nextAnswers, { notify = false, force = false } = {}) => {
+        if (!execution?.id) return Promise.resolve(false);
+        const serializedAnswers = JSON.stringify(nextAnswers);
+        if (!force && (
+            autosaveBaselineRef.current === serializedAnswers
+            || queuedAnswersRef.current === serializedAnswers
+        )) {
+            return Promise.resolve(true);
+        }
+        queuedAnswersRef.current = serializedAnswers;
+        const saveOperation = saveQueueRef.current.then(async () => {
+            const nextAnsweredCount = answerableItems.filter((item) => isAnswered(nextAnswers[item.id])).length;
+            const nextProgress = answerableItems.length
+                ? Math.round((nextAnsweredCount / answerableItems.length) * 100)
+                : 0;
+            try {
+                setSaving(true);
+                const saved = await checklistProducaoService.saveExecution(execution.id, {
+                    answers: nextAnswers,
+                    progress: nextProgress,
+                    status: 'in_progress',
+                });
+                autosaveBaselineRef.current = serializedAnswers;
+                if (queuedAnswersRef.current === serializedAnswers) queuedAnswersRef.current = '';
+                setExecution((currentExecution) => saved || (
+                    currentExecution
+                        ? { ...currentExecution, answers: nextAnswers, progress: nextProgress }
+                        : currentExecution
+                ));
+                if (notify) toast.success('Progresso salvo.');
+                return true;
+            } catch (saveError) {
+                logger.error({
+                    fn: 'ChecklistExecutionWorkspace.persistAnswers',
+                    status: 'error',
+                    executionId: execution.id,
+                    answeredCount: nextAnsweredCount,
+                    progress: nextProgress,
+                    error: saveError instanceof Error ? saveError.message : String(saveError),
+                });
+                if (queuedAnswersRef.current === serializedAnswers) queuedAnswersRef.current = '';
+                setStepFeedback('Não foi possível salvar este item. Tente novamente.');
+                if (notify) toast.error('Não foi possível salvar o progresso.');
+                return false;
+            } finally {
+                setSaving(false);
+            }
+        });
+        saveQueueRef.current = saveOperation.catch(() => false);
+        return saveOperation;
+    }, [answerableItems, execution?.id]);
+
+    useEffect(() => {
+        const serializedAnswers = JSON.stringify(answers);
+        if (!execution?.id || autosaveBaselineRef.current === serializedAnswers || queuedAnswersRef.current === serializedAnswers) {
+            return undefined;
+        }
+        const timeoutId = window.setTimeout(() => {
+            void persistAnswers(answers);
+        }, 450);
+        return () => window.clearTimeout(timeoutId);
+    }, [answers, execution, persistAnswers]);
+
+    useEffect(() => () => {
+        const nextAnswers = latestAnswersRef.current;
+        if (execution?.id && autosaveBaselineRef.current !== JSON.stringify(nextAnswers)) {
+            void persistAnswers(nextAnswers);
+        }
+    }, [execution?.id, persistAnswers]);
 
     const setAnswer = (itemId, value) => {
-        const isDeselecting = answers[itemId] === value;
+        const isDeselecting = latestAnswersRef.current[itemId] === value;
         const nextValue = isDeselecting ? undefined : value;
-        setAnswers((current) => ({ ...current, [itemId]: nextValue }));
+        const nextAnswers = { ...latestAnswersRef.current, [itemId]: nextValue };
+        latestAnswersRef.current = nextAnswers;
+        setAnswers(nextAnswers);
         setMissingItems((current) => current.filter((missingId) => missingId !== itemId));
         setStepFeedback(
             isDeselecting
@@ -179,6 +259,9 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
         );
         if (nextValue === NOT_APPLICABLE || isDeselecting) {
             setMissingEvidenceItems((current) => current.filter((missingId) => missingId !== itemId));
+        }
+        if (typeof nextValue === 'boolean' || nextValue === NOT_APPLICABLE || isDeselecting) {
+            void persistAnswers(nextAnswers);
         }
     };
 
@@ -214,26 +297,7 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
 
     const saveProgress = async () => {
         if (!execution) return;
-        try {
-            setSaving(true);
-            const saved = await checklistProducaoService.saveExecution(execution.id, {
-                answers,
-                progress,
-                status: 'in_progress',
-            });
-            setExecution(saved || execution);
-            toast.success('Progresso salvo.');
-        } catch (saveError) {
-            logger.error({
-                fn: 'ChecklistExecutionWorkspace.saveProgress',
-                status: 'error',
-                executionId: execution.id,
-                error: saveError instanceof Error ? saveError.message : String(saveError),
-            });
-            toast.error('Não foi possível salvar o progresso.');
-        } finally {
-            setSaving(false);
-        }
+        await persistAnswers(answers, { notify: true, force: true });
     };
 
     const complete = async () => {
@@ -264,6 +328,11 @@ const ChecklistExecutionWorkspace = ({ backPath = '/checklists' }) => {
         }
         if (!execution) return;
         try {
+            const progressSaved = await persistAnswers(answers, { force: true });
+            if (!progressSaved) {
+                toast.error('Não foi possível salvar o progresso antes de concluir.');
+                return;
+            }
             setSaving(true);
             const finished = await checklistProducaoService.completeExecution(execution.id, answers);
             setExecution(finished || execution);
